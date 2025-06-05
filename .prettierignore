@@ -1,0 +1,5 @@
+*.d.ts
+
+src/*/*/styles.css
+src/*/*/styles.layer.css
+src/*/*/styles/*.css
