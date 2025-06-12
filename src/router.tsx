@@ -1,8 +1,16 @@
 import Layout from '@components/layout/Layout';
-import About from '@pages/About';
+import loadable from '@loadable/component';
 import Home from '@pages/Home';
-import NotFound from '@pages/NotFound';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+
+const Loading = () => <div className="flex items-center justify-center">Loading...</div>;
+
+const About = loadable(() => import('./pages/About'), {
+  fallback: <Loading />,
+});
+const NotFound = loadable(() => import('./pages/NotFound'), {
+  fallback: <Loading />,
+});
 
 const router = createBrowserRouter([
   {
