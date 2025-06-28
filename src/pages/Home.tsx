@@ -13,10 +13,16 @@ export default function Home() {
       current: false,
     },
     {
-      name: '特别关心',
+      name: '我的关注',
       current: false,
     },
   ];
+
+  const [activeTab, setActiveTab] = useState('为你推荐');
+
+  const handleTabClick = (tabName: string) => {
+    setActiveTab(tabName);
+  };
 
   return (
     <div className="w-full">
@@ -25,7 +31,8 @@ export default function Home() {
           {tabs.map((tab) => (
             <button
               key={tab.name}
-              className={`px-4 py-2 rounded-sm ${tab.current ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800'}`}
+              onClick={() => handleTabClick(tab.name)}
+              className={`px-4 py-2 rounded-sm transition-colors ${activeTab === tab.name ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'}`}
             >
               {tab.name}
             </button>
@@ -33,7 +40,9 @@ export default function Home() {
         </div>
       </div>
       <div className="">
-        <RecommendedPost />
+        {activeTab === '为你推荐' && <RecommendedPost />}
+        {activeTab === '我的订阅' && <MySubscriptionsPostList />}
+        {activeTab === '我的关注' && <div>我的关注内容区域</div>}
       </div>
     </div>
   );
