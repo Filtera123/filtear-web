@@ -4,9 +4,9 @@ import SideBar from './SideBar';
 
 export default function Layout() {
   return (
-    <div className="relative min-h-screen flex lg:max-w-3/5 mx-auto justify-between ">
+    <div className="relative h-screen flex lg:max-w-4/5 mx-auto justify-between overflow-hidden"> {/* 将 lg:max-w-3/5 改为 lg:max-w-4/5 */}
       <SideBar />
-      <main className="flex-1 px-6">
+      <main className="flex-1 px-6 h-full overflow-y-auto">
         <div className="relative py-6 lg:py-10">
           <Outlet />
         </div>

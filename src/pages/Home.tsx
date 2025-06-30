@@ -25,7 +25,7 @@ export default function Home() {
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full p-4">
       <div className="flex justify-between items-center mb-4">
         <div className="flex space-x-4">
           {tabs.map((tab) => (
