@@ -1,6 +1,3 @@
-import { cn } from '@utils/cn';
-import { Link, useLocation } from 'react-router-dom';
-
 export default function GlobalSearchBar() {
   return (
     <div className="flex justify-center ">

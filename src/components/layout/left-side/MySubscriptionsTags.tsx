@@ -1,4 +1,3 @@
-import { div } from 'framer-motion/client';
 import { Tag } from '../../index';
 
 export default function MySubscriptionTags() {

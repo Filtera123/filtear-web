@@ -19,11 +19,7 @@ interface PostItem {
   comments: number;
 }
 
-interface Props {
-  post: PostItem;
-}
-
-export default function FullPostCard(Props: Props) {
+export default function FullPostCard() {
   const post: PostItem = {
     id: 1,
     author: 'John Doe',

@@ -1,9 +1,6 @@
-import { cn } from '@utils/cn';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 export default function MyFavoritePostList() {
-  const location = useLocation();
-
   const navItems = [
     { path: '/favorite/1', label: '我的收藏 1' },
     { path: '/favorite/2', label: '我的收藏 2' },

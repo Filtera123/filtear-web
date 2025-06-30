@@ -1,9 +1,6 @@
-import { cn } from '@utils/cn';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 export default function TrendingListBar() {
-  const location = useLocation();
-
   const navItems = [
     { path: '/trending', label: 'Trending' },
     { path: '/top', label: 'Top' },

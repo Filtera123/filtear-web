@@ -1,5 +1,3 @@
-import { cn } from '@utils/cn';
-import { Link, useLocation } from 'react-router-dom';
 import { MyInfo, MySubscriptionsTags } from './left-side';
 
 export default function SideBar() {
