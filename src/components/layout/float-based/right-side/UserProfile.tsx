@@ -64,9 +64,9 @@ export default function UserProfile() {
         <div className="absolute top-full left-0 right-0 mt-1 bg-white shadow-lg rounded-b-sm border border-gray-200 z-10 overflow-hidden">
           {otherAccounts.length > 0 ? (
             <div className="p-2 space-y-1">
-              {otherAccounts.map((account, _index) => (
-                <div 
-                  key={account.id} 
+              {otherAccounts.map((account) => (
+                <div
+                  key={account.id}
                   className="flex items-center p-2 rounded hover:bg-gray-100 cursor-pointer"
                   onClick={(e) => {
                     e.stopPropagation();

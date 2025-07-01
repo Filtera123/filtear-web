@@ -1,4 +1,4 @@
-import { Tag } from '../../index';
+import { Tag } from '../../../index';
 
 export default function MySubscriptionTags() {
   const tags = [

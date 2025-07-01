@@ -1,6 +1,6 @@
-import { useState, Suspense } from 'react';
-import MySubscriptionsPostList from './home/MySubscriptionsPostList';
-import RecommendedPost from './home/RecommendedPost';
+import { useState } from 'react';
+import MySubscriptionsPostList from './MySubscriptionsPostList';
+import RecommendedPost from './RecommendedPost';
 
 export default function Home() {
   const tabs = [
@@ -40,18 +40,9 @@ export default function Home() {
         </div>
       </div>
       <div className="">
-        {activeTab === '为你推荐' && (
-          <Suspense fallback={<div>加载推荐内容...</div>}>
-            <RecommendedPost />
-          </Suspense>
-        )}
+        {activeTab === '为你推荐' && <RecommendedPost />}
         {activeTab === '我的订阅' && <MySubscriptionsPostList />}
-        {activeTab === '我的关注' && (
-          <div className="p-4 bg-white rounded shadow">
-            <h2 className="text-xl font-bold mb-4">我的关注</h2>
-            <p>关注内容测试中...</p>
-          </div>
-        )}
+        {activeTab === '我的关注' && <div>我的关注内容区域</div>}
       </div>
     </div>
   );

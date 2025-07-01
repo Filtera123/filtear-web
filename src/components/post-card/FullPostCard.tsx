@@ -1,4 +1,4 @@
-import Tag from '../Tag';
+import Tag from '../tag/Tag.tsx';
 
 interface PostItem {
   id: number;
