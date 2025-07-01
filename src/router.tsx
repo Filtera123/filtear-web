@@ -1,36 +1,42 @@
 import Layout from '@components/layout/Layout';
-import loadable from '@loadable/component';
 import Home from '@pages/Home';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { Suspense, lazy } from 'react';
 
 const Loading = () => <div className="flex items-center justify-center">Loading...</div>;
 
-const About = loadable(() => import('./pages/About'), {
-  fallback: <Loading />,
-});
-const NotFound = loadable(() => import('./pages/NotFound'), {
-  fallback: <Loading />,
-});
+// 使用React官方懒加载
+const About = lazy(() => import('./pages/About'));
+const NotFound = lazy(() => import('./pages/NotFound'));
 
 const router = createBrowserRouter([
   {
     path: '/',
     element: <Layout />,
-    errorElement: <NotFound />,
+    errorElement: (
+      <Suspense fallback={<Loading />}>
+        <NotFound />
+      </Suspense>
+    ),
     children: [
-      {
-        index: true,
-        element: <Home />,
-      },
-      {
-        path: 'about',
-        element: <About />,
+      { index: true, element: <Home /> },
+      { 
+        path: 'about', 
+        element: (
+          <Suspense fallback={<Loading />}>
+            <About />
+          </Suspense>
+        ) 
       },
     ],
   },
-  {
-    path: '*',
-    element: <NotFound />,
+  { 
+    path: '*', 
+    element: (
+      <Suspense fallback={<Loading />}>
+        <NotFound />
+      </Suspense>
+    ) 
   },
 ]);
 
