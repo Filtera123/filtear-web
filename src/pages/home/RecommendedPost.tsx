@@ -380,8 +380,8 @@ export default function RecommendedPost() {
   }, [handleScroll]);
 
   return (
-    <div className="h-full overflow-y-auto">
-      <div className="grid grid-cols-1 gap-4">
+    <div className="h-full overflow-y-auto scrollbar-hide">
+      <div className="grid grid-cols-1 gap-4 ">
         <PostArea />
         <div className="space-y-4">
           {posts.map((post) => (

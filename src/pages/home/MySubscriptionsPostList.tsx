@@ -448,7 +448,7 @@ export default function MySubscriptionsList() {
   }, []);
 
   return (
-    <div className="grid grid-cols-1 gap-4">
+    <div className="grid grid-cols-1 gap-4 ">
       <PostArea />
       <div className="flex justify-end items-center mb-4 gap-4">
         <button className="px-4 py-2 bg-blue-500 text-white rounded">最新</button>

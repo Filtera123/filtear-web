@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 // 定义浏览记录数据类型
@@ -33,7 +33,7 @@ const typeDisplayMap = {
   article: '文章',
   image: '图片',
   dynamic: '动态',
-  video: '视频'
+  video: '视频',
 };
 
 export default function RecentlyViewed() {
@@ -48,9 +48,13 @@ export default function RecentlyViewed() {
       const mockData: ViewRecord[] = Array.from({ length: 25 }, (_, i) => ({
         id: `view-${i}`,
         title: `浏览记录标题 ${i + 1}`,
-        author: `作者${i % 5 + 1}`,
-        type: ['article', 'image', 'dynamic', 'video'][i % 4] as 'article' | 'image' | 'dynamic' | 'video',
-        viewTime: new Date(Date.now() - i * 3600000 * (i % 10 + 1)), // 不同时间的记录
+        author: `作者${(i % 5) + 1}`,
+        type: ['article', 'image', 'dynamic', 'video'][i % 4] as
+          | 'article'
+          | 'image'
+          | 'dynamic'
+          | 'video',
+        viewTime: new Date(Date.now() - i * 3600000 * ((i % 10) + 1)), // 不同时间的记录
         url: `/post/${i}`,
         // newCount: i > 0 ? Math.floor(Math.random() * 50) : undefined // 已移除新增数量生成代码
       }));
@@ -60,7 +64,7 @@ export default function RecentlyViewed() {
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
       const filtered = mockData
-        .filter(record => new Date(record.viewTime) >= sevenDaysAgo)
+        .filter((record) => new Date(record.viewTime) >= sevenDaysAgo)
         .sort((a, b) => new Date(b.viewTime).getTime() - new Date(a.viewTime).getTime());
 
       setViewRecords(filtered);
@@ -81,21 +85,18 @@ export default function RecentlyViewed() {
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-lg font-semibold">最近浏览</h1>
         {showMore && (
-          <Link
-            to="/profile/recent-views"
-            className="text-sm text-blue-500 hover:underline"
-          >
+          <Link to="/profile/recent-views" className="text-sm text-blue-500 hover:underline">
             查看更多
           </Link>
         )}
       </div>
-
+      {/* TODO: 沒有登錄我們怎麼去記錄用戶的瀏覽記錄呢？如果這個瀏覽記錄是要寫入到後端的，那麼我們總得有個要寫給誰的對象吧？*/}
       {/* 直接显示浏览记录列表，无需登录判断 */}
       {filteredRecords.length > 0 ? (
-        <div className="max-h-[300px] overflow-y-auto pr-1">
+        <div className="max-h-[300px] overflow-y-auto pr-1 scrollbar-hide">
           <div className="space-y-3 pb-2">
             {filteredRecords.map((record) => (
-              <Link 
+              <Link
                 key={record.id}
                 to={record.url}
                 className="block p-3 border border-gray-100 rounded hover:bg-gray-50 transition-colors"
@@ -122,7 +123,6 @@ export default function RecentlyViewed() {
           暂无浏览记录
         </div>
       )}
-
       {/* 已移除底部的查看更多按钮 */}
     </div>
   );

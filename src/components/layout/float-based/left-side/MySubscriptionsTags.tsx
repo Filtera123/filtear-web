@@ -56,7 +56,7 @@ export default function MySubscriptionTags() {
           </svg>
         </button>
       </div>
-      <div className="flex flex-col gap-2 max-h-[300px] overflow-y-auto pr-1">
+      <div className="flex flex-col gap-2 max-h-[300px] overflow-y-auto pr-1 scrollbar-hide">
         {tags.map((tag) => (
           <div className="flex justify-between items-center" key={tag.name}>
             <div onClick={() => handleTagClick(tag.name)} className="cursor-pointer">
