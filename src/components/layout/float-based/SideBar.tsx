@@ -2,7 +2,7 @@ import { MyInfo, MySubscriptionsTags } from './left-side';
 
 export default function SideBar() {
   return (
-    <aside className="w-64 pt-6 pb-10 flex flex-col h-full overflow-y-auto scrollbar-hide">
+    <aside className="w-64 pt-4 pb-10 flex flex-col h-full overflow-y-auto scrollbar-hide">
       <div className="flex flex-col gap-6 flex-grow">
         <MyInfo />
         <MySubscriptionsTags />

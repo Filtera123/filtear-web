@@ -1,17 +1,14 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import tailwindcss from '@tailwindcss/vite';
-import { fileURLToPath } from 'url';
 import path, { dirname } from 'path';
+import { fileURLToPath } from 'url';
+import tailwindcss from '@tailwindcss/vite';
+import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export default defineConfig({
-  plugins: [
-    react(),
-    tailwindcss()
-  ],
+  plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -19,7 +16,6 @@ export default defineConfig({
       '@pages': path.resolve(__dirname, './src/pages'),
       '@hooks': path.resolve(__dirname, './src/hooks'),
       '@utils': path.resolve(__dirname, './src/utils'),
-      '@types': path.resolve(__dirname, './src/types'),
       '@api': path.resolve(__dirname, './src/api'),
       '@tabler/icons-react': '@tabler/icons-react/dist/esm/icons/index.mjs',
     },
@@ -28,4 +24,4 @@ export default defineConfig({
     port: 3000,
     open: true,
   },
-})
+});

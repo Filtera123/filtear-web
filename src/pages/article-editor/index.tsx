@@ -1,11 +1,15 @@
+import React from 'react';
 import { Grid } from '@mui/material';
 import Aside from './Aside';
 import Editor from './Editor';
 import Sidebar from './Sidebar';
 
 export default function ArticleEditor() {
+  // TODO: 通过 id 获取文章数据
+  // const params = useParams();
+
   return (
-    <Grid className="h-screen px-32 py-6" container spacing={2}>
+    <Grid className="h-screen px-32 py-12" container spacing={2}>
       <Grid size="grow">
         <Sidebar />
       </Grid>
@@ -14,9 +18,9 @@ export default function ArticleEditor() {
         size={{
           xs: 12,
           sm: 12,
-          md: 6,
-          lg: 6,
-          xl: 6,
+          md: 8,
+          lg: 8,
+          xl: 8,
         }}
       >
         <Editor />

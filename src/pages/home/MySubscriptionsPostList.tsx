@@ -1,8 +1,8 @@
-import React, { useState, useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { type Comment } from '../../components/comment/comment.type';
 import { FullPostCard } from './../../components/post-card';
 import PostArea from './PostArea';
-import { type Comment } from '../../components/comment/comment.type';
 
 interface Post {
   id: number;
@@ -39,8 +39,28 @@ export default function MySubscriptionsList() {
       categorySlug: 'genshin',
       readingTime: 5,
       title: '《满月浮的月夜》- 原神同人小说',
-      content: '夜幕降临，璃月港的灯火星星点点亮起。钟离站在石板路上，月光洒在他的肩头上，为这位岩王帝君罩上了几分温柔...',
-      tags: ['原神', '小说', '虚构', '满月', '同人小说', '璃月港', '钟离', '岩王帝君', '月夜', '浪漫', '文学创作', '游戏同人', '中文小说', '幻想', '古风', '温柔', '诗意', '夜景'],
+      content:
+        '夜幕降临，璃月港的灯火星星点点亮起。钟离站在石板路上，月光洒在他的肩头上，为这位岩王帝君罩上了几分温柔...',
+      tags: [
+        '原神',
+        '小说',
+        '虚构',
+        '满月',
+        '同人小说',
+        '璃月港',
+        '钟离',
+        '岩王帝君',
+        '月夜',
+        '浪漫',
+        '文学创作',
+        '游戏同人',
+        '中文小说',
+        '幻想',
+        '古风',
+        '温柔',
+        '诗意',
+        '夜景',
+      ],
       isLike: false,
       likes: 234,
       comments: 8,
@@ -64,8 +84,8 @@ export default function MySubscriptionsList() {
               createdAt: '2024-01-15T12:30:00Z',
               likes: 2,
               isLiked: true,
-            }
-          ]
+            },
+          ],
         },
         {
           id: 'comment-1-2',
@@ -136,7 +156,7 @@ export default function MySubscriptionsList() {
           createdAt: '2024-01-15T21:30:00Z',
           likes: 9,
           isLiked: true,
-        }
+        },
       ],
       views: 1567,
       isFollowing: false,
@@ -152,8 +172,22 @@ export default function MySubscriptionsList() {
       categorySlug: 'technology',
       readingTime: 8,
       title: 'AI技术发展趋势与未来展望',
-      content: '人工智能技术正在以前所未有的速度发展，从机器学习到深度学习，从自然语言处理到计算机视觉...',
-      tags: ['AI', '人工智能', '机器学习', '深度学习', '科技趋势', '未来展望', '技术发展', '创新', '数据科学', '算法', '神经网络', '自动化'],
+      content:
+        '人工智能技术正在以前所未有的速度发展，从机器学习到深度学习，从自然语言处理到计算机视觉...',
+      tags: [
+        'AI',
+        '人工智能',
+        '机器学习',
+        '深度学习',
+        '科技趋势',
+        '未来展望',
+        '技术发展',
+        '创新',
+        '数据科学',
+        '算法',
+        '神经网络',
+        '自动化',
+      ],
       isLike: true,
       likes: 456,
       comments: 7,
@@ -227,7 +261,7 @@ export default function MySubscriptionsList() {
           createdAt: '2024-01-14T16:10:00Z',
           likes: 5,
           isLiked: false,
-        }
+        },
       ],
       views: 892,
       isFollowing: true,
@@ -243,7 +277,8 @@ export default function MySubscriptionsList() {
       categorySlug: 'food',
       readingTime: 5,
       title: '家常菜的温暖记忆',
-      content: '每一道家常菜都承载着温暖的记忆，从小时候妈妈做的红烧肉，到现在自己学会的各种菜谱...',
+      content:
+        '每一道家常菜都承载着温暖的记忆，从小时候妈妈做的红烧肉，到现在自己学会的各种菜谱...',
       tags: ['美食', '家常菜', '烹饪', '记忆', '温暖'],
       isLike: false,
       likes: 123,
@@ -256,49 +291,54 @@ export default function MySubscriptionsList() {
 
   // 处理关注/取消关注
   const handleFollow = useCallback((userId: string) => {
-    setPostList(prevPosts => 
-      prevPosts.map(post => 
-        post.author === userId 
-          ? { ...post, isFollowing: !post.isFollowing }
-          : post
+    setPostList((prevPosts) =>
+      prevPosts.map((post) =>
+        post.author === userId ? { ...post, isFollowing: !post.isFollowing } : post
       )
     );
   }, []);
 
   // 处理点赞/取消点赞
   const handleLike = useCallback((postId: number) => {
-    setPostList(prevPosts => 
-      prevPosts.map(post => 
-        post.id === postId 
-          ? { 
-              ...post, 
+    setPostList((prevPosts) =>
+      prevPosts.map((post) =>
+        post.id === postId
+          ? {
+              ...post,
               isLike: !post.isLike,
-              likes: post.isLike ? post.likes - 1 : post.likes + 1
+              likes: post.isLike ? post.likes - 1 : post.likes + 1,
             }
           : post
       )
     );
   }, []);
 
-
-
   // 处理用户点击
-  const handleUserClick = useCallback((userId: string) => {
-    console.log('跳转到用户主页', userId);
-    navigate(`/user/${userId}`);
-  }, [navigate]);
+  const handleUserClick = useCallback(
+    (userId: string) => {
+      console.log('跳转到用户主页', userId);
+      navigate(`/user/${userId}`);
+    },
+    [navigate]
+  );
 
   // 处理帖子点击
-  const handlePostClick = useCallback((postId: number) => {
-    console.log('跳转到帖子详情页', postId);
-    navigate(`/post/${postId}`);
-  }, [navigate]);
+  const handlePostClick = useCallback(
+    (postId: number) => {
+      console.log('跳转到帖子详情页', postId);
+      navigate(`/post/${postId}`);
+    },
+    [navigate]
+  );
 
   // 处理标签点击
-  const handleTagClick = useCallback((tag: string) => {
-    console.log('跳转到标签专栏页', tag);
-    navigate(`/tag/${encodeURIComponent(tag)}`);
-  }, [navigate]);
+  const handleTagClick = useCallback(
+    (tag: string) => {
+      console.log('跳转到标签专栏页', tag);
+      navigate(`/tag/${encodeURIComponent(tag)}`);
+    },
+    [navigate]
+  );
 
   // 处理添加评论
   const handleAddComment = useCallback((postId: number, content: string) => {
@@ -314,13 +354,13 @@ export default function MySubscriptionsList() {
       isLiked: false,
     };
 
-    setPostList(prevPosts => 
-      prevPosts.map(post => 
-        post.id === postId 
-          ? { 
-              ...post, 
+    setPostList((prevPosts) =>
+      prevPosts.map((post) =>
+        post.id === postId
+          ? {
+              ...post,
               commentList: [newComment, ...(post.commentList || [])],
-              comments: (post.commentList?.length || 0) + 1
+              comments: (post.commentList?.length || 0) + 1,
             }
           : post
       )
@@ -330,18 +370,18 @@ export default function MySubscriptionsList() {
   // 处理评论点赞
   const handleLikeComment = useCallback((commentId: string) => {
     console.log('点赞评论', commentId);
-    setPostList(prevPosts => 
-      prevPosts.map(post => ({
+    setPostList((prevPosts) =>
+      prevPosts.map((post) => ({
         ...post,
-        commentList: post.commentList?.map(comment => 
+        commentList: post.commentList?.map((comment) =>
           comment.id === commentId
             ? {
                 ...comment,
                 isLiked: !comment.isLiked,
-                likes: comment.isLiked ? comment.likes - 1 : comment.likes + 1
+                likes: comment.isLiked ? comment.likes - 1 : comment.likes + 1,
               }
             : comment
-        )
+        ),
       }))
     );
   }, []);
@@ -360,17 +400,17 @@ export default function MySubscriptionsList() {
       isLiked: false,
     };
 
-    setPostList(prevPosts => 
-      prevPosts.map(post => ({
+    setPostList((prevPosts) =>
+      prevPosts.map((post) => ({
         ...post,
-        commentList: post.commentList?.map(comment => 
+        commentList: post.commentList?.map((comment) =>
           comment.id === commentId
             ? {
                 ...comment,
-                replies: [newReply, ...(comment.replies || [])]
+                replies: [newReply, ...(comment.replies || [])],
               }
             : comment
-        )
+        ),
       }))
     );
   }, []);
@@ -382,33 +422,30 @@ export default function MySubscriptionsList() {
   }, []);
 
   // 处理屏蔽
-  const handleBlock = useCallback((postId: number, type: 'post' | 'user') => {
-    console.log(`屏蔽${type}`, postId);
-    if (type === 'post') {
-      setPostList(prevPosts => prevPosts.filter(post => post.id !== postId));
-      alert('已屏蔽该帖子');
-    } else {
-      const post = postList.find(p => p.id === postId);
-      if (post) {
-        setPostList(prevPosts => prevPosts.filter(p => p.author !== post.author));
-        alert(`已屏蔽用户 ${post.author}`);
+  const handleBlock = useCallback(
+    (postId: number, type: 'post' | 'user') => {
+      console.log(`屏蔽${type}`, postId);
+      if (type === 'post') {
+        setPostList((prevPosts) => prevPosts.filter((post) => post.id !== postId));
+        alert('已屏蔽该帖子');
+      } else {
+        const post = postList.find((p) => p.id === postId);
+        if (post) {
+          setPostList((prevPosts) => prevPosts.filter((p) => p.author !== post.author));
+          alert(`已屏蔽用户 ${post.author}`);
+        }
       }
-    }
-  }, [postList]);
+    },
+    [postList]
+  );
 
   // 处理取消关注
   const handleUnfollow = useCallback((userId: string) => {
     console.log('取消关注', userId);
-    setPostList(prevPosts => 
-      prevPosts.map(post => 
-        post.author === userId 
-          ? { ...post, isFollowing: false }
-          : post
-      )
+    setPostList((prevPosts) =>
+      prevPosts.map((post) => (post.author === userId ? { ...post, isFollowing: false } : post))
     );
   }, []);
-
-
 
   return (
     <div className="grid grid-cols-1 gap-4">
@@ -418,8 +455,8 @@ export default function MySubscriptionsList() {
         <button className="px-4 py-2 bg-gray-200 text-gray-800 rounded">最热</button>
       </div>
       {postList.map((post) => (
-        <FullPostCard 
-          key={post.id} 
+        <FullPostCard
+          key={post.id}
           post={post}
           onFollow={handleFollow}
           onLike={handleLike}

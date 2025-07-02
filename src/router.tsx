@@ -41,7 +41,7 @@ const router = createBrowserRouter([
     ],
   },
   {
-    path: '/editor/:user/normal/:id?',
+    path: '/editor/:user/normal',
     element: <ArticleEditor />,
   },
   {

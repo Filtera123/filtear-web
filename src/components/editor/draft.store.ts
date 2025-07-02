@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { mockDraftList } from '@/mocks/article/data.ts';
 import type { ArticleItem } from './article-editor/use-article-editor';
 
 export interface DraftStore {
@@ -11,17 +12,21 @@ export interface DraftStore {
 }
 
 export const useDraftStore = create<DraftStore>((set) => ({
-  drafts: [],
+  drafts: mockDraftList,
   setDraft: (drafts) => set({ drafts }),
   addDraft: (article) => set((state) => ({ drafts: [...state.drafts, article] })),
   deleteDraft: (articleId) =>
     set((state) => ({
-      drafts: state.drafts.filter((article) => article.id !== articleId),
+      drafts: state.drafts.filter(
+        (article) => article.tempDraftId !== articleId || article.id !== articleId
+      ),
     })),
   updateDraft: (article) =>
     set((state) => ({
       drafts: state.drafts.map((draftArticle) =>
-        draftArticle.id === article.id ? { ...draftArticle, ...article } : draftArticle
+        draftArticle.id === article.id || draftArticle.tempDraftId === article.tempDraftId
+          ? { ...draftArticle, ...article }
+          : draftArticle
       ),
     })),
   clearDraft: () => set({ drafts: [] }),

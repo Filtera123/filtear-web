@@ -10,14 +10,20 @@ export interface ArticleContentItem {
 
 export interface ArticleItem {
   id?: string;
+  tempDraftId?: string;
   title?: string;
   summary?: string;
   contentItems?: ArticleContentItem[];
   tags?: TagItem[];
-  createdAt?: Date;
-  updatedAt?: Date;
+  createdAt?: string;
+  updatedAt?: string;
   postUrl?: string;
   isRecycled?: boolean;
+  isLiked?: boolean;
+  isCollected?: boolean;
+  viewCount?: number;
+  likes?: number;
+  collectionCount?: number;
   isDraft?: boolean;
   isPinned?: boolean;
   editorHistory?: ArticleItem[];
