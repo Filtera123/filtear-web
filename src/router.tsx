@@ -11,6 +11,15 @@ const ArticleEditor = loadable(() => import('./pages/article-editor'), {
 const About = loadable(() => import('./pages/About'), {
   fallback: <Loading />,
 });
+const UserProfile = loadable(() => import('./pages/UserProfile'), {
+  fallback: <Loading />,
+});
+const PostDetail = loadable(() => import('./pages/PostDetail'), {
+  fallback: <Loading />,
+});
+const TagPage = loadable(() => import('./pages/TagPage'), {
+  fallback: <Loading />,
+});
 const NotFound = loadable(() => import('./pages/NotFound'), {
   fallback: <Loading />,
 });
@@ -34,6 +43,18 @@ const router = createBrowserRouter([
   {
     path: '/editor/:user/normal/:id?',
     element: <ArticleEditor />,
+  },
+  {
+    path: '/user/:userId',
+    element: <UserProfile />,
+  },
+  {
+    path: '/post/:postId',
+    element: <PostDetail />,
+  },
+  {
+    path: '/tag/:tag',
+    element: <TagPage />,
   },
   {
     path: '*',

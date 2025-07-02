@@ -1,6 +1,8 @@
+import { useNavigate } from 'react-router-dom';
 import { Tag } from '../../../index';
 
 export default function MySubscriptionTags() {
+  const navigate = useNavigate();
   const tags = [
     { name: '前端', color: 'blue' },
     { name: '后端', color: 'green' },
@@ -23,6 +25,11 @@ export default function MySubscriptionTags() {
     { name: '计算机视觉', color: 'emerald' },
     { name: '强化学习', color: 'rose' },
   ];
+
+  // 处理标签点击
+  const handleTagClick = (tagName: string) => {
+    navigate(`/tag/${encodeURIComponent(tagName)}`);
+  };
 
   return (
     <div className="bg-white p-4 rounded-b-sm">
@@ -52,7 +59,9 @@ export default function MySubscriptionTags() {
       <div className="flex flex-col gap-2 max-h-[300px] overflow-y-auto pr-1">
         {tags.map((tag) => (
           <div className="flex justify-between items-center" key={tag.name}>
-            <Tag className="text-xs py-1 px-2" tag={tag.name} />
+            <div onClick={() => handleTagClick(tag.name)} className="cursor-pointer">
+              <Tag className="text-xs py-1 px-2" tag={tag.name} />
+            </div>
             <span className="text-xs text-gray-500">+12.3k</span>
           </div>
         ))}

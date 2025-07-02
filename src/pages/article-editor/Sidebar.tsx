@@ -1,14 +1,14 @@
 import { useDraftStore } from '@components/editor/draft.store';
 import { IconButton, Stack } from '@mui/material';
 import { IconCircleMinus, IconEdit } from '@tabler/icons-react';
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 
 export default function Sidebar() {
   const { drafts, deleteDraft } = useDraftStore();
 
   return (
     <Stack spacing={2} className="p-4">
-      <Link to="/home" className="text-blue-500 hover:underline">
+      <Link to="/" className="text-blue-500 hover:underline">
         Home
       </Link>
       <div className="p-4 bg-gray-100 rounded-lg shadow-md">

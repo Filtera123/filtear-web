@@ -11,11 +11,11 @@ export default function Tag(props: TagProps) {
   return (
     <span
       className={cn(
-        'inline-block bg-gray-200 text-gray-800 text-xs font-semibold px-2.5 py-0.5 rounded mr-2 mb-2',
+        'inline-block bg-gray-200 text-gray-800 text-xs font-semibold px-2.5 py-0.5 rounded mr-2 mb-2 cursor-pointer hover:bg-gray-300 transition-colors',
         className
       )}
     >
-      <span> #{tag}</span>
+      #{tag}
     </span>
   );
 }

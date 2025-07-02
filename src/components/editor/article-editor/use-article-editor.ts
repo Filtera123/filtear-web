@@ -1,11 +1,11 @@
-import type { CommentItem } from '@/components/comment/comment.type';
+import type { Comment } from '@/components/comment/comment.type';
 import type { TagItem } from '@/components/tag/tag.type';
 
 export interface ArticleContentItem {
   text: string;
   startIndex: number;
   endIndex: number;
-  comment: CommentItem[];
+  comment: Comment[];
 }
 
 export interface ArticleItem {
