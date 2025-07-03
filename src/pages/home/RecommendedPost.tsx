@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { type Comment } from '../../components/comment/comment.type';
 import { FullPostCard } from './../../components/post-card';
+import { useInfiniteScroll } from '../../hooks/useInfiniteScroll';
 import PostArea from './PostArea';
 
 // 类型定义
@@ -24,6 +25,10 @@ interface Post {
   commentList?: Comment[];
   views?: number;
   isFollowing?: boolean;
+}
+
+interface RecommendedPostProps {
+  isActive: boolean;
 }
 
 // 生成模拟评论的函数
@@ -151,13 +156,13 @@ const generateMockPosts = (startId: number, count: number): Post[] => {
   });
 };
 
-export default function RecommendedPost() {
+export default function RecommendedPost({ isActive }: RecommendedPostProps) {
   const navigate = useNavigate();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(0);
-  const loadingRef = useRef(false); // 防止重复加载的引用
+  const [initialized, setInitialized] = useState(false);
 
   // 处理关注/取消关注
   const handleFollow = useCallback((userId: string) => {
@@ -319,13 +324,10 @@ export default function RecommendedPost() {
 
   // 加载更多帖子的函数
   const loadMorePosts = useCallback(async () => {
-    // 防止重复加载
-    if (loadingRef.current || !hasMore) return;
+    if (loading || !hasMore) return;
 
-    loadingRef.current = true;
     setLoading(true);
-
-    console.log(`加载第 ${page + 1} 页，起始ID: ${page * 10}`);
+    console.log(`加载推荐帖子第 ${page + 1} 页，起始ID: ${page * 10}`);
 
     // 模拟API延迟
     await new Promise((resolve) => setTimeout(resolve, 800));
@@ -339,49 +341,36 @@ export default function RecommendedPost() {
     // 限制总共加载6页（60个帖子）
     if (nextPage >= 6) {
       setHasMore(false);
-      console.log('已加载完所有内容');
+      console.log('已加载完所有推荐内容');
     }
 
     setLoading(false);
-    loadingRef.current = false;
-  }, [page, hasMore]);
+  }, [page, hasMore, loading]);
 
-  // 滚动监听函数（带防抖）
-  const handleScroll = useCallback(() => {
-    if (loadingRef.current || !hasMore) return;
+  // 使用无限滚动Hook
+  useInfiniteScroll({
+    hasMore,
+    loading,
+    onLoadMore: loadMorePosts,
+  });
 
-    const mainElement = document.querySelector('main');
-    if (!mainElement) return;
-
-    const { scrollTop, scrollHeight, clientHeight } = mainElement;
-
-    // 当滚动到接近底部时（距离底部200px以内）
-    if (scrollHeight - scrollTop <= clientHeight + 200) {
-      console.log('触发加载更多');
+  // 只有当组件激活且未初始化时才加载第一页
+  useEffect(() => {
+    if (isActive && !initialized) {
+      console.log('初始化推荐帖子数据');
+      setInitialized(true);
       loadMorePosts();
     }
-  }, [loadMorePosts, hasMore]);
+  }, [isActive, initialized, loadMorePosts]);
 
-  // 初始化加载
-  useEffect(() => {
-    // 只在组件首次挂载时加载第一页
-    if (posts.length === 0 && page === 0 && !loadingRef.current) {
-      loadMorePosts();
-    }
-  }, []); // 空依赖数组，只在挂载时运行一次
-
-  // 滚动监听
-  useEffect(() => {
-    const mainElement = document.querySelector('main');
-    if (mainElement) {
-      mainElement.addEventListener('scroll', handleScroll);
-      return () => mainElement.removeEventListener('scroll', handleScroll);
-    }
-  }, [handleScroll]);
+  // 如果未激活则不渲染
+  if (!isActive) {
+    return null;
+  }
 
   return (
-    <div className="h-full overflow-y-auto scrollbar-hide">
-      <div className="grid grid-cols-1 gap-4 ">
+    <div className="min-h-screen">
+      <div className="grid grid-cols-1 gap-4">
         <PostArea />
         <div className="space-y-4">
           {posts.map((post) => (
@@ -420,7 +409,7 @@ export default function RecommendedPost() {
           )}
 
           {/* 空状态 */}
-          {posts.length === 0 && !loading && (
+          {posts.length === 0 && !loading && initialized && (
             <div className="text-center py-8 text-gray-500">暂无推荐内容</div>
           )}
         </div>

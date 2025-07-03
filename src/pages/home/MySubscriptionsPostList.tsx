@@ -1,7 +1,8 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { type Comment } from '../../components/comment/comment.type';
 import { FullPostCard } from './../../components/post-card';
+import { useInfiniteScroll } from '../../hooks/useInfiniteScroll';
 import PostArea from './PostArea';
 
 interface Post {
@@ -25,9 +26,20 @@ interface Post {
   isFollowing?: boolean;
 }
 
-export default function MySubscriptionsList() {
+interface MySubscriptionsPostListProps {
+  isActive: boolean;
+}
+
+export default function MySubscriptionsPostList({ isActive }: MySubscriptionsPostListProps) {
   const navigate = useNavigate();
-  const [postList, setPostList] = useState<Post[]>([
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(0);
+  const [initialized, setInitialized] = useState(false);
+
+  // 初始帖子数据
+  const initialPosts: Post[] = [
     {
       id: 1,
       author: '墨染青花',
@@ -287,20 +299,46 @@ export default function MySubscriptionsList() {
       views: 445,
       isFollowing: false,
     },
-  ]);
+  ];
 
-  // 处理关注/取消关注
+  // 生成更多订阅帖子的函数
+  const generateMorePosts = (startId: number, count: number): Post[] => {
+    return Array.from({ length: count }).map((_, i) => {
+      const id = startId + i;
+      return {
+        id,
+        title: `订阅帖子 ${id + 1}`,
+        author: `订阅用户${(id % 4) + 1}`,
+        authorAvatar: '/default-avatar.png',
+        createdAt: new Date(Date.now() - Math.random() * 86400000 * 7).toISOString(),
+        updatedAt: new Date().toISOString(),
+        slug: `subscription-post-${id}`,
+        category: '订阅内容',
+        categorySlug: 'subscription',
+        readingTime: Math.floor(Math.random() * 10) + 1,
+        content: `这是第 ${id + 1} 个订阅帖子的内容...`,
+        tags: ['订阅', '内容', '更新'],
+        isLike: Math.random() > 0.6,
+        likes: Math.floor(Math.random() * 300),
+        comments: Math.floor(Math.random() * 15),
+        commentList: [],
+        views: Math.floor(Math.random() * 800) + 100,
+        isFollowing: Math.random() > 0.5,
+      };
+    });
+  };
+
+  // 处理各种事件的回调函数
   const handleFollow = useCallback((userId: string) => {
-    setPostList((prevPosts) =>
+    setPosts((prevPosts) =>
       prevPosts.map((post) =>
         post.author === userId ? { ...post, isFollowing: !post.isFollowing } : post
       )
     );
   }, []);
 
-  // 处理点赞/取消点赞
   const handleLike = useCallback((postId: number) => {
-    setPostList((prevPosts) =>
+    setPosts((prevPosts) =>
       prevPosts.map((post) =>
         post.id === postId
           ? {
@@ -313,36 +351,28 @@ export default function MySubscriptionsList() {
     );
   }, []);
 
-  // 处理用户点击
   const handleUserClick = useCallback(
     (userId: string) => {
-      console.log('跳转到用户主页', userId);
       navigate(`/user/${userId}`);
     },
     [navigate]
   );
 
-  // 处理帖子点击
   const handlePostClick = useCallback(
     (postId: number) => {
-      console.log('跳转到帖子详情页', postId);
       navigate(`/post/${postId}`);
     },
     [navigate]
   );
 
-  // 处理标签点击
   const handleTagClick = useCallback(
     (tag: string) => {
-      console.log('跳转到标签专栏页', tag);
       navigate(`/tag/${encodeURIComponent(tag)}`);
     },
     [navigate]
   );
 
-  // 处理添加评论
   const handleAddComment = useCallback((postId: number, content: string) => {
-    console.log('添加评论', postId, content);
     const newComment: Comment = {
       id: `comment-${Date.now()}`,
       userId: 'currentUser',
@@ -354,7 +384,7 @@ export default function MySubscriptionsList() {
       isLiked: false,
     };
 
-    setPostList((prevPosts) =>
+    setPosts((prevPosts) =>
       prevPosts.map((post) =>
         post.id === postId
           ? {
@@ -367,10 +397,8 @@ export default function MySubscriptionsList() {
     );
   }, []);
 
-  // 处理评论点赞
   const handleLikeComment = useCallback((commentId: string) => {
-    console.log('点赞评论', commentId);
-    setPostList((prevPosts) =>
+    setPosts((prevPosts) =>
       prevPosts.map((post) => ({
         ...post,
         commentList: post.commentList?.map((comment) =>
@@ -386,9 +414,7 @@ export default function MySubscriptionsList() {
     );
   }, []);
 
-  // 处理回复评论
   const handleReplyComment = useCallback((commentId: string, content: string) => {
-    console.log('回复评论', commentId, content);
     const newReply: Comment = {
       id: `reply-${Date.now()}`,
       userId: 'currentUser',
@@ -400,7 +426,7 @@ export default function MySubscriptionsList() {
       isLiked: false,
     };
 
-    setPostList((prevPosts) =>
+    setPosts((prevPosts) =>
       prevPosts.map((post) => ({
         ...post,
         commentList: post.commentList?.map((comment) =>
@@ -415,62 +441,135 @@ export default function MySubscriptionsList() {
     );
   }, []);
 
-  // 处理举报
   const handleReport = useCallback((postId: number, type: 'post' | 'user') => {
-    console.log(`举报${type}`, postId);
     alert(`您已举报该${type === 'post' ? '帖子' : '用户'}，我们将尽快处理`);
   }, []);
 
-  // 处理屏蔽
   const handleBlock = useCallback(
     (postId: number, type: 'post' | 'user') => {
-      console.log(`屏蔽${type}`, postId);
       if (type === 'post') {
-        setPostList((prevPosts) => prevPosts.filter((post) => post.id !== postId));
+        setPosts((prevPosts) => prevPosts.filter((post) => post.id !== postId));
         alert('已屏蔽该帖子');
       } else {
-        const post = postList.find((p) => p.id === postId);
+        const post = posts.find((p) => p.id === postId);
         if (post) {
-          setPostList((prevPosts) => prevPosts.filter((p) => p.author !== post.author));
+          setPosts((prevPosts) => prevPosts.filter((p) => p.author !== post.author));
           alert(`已屏蔽用户 ${post.author}`);
         }
       }
     },
-    [postList]
+    [posts]
   );
 
-  // 处理取消关注
   const handleUnfollow = useCallback((userId: string) => {
-    console.log('取消关注', userId);
-    setPostList((prevPosts) =>
+    setPosts((prevPosts) =>
       prevPosts.map((post) => (post.author === userId ? { ...post, isFollowing: false } : post))
     );
   }, []);
 
+  // 加载更多帖子的函数
+  const loadMorePosts = useCallback(async () => {
+    if (loading || !hasMore) return;
+
+    setLoading(true);
+    console.log(`加载订阅帖子第 ${page + 1} 页`);
+
+    // 模拟API延迟
+    await new Promise((resolve) => setTimeout(resolve, 800));
+
+    let newPosts: Post[] = [];
+    if (page === 0) {
+      // 第一页加载初始数据
+      newPosts = initialPosts;
+    } else {
+      // 后续页面加载新数据
+      newPosts = generateMorePosts(page * 5, 5);
+    }
+
+    setPosts((prevPosts) => [...prevPosts, ...newPosts]);
+
+    const nextPage = page + 1;
+    setPage(nextPage);
+
+    // 限制总共加载5页
+    if (nextPage >= 5) {
+      setHasMore(false);
+    }
+
+    setLoading(false);
+  }, [page, hasMore, loading]);
+
+  // 使用无限滚动Hook
+  useInfiniteScroll({
+    hasMore,
+    loading,
+    onLoadMore: loadMorePosts,
+  });
+
+  // 只有当组件激活且未初始化时才加载第一页
+  useEffect(() => {
+    if (isActive && !initialized) {
+      console.log('初始化订阅帖子数据');
+      setInitialized(true);
+      loadMorePosts();
+    }
+  }, [isActive, initialized, loadMorePosts]);
+
+  // 如果未激活则不渲染
+  if (!isActive) {
+    return null;
+  }
+
   return (
-    <div className="grid grid-cols-1 gap-4 ">
-      <PostArea />
-      <div className="flex justify-end items-center mb-4 gap-4">
-        <button className="px-4 py-2 bg-blue-500 text-white rounded">最新</button>
-        <button className="px-4 py-2 bg-gray-200 text-gray-800 rounded">最热</button>
+    <div className="min-h-screen">
+      <div className="grid grid-cols-1 gap-4">
+        <PostArea />
+        <div className="flex justify-end items-center mb-4 gap-4">
+          <button className="px-4 py-2 bg-blue-500 text-white rounded">最新</button>
+          <button className="px-4 py-2 bg-gray-200 text-gray-800 rounded">最热</button>
+        </div>
+        <div className="space-y-4">
+          {posts.map((post) => (
+            <FullPostCard
+              key={post.id}
+              post={post}
+              onFollow={handleFollow}
+              onLike={handleLike}
+              onUserClick={handleUserClick}
+              onPostClick={handlePostClick}
+              onTagClick={handleTagClick}
+              onReport={handleReport}
+              onBlock={handleBlock}
+              onUnfollow={handleUnfollow}
+              onAddComment={handleAddComment}
+              onLikeComment={handleLikeComment}
+              onReplyComment={handleReplyComment}
+            />
+          ))}
+
+          {/* 加载指示器 */}
+          {loading && (
+            <div className="flex justify-center items-center py-6">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+              <span className="ml-2 text-gray-600">加载更多帖子...</span>
+            </div>
+          )}
+
+          {/* 没有更多内容提示 */}
+          {!hasMore && posts.length > 0 && (
+            <div className="text-center py-6 text-gray-500">
+              <div className="bg-gray-100 rounded-lg p-4">
+                🎉 已加载全部内容！共 {posts.length} 个帖子
+              </div>
+            </div>
+          )}
+
+          {/* 空状态 */}
+          {posts.length === 0 && !loading && initialized && (
+            <div className="text-center py-8 text-gray-500">暂无订阅内容</div>
+          )}
+        </div>
       </div>
-      {postList.map((post) => (
-        <FullPostCard
-          key={post.id}
-          post={post}
-          onFollow={handleFollow}
-          onLike={handleLike}
-          onUserClick={handleUserClick}
-          onPostClick={handlePostClick}
-          onTagClick={handleTagClick}
-          onReport={handleReport}
-          onBlock={handleBlock}
-          onUnfollow={handleUnfollow}
-          onAddComment={handleAddComment}
-          onLikeComment={handleLikeComment}
-          onReplyComment={handleReplyComment}
-        />
-      ))}
     </div>
   );
 }

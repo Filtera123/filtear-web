@@ -3,11 +3,11 @@ import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { styled, Tab } from '@mui/material';
 import MySubscriptionsPostList from './MySubscriptionsPostList';
 import RecommendedPost from './RecommendedPost';
+import MyFollowList from './MyFollowList';
 
 const CustomerTabPanel = styled(TabPanel)(({ theme }) => ({
-  '&[hidden]:where(:not([hidden="until-found"]))': {
-    display: 'block !important',
-  },
+  padding: 0,
+  minHeight: 'calc(100vh - 100px)', // 确保有足够的高度
 }));
 
 export default function Home() {
@@ -36,71 +36,42 @@ export default function Home() {
   };
 
   return (
-    <div className="w-full px-4 h-full">
+    <div className="w-full px-4 min-h-screen">
       <TabContext value={activeTab}>
-        <div className="flex justify-between items-center mb-4 sticky top-0 bg-white z-50">
+        <div className="flex justify-between items-center mb-4 sticky top-0 bg-white z-50 py-2">
           <TabList
             onChange={(e, newValue) => {
               handleTabClick(newValue);
             }}
-            className="flex "
+            className="flex"
           >
             {tabs.map((tab) => (
               <Tab
                 key={tab.key}
                 value={tab.key}
                 label={tab.name}
-                className={`px-4 py-2 rounded-sm transition-colors ${activeTab === tab.key ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'}`}
+                className={`px-4 py-2 rounded-sm transition-colors ${
+                  activeTab === tab.key
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                }`}
               />
             ))}
           </TabList>
         </div>
-        <div className="h-full">
-          <CustomerTabPanel
-            value="recommended"
-            keepMounted
-            style={{
-              height: '100%',
-              padding: 0,
-              display: 'block',
-              opacity: activeTab === 'recommended' ? 1 : 0,
-              visibility: activeTab === 'recommended' ? 'visible' : 'hidden',
-              zIndex: activeTab === 'recommended' ? 1 : -1,
-              position: 'relative',
-            }}
-          >
-            <RecommendedPost />
+        
+        <div className="min-h-screen">
+          <CustomerTabPanel value="recommended">
+            <RecommendedPost isActive={activeTab === 'recommended'} />
           </CustomerTabPanel>
-          <CustomerTabPanel
-            value="subscriptions"
-            keepMounted
-            style={{
-              height: '100%',
-              padding: 0,
-              display: 'block',
-              opacity: activeTab === 'subscriptions' ? 1 : 0,
-              visibility: activeTab === 'subscriptions' ? 'visible' : 'hidden',
-              zIndex: activeTab === 'subscriptions' ? 1 : -1,
-              position: 'relative',
-            }}
-          >
-            <MySubscriptionsPostList />
+          
+          <CustomerTabPanel value="subscriptions">
+            <MySubscriptionsPostList isActive={activeTab === 'subscriptions'} />
           </CustomerTabPanel>
-          <TabPanel
-            value="following"
-            keepMounted
-            style={{
-              height: '100%',
-              padding: 0,
-              display: 'block',
-              opacity: activeTab === 'following' ? 1 : 0,
-              visibility: activeTab === 'following' ? 'visible' : 'hidden',
-              zIndex: activeTab === 'following' ? 1 : -1,
-              position: 'relative',
-            }}
-          >
-            <div>我的关注内容区域</div>
-          </TabPanel>
+          
+          <CustomerTabPanel value="following">
+            <MyFollowList isActive={activeTab === 'following'} />
+          </CustomerTabPanel>
         </div>
       </TabContext>
     </div>

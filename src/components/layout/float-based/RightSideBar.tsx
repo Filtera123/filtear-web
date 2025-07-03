@@ -2,19 +2,16 @@ import { GlobalSearchBar, RecentlyViewed, UserProfile } from './right-side';
 import LegalInfo from './right-side/LegalInfo'; // 导入新组件
 
 export default function RightSideBar() {
-  // 处理回到顶部的函数
+  // 处理回到顶部的函数 - 改为全局窗口滚动
   const handleScrollToTop = () => {
-    const mainElement = document.querySelector('main');
-    if (mainElement) {
-      mainElement.scrollTo({
-        top: 0,
-        behavior: 'smooth', // 平滑滚动效果
-      });
-    }
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth', // 平滑滚动效果
+    });
   };
 
   return (
-    <aside className="w-64 flex flex-col pt-4 h-full relative">
+    <aside className="w-full flex flex-col pt-4 h-full relative">
       {/* 主要内容区域 - 添加overflow-x-hidden和scrollbar-hide */}
       <div className="flex flex-col gap-6 flex-grow overflow-y-auto overflow-x-hidden scrollbar-hide">
         <GlobalSearchBar />
