@@ -1,0 +1,162 @@
+import React, { useState, useRef, useEffect } from 'react';
+import type { BasePost } from './post.types';
+
+interface PostHeaderProps {
+  post: BasePost;
+  onFollow?: (userId: string) => void;
+  onUserClick?: (userId: string) => void;
+  onReport?: (postId: number, type: 'post' | 'user') => void;
+  onBlock?: (postId: number, type: 'post' | 'user') => void;
+  onUnfollow?: (userId: string) => void;
+}
+
+// 格式化时间显示
+const formatTime = (dateString: string): string => {
+  const now = new Date();
+  const postTime = new Date(dateString);
+  const diffMs = now.getTime() - postTime.getTime();
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffDays = Math.floor(diffHours / 24);
+  
+  if (diffHours < 1) {
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+    return diffMinutes < 1 ? '刚刚' : `${diffMinutes}分钟前`;
+  } else if (diffHours < 24) {
+    return `${diffHours}小时前`;
+  } else if (diffDays < 30) {
+    return `${diffDays}天前`;
+  } else {
+    return postTime.toLocaleDateString('zh-CN');
+  }
+};
+
+export default function PostHeader({ post, onFollow, onUserClick, onReport, onBlock, onUnfollow }: PostHeaderProps) {
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const moreMenuRef = useRef<HTMLDivElement>(null);
+
+  // 点击外部关闭菜单
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (moreMenuRef.current && !moreMenuRef.current.contains(event.target as Node)) {
+        setShowMoreMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  return (
+    <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center space-x-3">
+        {/* 用户头像 */}
+        <div 
+          className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all"
+          onClick={() => onUserClick?.(post.author)}
+        >
+          <img 
+            src={post.authorAvatar} 
+            alt={post.author} 
+            className="w-10 h-10 rounded-full object-cover"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.style.display = 'none';
+              target.parentElement!.innerHTML = `<span class="text-white font-medium text-sm">${post.author[0]}</span>`;
+            }}
+          />
+        </div>
+        
+        {/* 用户名和时间 */}
+        <div>
+          <div 
+            className="font-medium text-gray-900 text-sm cursor-pointer hover:text-blue-600 transition-colors"
+            onClick={() => onUserClick?.(post.author)}
+          >
+            {post.author}
+          </div>
+          <div className="text-gray-500 text-xs">{formatTime(post.createdAt)}</div>
+        </div>
+      </div>
+      
+      {/* 关注按钮和更多选项 */}
+      <div className="flex items-center space-x-2">
+        <button 
+          onClick={post.isFollowing ? undefined : () => onFollow?.(post.author)}
+          className={`px-4 py-1 rounded-full text-sm font-medium transition-colors ${
+            post.isFollowing 
+              ? 'bg-gray-100 text-gray-600 cursor-not-allowed' 
+              : 'bg-blue-500 text-white hover:bg-blue-600 cursor-pointer'
+          }`}
+          disabled={post.isFollowing}
+        >
+          {post.isFollowing ? '已关注' : '关注'}
+        </button>
+        
+        {/* 更多选项按钮 */}
+        <div className="relative" ref={moreMenuRef}>
+          <button 
+            onClick={() => setShowMoreMenu(!showMoreMenu)}
+            className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
+          >
+            <svg className="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+            </svg>
+          </button>
+          
+          {/* 下拉菜单 */}
+          {showMoreMenu && (
+            <div className="absolute top-full right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
+              <button
+                onClick={() => {
+                  onReport?.(post.id, 'post');
+                  setShowMoreMenu(false);
+                }}
+                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+              >
+                举报帖子
+              </button>
+              <button
+                onClick={() => {
+                  onBlock?.(post.id, 'post');
+                  setShowMoreMenu(false);
+                }}
+                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+              >
+                屏蔽帖子
+              </button>
+              {post.isFollowing && (
+                <button
+                  onClick={() => {
+                    onUnfollow?.(post.author);
+                    setShowMoreMenu(false);
+                  }}
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                >
+                  取消关注
+                </button>
+              )}
+              <button
+                onClick={() => {
+                  onBlock?.(post.id, 'user');
+                  setShowMoreMenu(false);
+                }}
+                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+              >
+                屏蔽用户
+              </button>
+              <button
+                onClick={() => {
+                  onReport?.(post.id, 'user');
+                  setShowMoreMenu(false);
+                }}
+                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+              >
+                举报用户
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+} 

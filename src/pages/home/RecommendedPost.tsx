@@ -1,31 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { type Comment } from '../../components/comment/comment.type';
-import { FullPostCard } from './../../components/post-card';
+import { BasePostCard, PostType, type PostItem } from '../../components/post-card';
 import { useInfiniteScroll } from '../../hooks/useInfiniteScroll';
 import PostArea from './PostArea';
 
-// 类型定义
-interface Post {
-  id: number;
-  author: string;
-  authorAvatar: string;
-  createdAt: string;
-  updatedAt: string;
-  slug: string;
-  category: string;
-  categorySlug: string;
-  readingTime: number;
-  title: string;
-  content: string;
-  tags: string[];
-  isLike: boolean;
-  likes: number;
-  comments: number;
-  commentList?: Comment[];
-  views?: number;
-  isFollowing?: boolean;
-}
+// 接口定义已移到 post.types.ts 中
 
 interface RecommendedPostProps {
   isActive: boolean;
@@ -126,25 +106,31 @@ const generateMockTags = (postId: number): string[] => {
   return shuffled.slice(0, tagCount);
 };
 
-// 生成模拟帖子的函数
-const generateMockPosts = (startId: number, count: number): Post[] => {
+// 生成四种不同类型的模拟帖子
+const generateMockPosts = (startId: number, count: number): PostItem[] => {
+  const postTypes = [PostType.ARTICLE, PostType.IMAGE, PostType.VIDEO, PostType.DYNAMIC];
+  const authors = ['技术博主小王', '摄影师李梅', 'UP主小明', '旅行达人小张', '美食爱好者小红'];
+  const categories = ['前端技术', '摄影作品', '生活技能', '生活分享', '美食'];
+  
   return Array.from({ length: count }).map((_, i) => {
     const id = startId + i;
     const commentList = generateMockComments(id);
     const tags = generateMockTags(id);
+    const typeIndex = id % 4;
+    const type = postTypes[typeIndex];
+    const author = authors[id % authors.length];
+    const category = categories[id % categories.length];
 
-    return {
+    const basePost = {
       id,
-      title: `推荐帖子 ${id + 1}`,
-      author: `用户${(id % 5) + 1}`,
-      authorAvatar: '/default-avatar.png',
+      type,
+      author,
+      authorAvatar: `https://avatars.githubusercontent.com/u/${id}?v=4`,
       createdAt: new Date(Date.now() - Math.random() * 86400000 * 7).toISOString(),
       updatedAt: new Date().toISOString(),
       slug: `recommended-post-${id}`,
-      category: '推荐内容',
-      categorySlug: 'recommended',
-      readingTime: Math.floor(Math.random() * 10) + 1,
-      content: `这是第 ${id + 1} 个推荐帖子的内容，包含有趣的话题和讨论。内容会根据不同的帖子而变化，让用户有不同的阅读体验...`,
+      category,
+      categorySlug: category.toLowerCase().replace(/\s+/g, '-'),
       tags,
       isLike: Math.random() > 0.7,
       likes: Math.floor(Math.random() * 500),
@@ -153,12 +139,76 @@ const generateMockPosts = (startId: number, count: number): Post[] => {
       views: Math.floor(Math.random() * 1000) + 100,
       isFollowing: Math.random() > 0.6,
     };
+
+    // 根据类型生成不同的内容
+    switch (type) {
+      case PostType.ARTICLE:
+        return {
+          ...basePost,
+          type: PostType.ARTICLE,
+          title: `技术分享：${id % 2 === 0 ? 'React 进阶技巧' : 'Vue 3.0 最佳实践'} - 第 ${id + 1} 篇`,
+          content: `这是一篇关于前端技术的深度分析文章。作为第 ${id + 1} 篇推荐内容，我们将探讨现代前端开发中的核心概念和实践方法。从组件设计到状态管理，从性能优化到用户体验，每一个细节都值得深入讨论...`,
+          wordCount: Math.floor(Math.random() * 8000) + 2000, // 2000-10000字
+        };
+
+      case PostType.IMAGE:
+        const imageCount = Math.floor(Math.random() * 5) + 1;
+        return {
+          ...basePost,
+          type: PostType.IMAGE,
+          title: `摄影作品：${id % 2 === 0 ? '城市夜景' : '自然风光'} - 第 ${id + 1} 组`,
+          content: `今天分享一组精心拍摄的照片，希望能够带给大家视觉上的享受。这组作品拍摄于${id % 2 === 0 ? '繁华的都市夜晚，光影交错间展现着城市的生命力' : '宁静的自然环境中，每一帧都记录着大自然的美好瞬间'}。`,
+          images: Array.from({ length: imageCount }, (_, imgIndex) => ({
+            url: `https://images.unsplash.com/photo-${1500000000000 + id * 1000 + imgIndex}?w=800&auto=format`,
+            alt: `图片 ${imgIndex + 1}`,
+            width: 800,
+            height: 600
+          }))
+        };
+
+      case PostType.VIDEO:
+        return {
+          ...basePost,
+          type: PostType.VIDEO,
+          title: `视频教程：${id % 2 === 0 ? '烹饪技巧分享' : '手工制作教程'} - 第 ${id + 1} 期`,
+          content: `欢迎观看本期视频！在这个${Math.floor(Math.random() * 10) + 5}分钟的教程中，我将为大家详细演示${id % 2 === 0 ? '如何制作美味的家常菜，从选材到调味的每个步骤' : '手工制作的完整过程，包括材料准备和制作技巧'}。`,
+          video: {
+            url: `https://sample-videos.com/zip/10/mp4/SampleVideo_${800 + (id % 3)}x${600 + (id % 2) * 120}_1mb.mp4`,
+            thumbnail: `https://images.unsplash.com/photo-${1600000000000 + id * 1000}?w=800&auto=format`,
+            duration: Math.floor(Math.random() * 600) + 300, // 5-15分钟
+            width: 1280,
+            height: 720
+          }
+        };
+
+      case PostType.DYNAMIC:
+        const dynamicImageCount = Math.floor(Math.random() * 6) + 1;
+        return {
+          ...basePost,
+          type: PostType.DYNAMIC,
+          title: `生活分享：${id % 3 === 0 ? '今日美好时光' : id % 3 === 1 ? '周末小确幸' : '日常记录'} ✨`,
+          content: `${id % 3 === 0 ? '阳光正好，微风不燥' : id % 3 === 1 ? '周末的慢时光总是让人感到幸福' : '记录平凡日子里的美好瞬间'}！和朋友们一起度过了愉快的时光，分享一些随手拍的照片。生活就是要在这些小小的瞬间中找到快乐 🌟 #生活记录 #美好时光`,
+          images: dynamicImageCount > 0 ? Array.from({ length: dynamicImageCount }, (_, imgIndex) => ({
+            url: `https://images.unsplash.com/photo-${1400000000000 + id * 100 + imgIndex * 10}?w=400&auto=format`,
+            alt: `生活照片 ${imgIndex + 1}`
+          })) : undefined
+        };
+
+      default:
+        return {
+          ...basePost,
+          type: PostType.ARTICLE,
+          title: `默认帖子 ${id + 1}`,
+          content: '默认内容',
+          wordCount: 3000,
+        };
+    }
   });
 };
 
 export default function RecommendedPost({ isActive }: RecommendedPostProps) {
   const navigate = useNavigate();
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [posts, setPosts] = useState<PostItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(0);
@@ -327,18 +377,19 @@ export default function RecommendedPost({ isActive }: RecommendedPostProps) {
     if (loading || !hasMore) return;
 
     setLoading(true);
-    console.log(`加载推荐帖子第 ${page + 1} 页，起始ID: ${page * 10}`);
+    console.log(`加载推荐帖子第 ${page + 1} 页，起始ID: ${page * 8}`);
 
     // 模拟API延迟
     await new Promise((resolve) => setTimeout(resolve, 800));
 
-    const newPosts = generateMockPosts(page * 10, 10);
+    // 每页生成8个帖子，确保四种类型都有展示
+    const newPosts = generateMockPosts(page * 8, 8);
     setPosts((prevPosts) => [...prevPosts, ...newPosts]);
 
     const nextPage = page + 1;
     setPage(nextPage);
 
-    // 限制总共加载6页（60个帖子）
+    // 限制总共加载6页（48个帖子）
     if (nextPage >= 6) {
       setHasMore(false);
       console.log('已加载完所有推荐内容');
@@ -368,34 +419,75 @@ export default function RecommendedPost({ isActive }: RecommendedPostProps) {
     return null;
   }
 
+  // 根据类型获取类型标签颜色
+  const getTypeColor = (type: PostType) => {
+    switch (type) {
+      case PostType.ARTICLE:
+        return 'bg-blue-100 text-blue-800';
+      case PostType.IMAGE:
+        return 'bg-green-100 text-green-800';
+      case PostType.VIDEO:
+        return 'bg-purple-100 text-purple-800';
+      case PostType.DYNAMIC:
+        return 'bg-orange-100 text-orange-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  // 获取类型显示名称
+  const getTypeName = (type: PostType) => {
+    switch (type) {
+      case PostType.ARTICLE:
+        return '文章';
+      case PostType.IMAGE:
+        return '图片';
+      case PostType.VIDEO:
+        return '视频';
+      case PostType.DYNAMIC:
+        return '动态';
+      default:
+        return '未知';
+    }
+  };
+
   return (
     <div className="min-h-screen">
       <div className="grid grid-cols-1 gap-4">
         <PostArea />
         <div className="space-y-4">
           {posts.map((post) => (
-            <FullPostCard
-              key={post.id}
-              post={post}
-              onFollow={handleFollow}
-              onLike={handleLike}
-              onUserClick={handleUserClick}
-              onPostClick={handlePostClick}
-              onTagClick={handleTagClick}
-              onReport={handleReport}
-              onBlock={handleBlock}
-              onUnfollow={handleUnfollow}
-              onAddComment={handleAddComment}
-              onLikeComment={handleLikeComment}
-              onReplyComment={handleReplyComment}
-            />
+            <div key={post.id} className="relative">
+              {/* 类型标签 */}
+              <div className="absolute -top-2 -left-2 z-10">
+                <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium shadow-sm ${getTypeColor(post.type)}`}>
+                  {getTypeName(post.type)}
+                </div>
+              </div>
+              
+              {/* 使用新的BasePostCard组件 */}
+              <BasePostCard
+                post={post}
+                onFollow={handleFollow}
+                onLike={handleLike}
+                onUserClick={handleUserClick}
+                onPostClick={handlePostClick}
+                onTagClick={handleTagClick}
+                onReport={handleReport}
+                onBlock={handleBlock}
+                onUnfollow={handleUnfollow}
+                onAddComment={handleAddComment}
+                onLikeComment={handleLikeComment}
+                onReplyComment={handleReplyComment}
+              />
+            </div>
           ))}
 
           {/* 加载指示器 */}
           {loading && (
             <div className="flex justify-center items-center py-6">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-              <span className="ml-2 text-gray-600">加载更多帖子...</span>
+              <span className="ml-2 text-gray-600">加载更多精彩内容...</span>
             </div>
           )}
 
@@ -403,7 +495,10 @@ export default function RecommendedPost({ isActive }: RecommendedPostProps) {
           {!hasMore && posts.length > 0 && (
             <div className="text-center py-6 text-gray-500">
               <div className="bg-gray-100 rounded-lg p-4">
-                🎉 已加载全部内容！共 {posts.length} 个帖子
+                🎉 已加载全部推荐内容！共 {posts.length} 个帖子
+                <div className="text-sm mt-2 text-gray-400">
+                  包含文章、图片、视频、动态四种类型
+                </div>
               </div>
             </div>
           )}

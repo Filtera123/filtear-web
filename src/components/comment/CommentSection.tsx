@@ -10,6 +10,9 @@ interface Props {
   onLikeComment?: (commentId: string) => void;
   onReplyComment?: (commentId: string, content: string) => void;
   onUserClick?: (userId: string) => void;
+  onBlockComment?: (commentId: string) => void;
+  onReportComment?: (commentId: string) => void;
+  onBlockUser?: (userId: string) => void;
   currentUserId?: string;
   currentUserName?: string;
   currentUserAvatar?: string;
@@ -55,6 +58,9 @@ export default function CommentSection({
   onLikeComment, 
   onReplyComment, 
   onUserClick,
+  onBlockComment,
+  onReportComment,
+  onBlockUser,
   currentUserId,
   currentUserName = '当前用户',
   currentUserAvatar = '/default-avatar.png'
@@ -100,6 +106,21 @@ export default function CommentSection({
   const handleReplyModalClose = () => {
     setReplyModalOpen(false);
     setReplyToComment(null);
+  };
+
+  const handleBlockComment = (commentId: string) => {
+    onBlockComment?.(commentId);
+    console.log('屏蔽评论:', commentId);
+  };
+
+  const handleReportComment = (commentId: string) => {
+    onReportComment?.(commentId);
+    console.log('举报评论:', commentId);
+  };
+
+  const handleBlockUser = (userId: string) => {
+    onBlockUser?.(userId);
+    console.log('屏蔽用户:', userId);
   };
 
   // 计算总评论数（包括所有回复）
@@ -168,6 +189,9 @@ export default function CommentSection({
                 onReply={onReplyComment}
                 onReplyClick={handleReplyClick}
                 onUserClick={onUserClick}
+                onBlockComment={handleBlockComment}
+                onReportComment={handleReportComment}
+                onBlockUser={handleBlockUser}
                 level={0}
               />
             ))}

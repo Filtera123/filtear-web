@@ -23,6 +23,9 @@ const TagPage = loadable(() => import('./pages/TagPage'), {
 const NotFound = loadable(() => import('./pages/NotFound'), {
   fallback: <Loading />,
 });
+const PostCardsDemo = loadable(() => import('./pages/PostCardsDemo'), {
+  fallback: <Loading />,
+});
 
 const router = createBrowserRouter([
   {
@@ -37,6 +40,10 @@ const router = createBrowserRouter([
       {
         path: 'about',
         element: <About />,
+      },
+      {
+        path: 'demo/post-cards',
+        element: <PostCardsDemo />,
       },
     ],
   },
