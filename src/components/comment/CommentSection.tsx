@@ -85,10 +85,12 @@ export default function CommentSection({
   };
 
   const handleExpandComments = () => {
+    console.log(`[评论区] 展开评论区 - 帖子 ${postId}`);
     setIsExpanded(true);
   };
 
   const handleCollapseComments = () => {
+    console.log(`[评论区] 收起评论区 - 帖子 ${postId}`);
     setIsExpanded(false);
   };
 

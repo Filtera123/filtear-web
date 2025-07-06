@@ -35,6 +35,12 @@ export default function PostFooter({
 }: PostFooterProps) {
   const [showCommentSection, setShowCommentSection] = useState(false);
 
+  // 处理评论区展开收起
+  const handleToggleComments = () => {
+    console.log(`[评论区切换] 帖子 ${post.id} ${showCommentSection ? '收起' : '展开'}评论区`);
+    setShowCommentSection(!showCommentSection);
+  };
+
   const handleBlockComment = (commentId: string) => {
     onBlockComment?.(commentId);
     console.log('屏蔽评论:', commentId);
@@ -82,7 +88,7 @@ export default function PostFooter({
 
         {/* 评论 */}
         <button 
-          onClick={() => setShowCommentSection(!showCommentSection)}
+          onClick={handleToggleComments}
           className={`flex items-center space-x-1 transition-colors ${
             showCommentSection 
               ? 'text-blue-500' 

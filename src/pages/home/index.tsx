@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { styled, Tab } from '@mui/material';
-import MySubscriptionsPostList from './MySubscriptionsPostList';
-import RecommendedPost from './RecommendedPost';
-import MyFollowList from './MyFollowList';
+import PostList, { type PostListType } from './PostList';
 
 const CustomerTabPanel = styled(TabPanel)(({ theme }) => ({
   padding: 0,
@@ -13,25 +11,25 @@ const CustomerTabPanel = styled(TabPanel)(({ theme }) => ({
 export default function Home() {
   const tabs = [
     {
-      key: 'recommended',
+      key: 'recommended' as PostListType,
       name: '为你推荐',
       current: true,
     },
     {
-      key: 'subscriptions',
+      key: 'subscriptions' as PostListType,
       name: '我的订阅',
       current: false,
     },
     {
-      key: 'following',
+      key: 'following' as PostListType,
       name: '我的关注',
       current: false,
     },
   ];
 
-  const [activeTab, setActiveTab] = useState('recommended');
+  const [activeTab, setActiveTab] = useState<PostListType>('recommended');
 
-  const handleTabClick = (key: string) => {
+  const handleTabClick = (key: PostListType) => {
     setActiveTab(key);
   };
 
@@ -62,15 +60,15 @@ export default function Home() {
         
         <div className="min-h-screen">
           <CustomerTabPanel value="recommended">
-            <RecommendedPost isActive={activeTab === 'recommended'} />
+            <PostList type="recommended" isActive={activeTab === 'recommended'} />
           </CustomerTabPanel>
           
           <CustomerTabPanel value="subscriptions">
-            <MySubscriptionsPostList isActive={activeTab === 'subscriptions'} />
+            <PostList type="subscriptions" isActive={activeTab === 'subscriptions'} />
           </CustomerTabPanel>
           
           <CustomerTabPanel value="following">
-            <MyFollowList isActive={activeTab === 'following'} />
+            <PostList type="following" isActive={activeTab === 'following'} />
           </CustomerTabPanel>
         </div>
       </TabContext>

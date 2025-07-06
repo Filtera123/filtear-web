@@ -6,141 +6,138 @@ import { PostType, type PostItem } from '../../components/post-card/post.types';
 import { useInfiniteScroll } from '../../hooks/useInfiniteScroll';
 import PostArea from './PostArea';
 
-interface MyFollowListProps {
+// 定义帖子列表类型
+export type PostListType = 'recommended' | 'subscriptions' | 'following';
+
+interface PostListProps {
+  type: PostListType;
   isActive: boolean;
 }
 
 // 生成模拟评论的函数
-const generateMockComments = (postId: number): Comment[] => {
-  const commentCount = Math.floor(Math.random() * 8) + 3; // 3-10条评论
+const generateMockComments = (postId: number, type: PostListType): Comment[] => {
+  const commentCount = Math.floor(Math.random() * 12) + 3;
+  const userPrefix = type === 'subscriptions' ? '订阅用户' : type === 'following' ? '关注用户' : '推荐用户';
+  
   return Array.from({ length: commentCount }, (_, i) => {
     const comment: Comment = {
       id: `comment-${postId}-${i}`,
-      userId: `user${(i % 3) + 1}`,
-      userName: `关注用户${(i % 3) + 1}`,
+      userId: `user${(i % 4) + 1}`,
+      userName: `${userPrefix}${(i % 4) + 1}`,
       userAvatar: '/default-avatar.png',
-      content:
-        i % 4 === 0
-          ? `很棒的分享！第 ${i + 1} 条评论：一直关注你的内容，每次都能学到新东西。`
-          : i % 4 === 1
-            ? `支持！第 ${i + 1} 条评论：写得很深入，希望能多发一些类似的内容。`
-            : i % 4 === 2
-              ? `有启发！第 ${i + 1} 条评论：这个角度很独特，给我带来了新的思考。`
-              : `收藏了！第 ${i + 1} 条评论：内容质量很高，已经推荐给其他朋友了。`,
-      createdAt: new Date(Date.now() - Math.random() * 86400000 * 2).toISOString(),
-      likes: Math.floor(Math.random() * 15),
+      content: type === 'subscriptions' 
+        ? `精彩内容！第 ${i + 1} 条评论：订阅你的频道真是太值得了。`
+        : type === 'following'
+        ? `很棒的分享！第 ${i + 1} 条评论：一直关注你的内容。`
+        : `很有深度的内容！第 ${i + 1} 条评论：这个话题让我想到了很多。`,
+      createdAt: new Date(Date.now() - Math.random() * 86400000 * 3).toISOString(),
+      likes: Math.floor(Math.random() * 25),
       isLiked: Math.random() > 0.8,
-      replies:
-        Math.random() > 0.6
-          ? [
-              {
-                id: `reply-${postId}-${i}-1`,
-                userId: `user${((i + 1) % 3) + 1}`,
-                userName: `博主回复${((i + 1) % 3) + 1}`,
-                userAvatar: '/default-avatar.png',
-                content: `谢谢支持！很高兴能帮到你。`,
-                createdAt: new Date(Date.now() - Math.random() * 86400000).toISOString(),
-                likes: Math.floor(Math.random() * 3),
-                isLiked: false,
-              },
-            ]
-          : undefined,
+      replies: Math.random() > 0.6 ? [
+        {
+          id: `reply-${postId}-${i}-1`,
+          userId: `user${((i + 1) % 4) + 1}`,
+          userName: `回复用户${((i + 1) % 4) + 1}`,
+          userAvatar: '/default-avatar.png',
+          content: `回复评论 ${i + 1} 的内容...`,
+          createdAt: new Date(Date.now() - Math.random() * 86400000).toISOString(),
+          likes: Math.floor(Math.random() * 5),
+          isLiked: false,
+        },
+      ] : undefined,
     };
     return comment;
   });
 };
 
 // 生成模拟标签的函数
-const generateFollowTags = (postId: number): string[] => {
-  const followTags = [
-    '关注',
-    '专业',
-    '深度',
-    '原创',
-    '实用',
-    '经验分享',
-    '技术',
-    '生活',
-    '学习',
-    '职场',
-    '创意',
-    '设计',
-    '思考',
-    '分析',
-    '总结',
-    '教程',
-    '心得',
-    '感悟',
-    '干货',
-    '推荐',
+const generateMockTags = (postId: number, type: PostListType): string[] => {
+  const tagSets = {
+    recommended: ['推荐', '热门', '讨论', '分享', '技术', '生活', '学习', '工作', '娱乐', '游戏'],
+    subscriptions: ['订阅', '优质内容', '专业', '原创', '深度解析', '实战经验', '行业动态', '技术前沿'],
+    following: ['关注', '专业', '深度', '原创', '实用', '经验分享', '技术', '生活', '学习', '职场']
+  };
+  
+  const allTags = [
+    ...tagSets[type],
+    '创新思维', '效率提升', '思考总结', '案例分析', '趋势观察', '方法论', '最佳实践', '干货分享'
   ];
 
-  // 关注的内容通常质量较高，标签数量适中
-  let tagCount;
-  if (postId % 3 === 0) {
-    tagCount = Math.floor(Math.random() * 4) + 6; // 6-9个标签
-  } else {
-    tagCount = Math.floor(Math.random() * 3) + 3; // 3-5个标签
+  let tagCount = Math.floor(Math.random() * 5) + 3; // 3-7个标签
+  if (postId % 4 === 0) {
+    tagCount = Math.floor(Math.random() * 6) + 8; // 8-13个标签
   }
 
-  const shuffled = [...followTags].sort(() => 0.5 - Math.random());
+  const shuffled = [...allTags].sort(() => 0.5 - Math.random());
   return shuffled.slice(0, tagCount);
 };
 
-// 生成模拟关注帖子的函数
-const generateMockPosts = (startId: number, count: number): PostItem[] => {
+// 生成模拟帖子数据
+const generateMockPosts = (startId: number, count: number, type: PostListType): PostItem[] => {
   const postTypes = [PostType.ARTICLE, PostType.IMAGE, PostType.VIDEO, PostType.DYNAMIC];
-  const authors = ['技术大牛老王', '设计师小李', '创业者张总', '产品经理小美', '摄影师老陈'];
-  const categories = ['技术分享', '设计作品', '创业心得', '产品思考', '摄影教程'];
   
-  return Array.from({ length: count }).map((_, i) => {
+  const authorSets = {
+    recommended: ['技术博主小王', '摄影师李梅', 'UP主小明', '旅行达人小张', '美食爱好者小红'],
+    subscriptions: ['知识博主王老师', '设计师李小姐', '技术UP主小明', '生活达人张姐', '创业导师陈总'],
+    following: ['技术大牛老王', '设计师小李', '创业者张总', '产品经理小美', '摄影师老陈']
+  };
+
+  const categorySets = {
+    recommended: ['前端技术', '摄影作品', '生活技能', '生活分享', '美食'],
+    subscriptions: ['知识分享', '设计灵感', '技术教程', '生活美学', '创业心得'],
+    following: ['技术分享', '设计作品', '创业心得', '产品思考', '摄影教程']
+  };
+
+  const authors = authorSets[type];
+  const categories = categorySets[type];
+  
+  return Array.from({ length: count }).map((_, i): PostItem => {
     const id = startId + i;
-    const commentList = generateMockComments(id);
-    const tags = generateFollowTags(id);
+    const commentList = generateMockComments(id, type);
+    const tags = generateMockTags(id, type);
     const typeIndex = id % 4;
-    const type = postTypes[typeIndex];
+    const postType = postTypes[typeIndex];
     const author = authors[id % authors.length];
     const category = categories[id % categories.length];
 
     const basePost = {
       id,
-      type,
       author,
-      authorAvatar: `https://avatars.githubusercontent.com/u/${id + 1000}?v=4`,
+      authorAvatar: `https://avatars.githubusercontent.com/u/${id + (type === 'subscriptions' ? 2000 : type === 'following' ? 1000 : 0)}?v=4`,
       createdAt: new Date(Date.now() - Math.random() * 86400000 * 5).toISOString(),
       updatedAt: new Date().toISOString(),
-      slug: `follow-post-${id}`,
+      slug: `${type}-post-${id}`,
       category,
       categorySlug: category.toLowerCase().replace(/\s+/g, '-'),
       tags,
       isLike: Math.random() > 0.6,
-      likes: Math.floor(Math.random() * 300) + 50,
+      likes: Math.floor(Math.random() * 500) + 50,
       comments: commentList.length,
       commentList,
-      views: Math.floor(Math.random() * 800) + 200,
-      isFollowing: true, // 关注页面的内容都是已关注的
+      views: Math.floor(Math.random() * 1000) + 100,
+      isFollowing: type === 'following' ? true : Math.random() > 0.5,
     };
 
     // 根据类型生成不同的内容
-    switch (type) {
+    switch (postType) {
       case PostType.ARTICLE:
         return {
           ...basePost,
           type: PostType.ARTICLE,
-          title: `${author}的专业分享：${id % 3 === 0 ? '前端架构设计心得' : id % 3 === 1 ? '团队管理实践' : '技术选型思考'} - 第 ${id + 1} 篇`,
-          content: `作为一名经验丰富的${category}专家，我想和大家分享一些实际工作中的心得体会。这篇文章将深入探讨${id % 3 === 0 ? '如何设计可扩展的前端架构，从模块化到微前端的完整实践' : id % 3 === 1 ? '如何高效管理技术团队，从沟通协作到绩效考核的全方位思考' : '技术选型中的权衡与取舍，如何在众多方案中找到最适合的解决方案'}...`,
-          wordCount: Math.floor(Math.random() * 6000) + 3000,
+          title: `${author}的专业分享：${i % 3 === 0 ? '技术深度解析' : i % 3 === 1 ? '实战经验总结' : '行业趋势观察'} - 第 ${id + 1} 篇`,
+          content: `这是一篇关于${category}的深度分析文章。作为第 ${id + 1} 篇${type === 'subscriptions' ? '订阅' : type === 'following' ? '关注' : '推荐'}内容，我们将探讨现代技术发展中的核心概念和实践方法...`,
+          wordCount: Math.floor(Math.random() * 8000) + 3000,
         };
 
       case PostType.IMAGE:
-        const imageCount = Math.floor(Math.random() * 4) + 2;
+        const imageCount = Math.floor(Math.random() * 5) + 2;
         return {
           ...basePost,
           type: PostType.IMAGE,
-          title: `${author}的作品集：${id % 2 === 0 ? 'UI设计案例分析' : '摄影作品欣赏'} - 第 ${id + 1} 组`,
-          content: `很高兴能和大家分享我的最新作品。这组${id % 2 === 0 ? 'UI设计作品展示了从用户研究到视觉设计的完整流程，每个细节都经过精心打磨' : '摄影作品捕捉了生活中的美好瞬间，希望能通过镜头传递更多的情感和思考'}。`,
+          title: `${author}的精选作品：${i % 2 === 0 ? '创意设计展示' : '摄影作品分享'} - 第 ${id + 1} 组`,
+          content: `分享一组精心创作的作品，希望能够带给大家视觉上的享受和创作灵感。`,
           images: Array.from({ length: imageCount }, (_, imgIndex) => ({
-            url: `https://images.unsplash.com/photo-${1550000000000 + id * 1000 + imgIndex}?w=800&auto=format`,
+            url: `https://images.unsplash.com/photo-${1500000000000 + id * 1000 + imgIndex}?w=800&auto=format`,
             alt: `作品 ${imgIndex + 1}`,
             width: 800,
             height: 600
@@ -151,12 +148,12 @@ const generateMockPosts = (startId: number, count: number): PostItem[] => {
         return {
           ...basePost,
           type: PostType.VIDEO,
-          title: `${author}的视频教程：${id % 2 === 0 ? '代码重构实战' : '创业经验分享'} - 第 ${id + 1} 期`,
-          content: `本期视频为大家带来${Math.floor(Math.random() * 15) + 10}分钟的深度讲解。我会详细分析${id % 2 === 0 ? '一个真实项目的重构过程，从代码审查到架构优化的每个环节' : '创业路上的关键决策点，分享成功和失败的经验教训'}。`,
+          title: `${author}的视频教程：${i % 2 === 0 ? '实用技巧分享' : '深度知识讲解'} - 第 ${id + 1} 期`,
+          content: `本期视频为大家带来${Math.floor(Math.random() * 20) + 10}分钟的精彩内容，希望对大家的学习和工作有所帮助。`,
           video: {
             url: `https://sample-videos.com/zip/10/mp4/SampleVideo_${1200 + (id % 4)}x${800 + (id % 2) * 100}_2mb.mp4`,
-            thumbnail: `https://images.unsplash.com/photo-${1650000000000 + id * 1000}?w=800&auto=format`,
-            duration: Math.floor(Math.random() * 900) + 600, // 10-25分钟
+            thumbnail: `https://images.unsplash.com/photo-${1600000000000 + id * 1000}?w=800&auto=format`,
+            duration: Math.floor(Math.random() * 1200) + 600,
             width: 1280,
             height: 720
           }
@@ -167,11 +164,11 @@ const generateMockPosts = (startId: number, count: number): PostItem[] => {
         return {
           ...basePost,
           type: PostType.DYNAMIC,
-          title: `${author}的日常分享：${id % 3 === 0 ? '工作日常记录' : id % 3 === 1 ? '学习心得总结' : '生活感悟'} 📝`,
-          content: `${id % 3 === 0 ? '今天团队讨论了一个很有意思的技术问题' : id % 3 === 1 ? '最近在学习新技术，有一些心得想和大家分享' : '生活中的一些小感悟，希望能给正在奋斗的朋友们一些启发'}。分享几张工作和学习的照片，记录这段充实的时光 ✨ #专业成长 #学习记录`,
+          title: `${author}的日常分享：${i % 3 === 0 ? '工作日常' : i % 3 === 1 ? '学习心得' : '生活感悟'} ✨`,
+          content: `记录日常生活中的美好瞬间，分享一些工作和学习的心得体会。生活就是要在这些小小的瞬间中找到快乐 🌟`,
           images: dynamicImageCount > 0 ? Array.from({ length: dynamicImageCount }, (_, imgIndex) => ({
-            url: `https://images.unsplash.com/photo-${1450000000000 + id * 100 + imgIndex * 10}?w=400&auto=format`,
-            alt: `日常记录 ${imgIndex + 1}`
+            url: `https://images.unsplash.com/photo-${1400000000000 + id * 100 + imgIndex * 10}?w=400&auto=format`,
+            alt: `日常分享 ${imgIndex + 1}`
           })) : undefined
         };
 
@@ -187,13 +184,46 @@ const generateMockPosts = (startId: number, count: number): PostItem[] => {
   });
 };
 
-export default function MyFollowList({ isActive }: MyFollowListProps) {
+// 获取类型配置
+const getTypeConfig = (type: PostListType) => {
+  const configs = {
+    recommended: {
+      name: '推荐',
+      loadingText: '加载更多精彩内容...',
+      completedText: '已加载全部推荐内容！',
+      emptyText: '暂无推荐内容',
+      pageSize: 8,
+      maxPages: 6
+    },
+    subscriptions: {
+      name: '订阅',
+      loadingText: '加载更多订阅内容...',
+      completedText: '已加载全部订阅内容！',
+      emptyText: '暂无订阅内容',
+      pageSize: 6,
+      maxPages: 5
+    },
+    following: {
+      name: '关注',
+      loadingText: '加载更多关注内容...',
+      completedText: '已加载全部关注内容！',
+      emptyText: '暂无关注内容',
+      pageSize: 6,
+      maxPages: 5
+    }
+  };
+  return configs[type];
+};
+
+export default function PostList({ type, isActive }: PostListProps) {
   const navigate = useNavigate();
   const [posts, setPosts] = useState<PostItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(0);
   const [initialized, setInitialized] = useState(false);
+
+  const config = getTypeConfig(type);
 
   // 处理各种事件的回调函数
   const handleFollow = useCallback((userId: string) => {
@@ -239,13 +269,13 @@ export default function MyFollowList({ isActive }: MyFollowListProps) {
     [navigate]
   );
 
-  const handleReport = useCallback((postId: number, type: 'post' | 'user') => {
-    alert(`您已举报该${type === 'post' ? '帖子' : '用户'}，我们将尽快处理`);
+  const handleReport = useCallback((postId: number, reportType: 'post' | 'user') => {
+    alert(`您已举报该${reportType === 'post' ? '帖子' : '用户'}，我们将尽快处理`);
   }, []);
 
   const handleBlock = useCallback(
-    (postId: number, type: 'post' | 'user') => {
-      if (type === 'post') {
+    (postId: number, blockType: 'post' | 'user') => {
+      if (blockType === 'post') {
         setPosts((prevPosts) => prevPosts.filter((post) => post.id !== postId));
         alert('已屏蔽该帖子');
       } else {
@@ -336,19 +366,16 @@ export default function MyFollowList({ isActive }: MyFollowListProps) {
 
   const handleBlockComment = useCallback((commentId: string) => {
     alert(`已屏蔽评论 ${commentId}`);
-    // 这里可以添加实际的屏蔽逻辑
     console.log('屏蔽评论:', commentId);
   }, []);
 
   const handleReportComment = useCallback((commentId: string) => {
     alert(`已举报评论 ${commentId}，我们将尽快处理`);
-    // 这里可以添加实际的举报逻辑
     console.log('举报评论:', commentId);
   }, []);
 
   const handleBlockUser = useCallback((userId: string) => {
     alert(`已屏蔽用户 ${userId}`);
-    // 这里可以添加实际的屏蔽用户逻辑
     setPosts((prevPosts) => prevPosts.filter((post) => post.author !== userId));
     console.log('屏蔽用户:', userId);
   }, []);
@@ -358,26 +385,26 @@ export default function MyFollowList({ isActive }: MyFollowListProps) {
     if (loading || !hasMore) return;
 
     setLoading(true);
-    console.log(`加载关注帖子第 ${page + 1} 页，起始ID: ${page * 6}`);
+    console.log(`加载${config.name}帖子第 ${page + 1} 页，起始ID: ${page * config.pageSize}`);
 
     // 模拟API延迟
     await new Promise((resolve) => setTimeout(resolve, 800));
 
-    // 每页生成6个帖子，确保四种类型都有展示
-    const newPosts = generateMockPosts(page * 6, 6);
+    // 生成新帖子
+    const newPosts = generateMockPosts(page * config.pageSize, config.pageSize, type);
     setPosts((prevPosts) => [...prevPosts, ...newPosts]);
 
     const nextPage = page + 1;
     setPage(nextPage);
 
-    // 限制总共加载5页（30个帖子）
-    if (nextPage >= 5) {
+    // 检查是否到达最大页数
+    if (nextPage >= config.maxPages) {
       setHasMore(false);
-      console.log('已加载完所有关注内容');
+      console.log(`已加载完所有${config.name}内容`);
     }
 
     setLoading(false);
-  }, [page, hasMore, loading]);
+  }, [page, hasMore, loading, type, config]);
 
   // 使用无限滚动Hook
   useInfiniteScroll({
@@ -389,11 +416,19 @@ export default function MyFollowList({ isActive }: MyFollowListProps) {
   // 只有当组件激活且未初始化时才加载第一页
   useEffect(() => {
     if (isActive && !initialized) {
-      console.log('初始化关注帖子数据');
+      console.log(`初始化${config.name}帖子数据`);
       setInitialized(true);
       loadMorePosts();
     }
-  }, [isActive, initialized, loadMorePosts]);
+  }, [isActive, initialized, loadMorePosts, config.name]);
+
+  // 当type变化时重置状态
+  useEffect(() => {
+    setPosts([]);
+    setPage(0);
+    setHasMore(true);
+    setInitialized(false);
+  }, [type]);
 
   // 如果未激活则不渲染
   if (!isActive) {
@@ -401,8 +436,8 @@ export default function MyFollowList({ isActive }: MyFollowListProps) {
   }
 
   // 根据类型获取类型标签颜色
-  const getTypeColor = (type: PostType) => {
-    switch (type) {
+  const getTypeColor = (postType: PostType) => {
+    switch (postType) {
       case PostType.ARTICLE:
         return 'bg-blue-100 text-blue-800';
       case PostType.IMAGE:
@@ -417,8 +452,8 @@ export default function MyFollowList({ isActive }: MyFollowListProps) {
   };
 
   // 获取类型显示名称
-  const getTypeName = (type: PostType) => {
-    switch (type) {
+  const getTypeName = (postType: PostType) => {
+    switch (postType) {
       case PostType.ARTICLE:
         return '文章';
       case PostType.IMAGE:
@@ -436,10 +471,15 @@ export default function MyFollowList({ isActive }: MyFollowListProps) {
     <div className="min-h-screen">
       <div className="grid grid-cols-1 gap-4">
         <PostArea />
-        <div className="flex justify-end items-center mb-4 gap-4">
-          <button className="px-4 py-2 bg-blue-500 text-white rounded">最新</button>
-          <button className="px-4 py-2 bg-gray-200 text-gray-800 rounded">最热</button>
-        </div>
+        
+        {/* 关注页面显示排序选项 */}
+        {type === 'following' && (
+          <div className="flex justify-end items-center mb-4 gap-4">
+            <button className="px-4 py-2 bg-blue-500 text-white rounded">最新</button>
+            <button className="px-4 py-2 bg-gray-200 text-gray-800 rounded">最热</button>
+          </div>
+        )}
+        
         <div className="space-y-4">
           {posts.map((post) => (
             <div key={post.id} className="relative">
@@ -474,7 +514,7 @@ export default function MyFollowList({ isActive }: MyFollowListProps) {
           {loading && (
             <div className="flex justify-center items-center py-6">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-              <span className="ml-2 text-gray-600">加载更多关注内容...</span>
+              <span className="ml-2 text-gray-600">{config.loadingText}</span>
             </div>
           )}
 
@@ -482,7 +522,7 @@ export default function MyFollowList({ isActive }: MyFollowListProps) {
           {!hasMore && posts.length > 0 && (
             <div className="text-center py-6 text-gray-500">
               <div className="bg-gray-100 rounded-lg p-4">
-                🎉 已加载全部关注内容！共 {posts.length} 个帖子
+                🎉 {config.completedText}共 {posts.length} 个帖子
                 <div className="text-sm mt-2 text-gray-400">
                   包含文章、图片、视频、动态四种类型
                 </div>
@@ -492,10 +532,10 @@ export default function MyFollowList({ isActive }: MyFollowListProps) {
 
           {/* 空状态 */}
           {posts.length === 0 && !loading && initialized && (
-            <div className="text-center py-8 text-gray-500">暂无关注内容</div>
+            <div className="text-center py-8 text-gray-500">{config.emptyText}</div>
           )}
         </div>
       </div>
     </div>
   );
-}
+} 
