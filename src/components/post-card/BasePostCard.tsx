@@ -25,7 +25,7 @@ export default function BasePostCard(props: PostCardProps) {
       case PostType.ARTICLE:
         return <ArticleContent post={post} />;
       case PostType.IMAGE:
-        return <ImageContent post={post} />;
+        return <ImageContent post={post}  />;
       case PostType.VIDEO:
         return <VideoContent post={post} />;
       case PostType.DYNAMIC:

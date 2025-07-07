@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import type { VideoPost } from '../post.types';
+import { useNavigate } from 'react-router-dom';
 
 interface VideoContentProps {
   post: VideoPost;
@@ -18,15 +18,13 @@ const formatDuration = (seconds: number): string => {
   return `${minutes}:${secs.toString().padStart(2, '0')}`;
 };
 
-export default function VideoContent({ post }: VideoContentProps) {
+export default function VideoContent({ post}: VideoContentProps) {
+  const navigate = useNavigate();
+  const onPostClick = () => {
+    navigate(`/post/video/${post.id}`);
+  };
   const [videoError, setVideoError] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const navigate = useNavigate();
-
-  // 处理帖子内容点击事件
-  const handlePostClick = () => {
-    navigate(`/post/${post.id}`);
-  };
 
   const handleVideoError = () => {
     setVideoError(true);
@@ -42,7 +40,7 @@ export default function VideoContent({ post }: VideoContentProps) {
       {/* 帖子标题 */}
       <h2
         className="text-lg font-semibold text-gray-900 mb-2 leading-tight cursor-pointer hover:text-blue-600 transition-colors"
-        onClick={handlePostClick}
+        onClick={onPostClick}
       >
         {post.title}
       </h2>
@@ -51,7 +49,7 @@ export default function VideoContent({ post }: VideoContentProps) {
       {post.content && (
         <div
           className="text-gray-700 text-sm leading-relaxed mb-3 cursor-pointer hover:text-gray-900 transition-colors"
-          onClick={handlePostClick}
+          onClick={onPostClick}
         >
           {post.content}
         </div>
@@ -107,7 +105,7 @@ export default function VideoContent({ post }: VideoContentProps) {
             // 视频加载错误时的占位符
             <div
               className="w-full h-full flex flex-col items-center justify-center text-gray-400 cursor-pointer hover:text-gray-500 transition-colors"
-              onClick={handlePostClick}
+              onClick={onPostClick}
             >
               <svg className="w-16 h-16 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -136,6 +134,7 @@ export default function VideoContent({ post }: VideoContentProps) {
               </div>
             )}
           </div>
+
         </div>
       </div>
     </div>

@@ -10,9 +10,8 @@ interface ArticleContentProps {
 export default function ArticleContent({ post }: ArticleContentProps) {
   const navigate = useNavigate();
 
-  // 处理帖子内容点击事件
-  const handlePostClick = () => {
-    navigate(`/post/${post.id}`);
+  const onPostClick = () => {
+    navigate(`/post/article/${post.id}`, { state: post });
   };
 
   return (
@@ -20,7 +19,7 @@ export default function ArticleContent({ post }: ArticleContentProps) {
       {/* 帖子标题 */}
       <h2
         className="text-lg font-semibold text-gray-900 mb-3 leading-tight cursor-pointer hover:text-blue-600 transition-colors"
-        onClick={handlePostClick}
+        onClick={onPostClick}
       >
         {post.title}
       </h2>
@@ -29,7 +28,7 @@ export default function ArticleContent({ post }: ArticleContentProps) {
         <Blockquote.Root
           variant="plain"
           className="text-gray-700 ml-4 cursor-pointer hover:text-gray-900 mb-2"
-          onClick={handlePostClick}
+          onClick={onPostClick}
         >
           <Float placement="top-start" offsetY="2">
             <Blockquote.Icon />
@@ -48,7 +47,7 @@ export default function ArticleContent({ post }: ArticleContentProps) {
         className={`text-gray-700 text-sm leading-relaxed mb-3 cursor-pointer hover:text-gray-900 transition-colors ${
           post.abstract ? 'line-clamp-7' : 'line-clamp-9'
         }`}
-        onClick={handlePostClick}
+        onClick={onPostClick}
       >
         {post.content}
       </div>

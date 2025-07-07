@@ -14,7 +14,17 @@ const About = loadable(() => import('./pages/About'), {
 const UserProfile = loadable(() => import('./pages/UserProfile'), {
   fallback: <Loading />,
 });
-const PostDetail = loadable(() => import('./pages/PostDetail'), {
+
+const ArticleDetail = loadable(() => import('./pages/post-details/ArticleDetail'), {
+  fallback: <Loading />,
+});
+const VideoDetail = loadable(() => import('./pages/post-details/VideoDetail'), {
+  fallback: <Loading />,
+});
+const ImageDetail = loadable(() => import('./pages/post-details/ImageDetail'), {
+  fallback: <Loading />,
+});
+const DynamicDetail = loadable(() => import('./pages/post-details/DynamicDetail'), {
   fallback: <Loading />,
 });
 const TagPage = loadable(() => import('./pages/TagPage'), {
@@ -69,8 +79,20 @@ const router = createBrowserRouter([
     element: <UserProfile />,
   },
   {
-    path: '/post/:postId',
-    element: <PostDetail />,
+    path: '/post/article/:postId',
+    element: <ArticleDetail />,
+  },
+  {
+    path: '/post/video/:postId',
+    element: <VideoDetail />,
+  },
+  {
+    path: '/post/image/:postId',
+    element: <ImageDetail />,
+  },
+  {
+    path: '/post/dynamic/:postId',
+    element: <DynamicDetail />,
   },
   {
     path: '/tag/:tag',
