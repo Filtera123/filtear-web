@@ -1,15 +1,16 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { type Comment } from '../../components/comment/comment.type';
 import { BasePostCard } from '../../components/post-card';
 import { PostType, type PostItem, type PostTypeValue } from '../../components/post-card/post.types';
-import { useInfiniteScroll } from '../../hooks/useInfiniteScroll';
+import { useVirtualScroll } from '../../hooks/useVirtualScroll';
+import { usePostListStore, useScrollPositionManager } from '../../stores/postListStore';
 import PostArea from './PostArea';
 
 // 定义帖子列表类型
 export type PostListType = 'recommended' | 'subscriptions' | 'following';
 
-interface PostListProps {
+interface VirtualPostListProps {
   type: PostListType;
   isActive: boolean;
 }
@@ -193,7 +194,7 @@ const getTypeConfig = (type: PostListType) => {
       completedText: '已加载全部推荐内容！',
       emptyText: '暂无推荐内容',
       pageSize: 8,
-      maxPages: 6
+      maxPages: 20 // 增加最大页数以测试虚拟滚动
     },
     subscriptions: {
       name: '订阅',
@@ -201,7 +202,7 @@ const getTypeConfig = (type: PostListType) => {
       completedText: '已加载全部订阅内容！',
       emptyText: '暂无订阅内容',
       pageSize: 6,
-      maxPages: 5
+      maxPages: 15
     },
     following: {
       name: '关注',
@@ -209,44 +210,108 @@ const getTypeConfig = (type: PostListType) => {
       completedText: '已加载全部关注内容！',
       emptyText: '暂无关注内容',
       pageSize: 6,
-      maxPages: 5
+      maxPages: 15
     }
   };
   return configs[type];
 };
 
-export default function PostList({ type, isActive }: PostListProps) {
+export default function VirtualPostList({ type, isActive }: VirtualPostListProps) {
   const navigate = useNavigate();
-  const [posts, setPosts] = useState<PostItem[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
-  const [page, setPage] = useState(0);
-  const [initialized, setInitialized] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  // 使用 zustand store
+  const {
+    tabs,
+    initializeTab,
+    addPosts,
+    setTabLoading,
+    setTabPage,
+    setTabHasMore,
+    updatePost,
+    removePost,
+    removePostsByAuthor,
+    resetTab,
+    saveTotalSize,
+    saveVisibleRange,
+  } = usePostListStore();
+
+  // 滚动位置管理
+  const { restoreScrollPosition } = useScrollPositionManager();
+
+  // 获取当前tab的状态
+  const currentTab = tabs[type];
+  const { posts, loading, hasMore, page, initialized } = currentTab;
 
   const config = getTypeConfig(type);
 
+  // 加载更多帖子的函数
+  const loadMorePosts = useCallback(async () => {
+    if (loading || !hasMore) return;
+
+    setTabLoading(type, true);
+    console.log(`[虚拟滚动] 加载${config.name}帖子第 ${page + 1} 页，起始ID: ${page * config.pageSize}`);
+
+    // 模拟API延迟
+    await new Promise((resolve) => setTimeout(resolve, 800));
+
+    // 生成新帖子
+    const newPosts = generateMockPosts(page * config.pageSize, config.pageSize, type);
+    addPosts(type, newPosts);
+
+    const nextPage = page + 1;
+    setTabPage(type, nextPage);
+
+    // 检查是否到达最大页数
+    if (nextPage >= config.maxPages) {
+      setTabHasMore(type, false);
+      console.log(`[虚拟滚动] 已加载完所有${config.name}内容`);
+    }
+
+    setTabLoading(type, false);
+  }, [page, hasMore, loading, type, config, addPosts, setTabLoading, setTabPage, setTabHasMore]);
+
+  // 虚拟滚动配置
+  const virtualConfig = {
+    itemHeight: 450, // 帖子的平均高度
+    overscan: 3, // 缓冲项目数
+    threshold: 500, // 触发加载更多的阈值
+    onLoadMore: loadMorePosts,
+    hasMore,
+    loading,
+  };
+
+  // 使用虚拟滚动Hook
+  const {
+    containerStyle,
+    itemStyle,
+    visibleItems,
+    totalHeight,
+    measureItem,
+    scrollToTop,
+    isScrolling,
+    visibleRange,
+    forceRemeasure,
+    disableTransition,
+  } = useVirtualScroll(posts.length, virtualConfig);
+
   // 处理各种事件的回调函数
   const handleFollow = useCallback((userId: string) => {
-    setPosts((prevPosts) =>
-      prevPosts.map((post) =>
-        post.author === userId ? { ...post, isFollowing: !post.isFollowing } : post
-      )
-    );
-  }, []);
+    const post = posts.find(p => p.author === userId);
+    if (post) {
+      updatePost(type, post.id, { isFollowing: !post.isFollowing });
+    }
+  }, [posts, type, updatePost]);
 
   const handleLike = useCallback((postId: number) => {
-    setPosts((prevPosts) =>
-      prevPosts.map((post) =>
-        post.id === postId
-          ? {
-              ...post,
-              isLike: !post.isLike,
-              likes: post.isLike ? post.likes - 1 : post.likes + 1,
-            }
-          : post
-      )
-    );
-  }, []);
+    const post = posts.find(p => p.id === postId);
+    if (post) {
+      updatePost(type, postId, {
+        isLike: !post.isLike,
+        likes: post.isLike ? post.likes - 1 : post.likes + 1,
+      });
+    }
+  }, [posts, type, updatePost]);
 
   const handleUserClick = useCallback(
     (userId: string) => {
@@ -269,31 +334,32 @@ export default function PostList({ type, isActive }: PostListProps) {
     [navigate]
   );
 
-  const handleReport = useCallback((postId: number, reportType: 'post' | 'user') => {
+  const handleReport = useCallback((_postId: number, reportType: 'post' | 'user') => {
     alert(`您已举报该${reportType === 'post' ? '帖子' : '用户'}，我们将尽快处理`);
   }, []);
 
   const handleBlock = useCallback(
     (postId: number, blockType: 'post' | 'user') => {
       if (blockType === 'post') {
-        setPosts((prevPosts) => prevPosts.filter((post) => post.id !== postId));
+        removePost(type, postId);
         alert('已屏蔽该帖子');
       } else {
         const post = posts.find((p) => p.id === postId);
         if (post) {
-          setPosts((prevPosts) => prevPosts.filter((p) => p.author !== post.author));
+          removePostsByAuthor(type, post.author);
           alert(`已屏蔽用户 ${post.author}`);
         }
       }
     },
-    [posts]
+    [posts, type, removePost, removePostsByAuthor]
   );
 
   const handleUnfollow = useCallback((userId: string) => {
-    setPosts((prevPosts) =>
-      prevPosts.map((post) => (post.author === userId ? { ...post, isFollowing: false } : post))
-    );
-  }, []);
+    const post = posts.find(p => p.author === userId);
+    if (post) {
+      updatePost(type, post.id, { isFollowing: false });
+    }
+  }, [posts, type, updatePost]);
 
   const handleAddComment = useCallback((postId: number, content: string) => {
     const newComment: Comment = {
@@ -307,35 +373,30 @@ export default function PostList({ type, isActive }: PostListProps) {
       isLiked: false,
     };
 
-    setPosts((prevPosts) =>
-      prevPosts.map((post) =>
-        post.id === postId
-          ? {
-              ...post,
-              commentList: [newComment, ...(post.commentList || [])],
-              comments: (post.commentList?.length || 0) + 1,
-            }
-          : post
-      )
-    );
-  }, []);
+    const post = posts.find(p => p.id === postId);
+    if (post) {
+      updatePost(type, postId, {
+        commentList: [newComment, ...(post.commentList || [])],
+        comments: (post.commentList?.length || 0) + 1,
+      });
+    }
+  }, [posts, type, updatePost]);
 
   const handleLikeComment = useCallback((commentId: string) => {
-    setPosts((prevPosts) =>
-      prevPosts.map((post) => ({
-        ...post,
-        commentList: post.commentList?.map((comment) =>
-          comment.id === commentId
-            ? {
-                ...comment,
-                isLiked: !comment.isLiked,
-                likes: comment.isLiked ? comment.likes - 1 : comment.likes + 1,
-              }
-            : comment
-        ),
-      }))
-    );
-  }, []);
+    const post = posts.find(p => p.commentList?.some(c => c.id === commentId));
+    if (post) {
+      const updatedCommentList = post.commentList?.map((comment) =>
+        comment.id === commentId
+          ? {
+              ...comment,
+              isLiked: !comment.isLiked,
+              likes: comment.isLiked ? comment.likes - 1 : comment.likes + 1,
+            }
+          : comment
+      );
+      updatePost(type, post.id, { commentList: updatedCommentList });
+    }
+  }, [posts, type, updatePost]);
 
   const handleReplyComment = useCallback((commentId: string, content: string) => {
     const newReply: Comment = {
@@ -349,20 +410,19 @@ export default function PostList({ type, isActive }: PostListProps) {
       isLiked: false,
     };
 
-    setPosts((prevPosts) =>
-      prevPosts.map((post) => ({
-        ...post,
-        commentList: post.commentList?.map((comment) =>
-          comment.id === commentId
-            ? {
-                ...comment,
-                replies: [newReply, ...(comment.replies || [])],
-              }
-            : comment
-        ),
-      }))
-    );
-  }, []);
+    const post = posts.find(p => p.commentList?.some(c => c.id === commentId));
+    if (post) {
+      const updatedCommentList = post.commentList?.map((comment) =>
+        comment.id === commentId
+          ? {
+              ...comment,
+              replies: [newReply, ...(comment.replies || [])],
+            }
+          : comment
+      );
+      updatePost(type, post.id, { commentList: updatedCommentList });
+    }
+  }, [posts, type, updatePost]);
 
   const handleBlockComment = useCallback((commentId: string) => {
     alert(`已屏蔽评论 ${commentId}`);
@@ -376,59 +436,59 @@ export default function PostList({ type, isActive }: PostListProps) {
 
   const handleBlockUser = useCallback((userId: string) => {
     alert(`已屏蔽用户 ${userId}`);
-    setPosts((prevPosts) => prevPosts.filter((post) => post.author !== userId));
+    removePostsByAuthor(type, userId);
     console.log('屏蔽用户:', userId);
+  }, [type, removePostsByAuthor]);
+
+  // 处理帖子高度变化 - 使用ref避免依赖循环
+  const handleHeightChangeRef = useRef<(index: number) => void>(null);
+  
+  useEffect(() => {
+    handleHeightChangeRef.current = (index: number) => {
+      console.log(`[高度变化] 帖子索引 ${index} 的高度发生变化，重新测量中...`);
+      // 立即触发重新测量，让位置调整与动画同步
+      forceRemeasure(index);
+    };
+  }, [forceRemeasure]);
+
+  const handleHeightChange = useCallback((index: number) => {
+    handleHeightChangeRef.current?.(index);
   }, []);
-
-  // 加载更多帖子的函数
-  const loadMorePosts = useCallback(async () => {
-    if (loading || !hasMore) return;
-
-    setLoading(true);
-    console.log(`加载${config.name}帖子第 ${page + 1} 页，起始ID: ${page * config.pageSize}`);
-
-    // 模拟API延迟
-    await new Promise((resolve) => setTimeout(resolve, 800));
-
-    // 生成新帖子
-    const newPosts = generateMockPosts(page * config.pageSize, config.pageSize, type);
-    setPosts((prevPosts) => [...prevPosts, ...newPosts]);
-
-    const nextPage = page + 1;
-    setPage(nextPage);
-
-    // 检查是否到达最大页数
-    if (nextPage >= config.maxPages) {
-      setHasMore(false);
-      console.log(`已加载完所有${config.name}内容`);
-    }
-
-    setLoading(false);
-  }, [page, hasMore, loading, type, config]);
-
-  // 使用无限滚动Hook
-  useInfiniteScroll({
-    hasMore,
-    loading,
-    onLoadMore: loadMorePosts,
-  });
 
   // 只有当组件激活且未初始化时才加载第一页
   useEffect(() => {
     if (isActive && !initialized) {
-      console.log(`初始化${config.name}帖子数据`);
-      setInitialized(true);
+      console.log(`[虚拟滚动] 初始化${config.name}帖子数据`);
+      initializeTab(type);
       loadMorePosts();
     }
-  }, [isActive, initialized, loadMorePosts, config.name]);
+  }, [isActive, initialized, loadMorePosts, config.name, type, initializeTab]);
 
   // 当type变化时重置状态
   useEffect(() => {
-    setPosts([]);
-    setPage(0);
-    setHasMore(true);
-    setInitialized(false);
-  }, [type]);
+    if (isActive) {
+      resetTab(type);
+    }
+  }, [type, isActive, resetTab]);
+
+  // 滚动位置恢复
+  useEffect(() => {
+    if (isActive && posts.length > 0) {
+      // 延迟恢复滚动位置，确保虚拟滚动容器已准备好
+      const timer = setTimeout(() => {
+        restoreScrollPosition(type, containerRef);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isActive, posts.length, type, restoreScrollPosition]);
+
+  // 保存滚动状态
+  useEffect(() => {
+    if (isActive) {
+      saveTotalSize(type, totalHeight);
+      saveVisibleRange(type, visibleRange);
+    }
+  }, [isActive, type, totalHeight, visibleRange, saveTotalSize, saveVisibleRange]);
 
   // 如果未激活则不渲染
   if (!isActive) {
@@ -480,61 +540,94 @@ export default function PostList({ type, isActive }: PostListProps) {
           </div>
         )}
         
-        <div className="space-y-4">
-          {posts.map((post) => (
-            <div key={post.id} className="relative">
-              {/* 类型标签 */}
-              <div className="absolute -top-2 -left-2 z-10">
-                <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium shadow-sm ${getTypeColor(post.type)}`}>
-                  {getTypeName(post.type)}
+        {/* 虚拟滚动容器 */}
+        <div ref={containerRef} style={containerStyle}>
+          {visibleItems.map((index) => {
+            const post = posts[index];
+            if (!post) return null;
+
+            return (
+              <div
+                key={post.id}
+                style={itemStyle(index)}
+                ref={(el) => {
+                  if (el) {
+                    measureItem(index, el);
+                  }
+                }}
+                className={`w-full ${disableTransition ? 'virtual-item-no-transition' : 'virtual-item'}`}
+              >
+                <div className="relative mb-4">
+                  {/* 类型标签 */}
+                  <div className="absolute -top-2 -left-2 z-10">
+                    <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium shadow-sm ${getTypeColor(post.type)}`}>
+                      {getTypeName(post.type)}
+                    </div>
+                  </div>
+                  
+                  <BasePostCard
+                    post={post}
+                    onFollow={handleFollow}
+                    onLike={handleLike}
+                    onUserClick={handleUserClick}
+                    onPostClick={handlePostClick}
+                    onTagClick={handleTagClick}
+                    onReport={handleReport}
+                    onBlock={handleBlock}
+                    onUnfollow={handleUnfollow}
+                    onAddComment={handleAddComment}
+                    onLikeComment={handleLikeComment}
+                    onReplyComment={handleReplyComment}
+                    onBlockComment={handleBlockComment}
+                    onReportComment={handleReportComment}
+                    onBlockUser={handleBlockUser}
+                    onHeightChange={() => handleHeightChange(index)}
+                  />
                 </div>
               </div>
-              
-              <BasePostCard
-                post={post}
-                onFollow={handleFollow}
-                onLike={handleLike}
-                onUserClick={handleUserClick}
-                onPostClick={handlePostClick}
-                onTagClick={handleTagClick}
-                onReport={handleReport}
-                onBlock={handleBlock}
-                onUnfollow={handleUnfollow}
-                onAddComment={handleAddComment}
-                onLikeComment={handleLikeComment}
-                onReplyComment={handleReplyComment}
-                onBlockComment={handleBlockComment}
-                onReportComment={handleReportComment}
-                onBlockUser={handleBlockUser}
-              />
-            </div>
-          ))}
-
-          {/* 加载指示器 */}
-          {loading && (
-            <div className="flex justify-center items-center py-6">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-              <span className="ml-2 text-gray-600">{config.loadingText}</span>
-            </div>
-          )}
-
-          {/* 没有更多内容提示 */}
-          {!hasMore && posts.length > 0 && (
-            <div className="text-center py-6 text-gray-500">
-              <div className="bg-gray-100 rounded-lg p-4">
-                🎉 {config.completedText}共 {posts.length} 个帖子
-                <div className="text-sm mt-2 text-gray-400">
-                  包含文章、图片、视频、动态四种类型
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* 空状态 */}
-          {posts.length === 0 && !loading && initialized && (
-            <div className="text-center py-8 text-gray-500">{config.emptyText}</div>
-          )}
+            );
+          })}
         </div>
+
+        {/* 加载指示器 */}
+        {loading && (
+          <div className="flex justify-center items-center py-6">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            <span className="ml-2 text-gray-600">{config.loadingText}</span>
+          </div>
+        )}
+
+        {/* 没有更多内容提示 */}
+        {!hasMore && posts.length > 0 && (
+          <div className="text-center py-6 text-gray-500">
+            <div className="bg-gray-100 rounded-lg p-4">
+              🎉 {config.completedText}共 {posts.length} 个帖子
+              <div className="text-sm mt-2 text-gray-400">
+                包含文章、图片、视频、动态四种类型 | 虚拟滚动优化
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 空状态 */}
+        {posts.length === 0 && !loading && initialized && (
+          <div className="text-center py-8 text-gray-500">{config.emptyText}</div>
+        )}
+
+        {/* 回到顶部按钮 */}
+        {posts.length > 5 && (
+          <button
+            onClick={scrollToTop}
+            className="fixed bottom-6 right-6 w-12 h-12 bg-blue-500 text-white rounded-full shadow-lg hover:bg-blue-600 transition-colors flex items-center justify-center z-50"
+            title="回到顶部"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+            </svg>
+          </button>
+        )}
+
+
       </div>
     </div>
   );

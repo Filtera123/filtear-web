@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { styled, Tab } from '@mui/material';
-import PostList, { type PostListType } from './PostList';
+import VirtualPostList, { type PostListType } from './VirtualPostList';
 
 const CustomerTabPanel = styled(TabPanel)(({ theme }) => ({
   padding: 0,
@@ -60,15 +60,15 @@ export default function Home() {
         
         <div className="min-h-screen">
           <CustomerTabPanel value="recommended">
-            <PostList type="recommended" isActive={activeTab === 'recommended'} />
+            <VirtualPostList type="recommended" isActive={activeTab === 'recommended'} />
           </CustomerTabPanel>
           
           <CustomerTabPanel value="subscriptions">
-            <PostList type="subscriptions" isActive={activeTab === 'subscriptions'} />
+            <VirtualPostList type="subscriptions" isActive={activeTab === 'subscriptions'} />
           </CustomerTabPanel>
           
           <CustomerTabPanel value="following">
-            <PostList type="following" isActive={activeTab === 'following'} />
+            <VirtualPostList type="following" isActive={activeTab === 'following'} />
           </CustomerTabPanel>
         </div>
       </TabContext>

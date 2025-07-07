@@ -1,8 +1,7 @@
 import React from 'react';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { type PostItem } from '../components/post-card/post.types';
-import { type PostListType } from '../pages/home/PostList';
+import { type PostItem, type PostListType } from '../components/post-card/post.types';
 
 // 单个 tab 的状态
 interface TabState {

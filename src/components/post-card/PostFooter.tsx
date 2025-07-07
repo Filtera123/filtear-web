@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import CommentSection from '../comment/CommentSection';
 import type { BasePost } from './post.types';
 
@@ -12,6 +12,7 @@ interface PostFooterProps {
   onBlockComment?: (commentId: string) => void;
   onReportComment?: (commentId: string) => void;
   onBlockUser?: (userId: string) => void;
+  onHeightChange?: () => void;
 }
 
 // 格式化数字显示（如1.2k）
@@ -31,14 +32,33 @@ export default function PostFooter({
   onUserClick,
   onBlockComment,
   onReportComment,
-  onBlockUser
+  onBlockUser,
+  onHeightChange
 }: PostFooterProps) {
   const [showCommentSection, setShowCommentSection] = useState(false);
+
+  // 使用ref来避免依赖循环
+  const onHeightChangeRef = useRef(onHeightChange);
+  onHeightChangeRef.current = onHeightChange;
 
   // 处理评论区展开收起
   const handleToggleComments = () => {
     console.log(`[评论区切换] 帖子 ${post.id} ${showCommentSection ? '收起' : '展开'}评论区`);
-    setShowCommentSection(!showCommentSection);
+    const newShowCommentSection = !showCommentSection;
+    setShowCommentSection(newShowCommentSection);
+    
+    // 立即通知高度变化开始，让虚拟滚动同步开始调整
+    if (onHeightChangeRef.current) {
+      // 立即触发第一次，开始同步动画
+      setTimeout(() => {
+        onHeightChangeRef.current?.();
+      }, 16); // 一帧后立即开始
+      
+      // 动画结束后再次确认最终高度
+      setTimeout(() => {
+        onHeightChangeRef.current?.();
+      }, 350); // 动画结束后确认
+    }
   };
 
   const handleBlockComment = (commentId: string) => {
@@ -103,19 +123,31 @@ export default function PostFooter({
       </div>
 
       {/* 评论区 */}
-      {showCommentSection && (
-        <CommentSection
-          postId={post.id}
-          comments={post.commentList || []}
-          onAddComment={onAddComment}
-          onLikeComment={onLikeComment}
-          onReplyComment={onReplyComment}
-          onUserClick={onUserClick}
-          onBlockComment={handleBlockComment}
-          onReportComment={handleReportComment}
-          onBlockUser={handleBlockUser}
-        />
-      )}
+      <div 
+        className={`comment-section-transition transition-all duration-300 ease-out overflow-hidden transform-gpu ${
+          showCommentSection 
+            ? 'max-h-[2000px] opacity-100' 
+            : 'max-h-0 opacity-0'
+        }`}
+      >
+        <div className={`animate-smooth transition-transform duration-300 ease-out ${
+          showCommentSection ? 'translate-y-0' : '-translate-y-2'
+        }`}>
+          {showCommentSection && (
+            <CommentSection
+              postId={post.id}
+              comments={post.commentList || []}
+              onAddComment={onAddComment}
+              onLikeComment={onLikeComment}
+              onReplyComment={onReplyComment}
+              onUserClick={onUserClick}
+              onBlockComment={handleBlockComment}
+              onReportComment={handleReportComment}
+              onBlockUser={handleBlockUser}
+            />
+          )}
+        </div>
+      </div>
     </>
   );
 } 

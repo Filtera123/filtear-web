@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PostHeader from './PostHeader';
 import PostTags from './PostTags';
 import PostFooter from './PostFooter';
@@ -21,8 +21,22 @@ export default function BasePostCard(props: PostCardProps) {
     onReplyComment,
     onBlockComment,
     onReportComment,
-    onBlockUser
+    onBlockUser,
+    onHeightChange
   } = props;
+
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  // 处理高度变化时的动画状态
+  const handleHeightChangeWithAnimation = () => {
+    setIsTransitioning(true);
+    onHeightChange?.();
+    
+    // 动画结束后清除transitioning状态
+    setTimeout(() => {
+      setIsTransitioning(false);
+    }, 300);
+  };
 
   // 根据帖子类型渲染不同的内容组件
   const renderPostContent = () => {
@@ -42,7 +56,9 @@ export default function BasePostCard(props: PostCardProps) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 mb-4">
+    <div className={`bg-white rounded-lg shadow-sm border border-gray-100 p-4 mb-4 ${
+      isTransitioning ? 'post-height-transitioning' : ''
+    }`}>
       {/* 头部：用户信息和关注按钮 */}
       <PostHeader
         post={post}
@@ -73,6 +89,7 @@ export default function BasePostCard(props: PostCardProps) {
         onBlockComment={onBlockComment}
         onReportComment={onReportComment}
         onBlockUser={onBlockUser}
+        onHeightChange={handleHeightChangeWithAnimation}
       />
     </div>
   );

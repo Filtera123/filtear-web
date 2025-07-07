@@ -12,6 +12,39 @@ html, body {
   height: 100%;
 }
 
+/* 虚拟滚动和动画优化 */
+.virtual-item {
+  contain: layout style paint;
+  will-change: transform;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 禁用虚拟滚动项目的过渡动画，用于快速跳转 */
+.virtual-item-no-transition {
+  contain: layout style paint;
+  will-change: transform;
+  transition: none !important;
+}
+
+.comment-section-transition {
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+.post-height-transitioning {
+  transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.virtual-item-smooth {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 硬件加速优化 */
+.animate-smooth {
+  animation-fill-mode: both;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 @media (prefers-color-scheme: dark) {
   @theme {
     --color-background: #0f172a;
