@@ -76,6 +76,7 @@ export default function BasePostCard(props: PostCardProps) {
       <PostTags
         tags={post.tags}
         onTagClick={onTagClick}
+        onHeightChange={handleHeightChangeWithAnimation}
       />
 
       {/* 底部交互按钮和评论区 */}
@@ -89,6 +90,7 @@ export default function BasePostCard(props: PostCardProps) {
         onBlockComment={onBlockComment}
         onReportComment={onReportComment}
         onBlockUser={onBlockUser}
+        onPostClick={onPostClick}
         onHeightChange={handleHeightChangeWithAnimation}
       />
     </div>

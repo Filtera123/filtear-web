@@ -13,6 +13,7 @@ interface Props {
   onBlockComment?: (commentId: string) => void;
   onReportComment?: (commentId: string) => void;
   onBlockUser?: (userId: string) => void;
+  onPostClick?: (postId: number) => void; // 新增：点击查看帖子详情的回调
   currentUserId?: string;
   currentUserName?: string;
   currentUserAvatar?: string;
@@ -61,12 +62,12 @@ export default function CommentSection({
   onBlockComment,
   onReportComment,
   onBlockUser,
+  onPostClick,
   currentUserId,
   currentUserName = '当前用户',
   currentUserAvatar = '/default-avatar.png'
 }: Props) {
   const [newComment, setNewComment] = useState('');
-  const [isExpanded, setIsExpanded] = useState(false);
   const [replyModalOpen, setReplyModalOpen] = useState(false);
   const [replyToComment, setReplyToComment] = useState<Comment | null>(null);
 
@@ -84,15 +85,7 @@ export default function CommentSection({
     }
   };
 
-  const handleExpandComments = () => {
-    console.log(`[评论区] 展开评论区 - 帖子 ${postId}`);
-    setIsExpanded(true);
-  };
 
-  const handleCollapseComments = () => {
-    console.log(`[评论区] 收起评论区 - 帖子 ${postId}`);
-    setIsExpanded(false);
-  };
 
   const handleReplyClick = (comment: Comment) => {
     setReplyToComment(comment);
@@ -128,8 +121,8 @@ export default function CommentSection({
   // 计算总评论数（包括所有回复）
   const totalCommentCount = getTotalCommentCount(comments);
   
-  // 根据展开状态决定显示的评论
-  const displayedComments = isExpanded ? comments : limitComments(comments, 5).limitedComments;
+  // 限制显示的评论数量
+  const displayedComments = limitComments(comments, 5).limitedComments;
   const hasMoreComments = totalCommentCount > 5;
 
         return (
@@ -198,30 +191,18 @@ export default function CommentSection({
               />
             ))}
             
-            {/* 展开/收起按钮 */}
+            {/* 查看帖子详情按钮 */}
             {hasMoreComments && (
               <div className="py-3 text-center border-t border-gray-50">
-                {!isExpanded ? (
-                  <button 
-                    onClick={handleExpandComments}
-                    className="text-sm text-blue-600 hover:text-blue-800 transition-colors flex items-center justify-center space-x-1"
-                  >
-                    <span>查看全部 {totalCommentCount} 条评论</span>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-                ) : (
-                  <button 
-                    onClick={handleCollapseComments}
-                    className="text-sm text-gray-600 hover:text-gray-800 transition-colors flex items-center justify-center space-x-1"
-                  >
-                    <span>收起评论</span>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                    </svg>
-                  </button>
-                )}
+                <button 
+                  onClick={() => onPostClick?.(postId)}
+                  className="text-sm text-blue-600 hover:text-blue-800 transition-colors flex items-center justify-center space-x-1"
+                >
+                  <span>查看全部 {totalCommentCount} 条评论</span>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                </button>
               </div>
             )}
           </div>

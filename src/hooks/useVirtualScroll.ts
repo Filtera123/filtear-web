@@ -17,11 +17,7 @@ interface VirtualScrollState {
   isScrolling: boolean;
   visibleRange: { start: number; end: number };
   totalHeight: number;
-  itemHeights: Map<number, number>;
   averageHeight: number;
-  startOffset: number;
-  endOffset: number;
-  disableTransition: boolean; // 禁用过渡动画
 }
 
 // 虚拟滚动返回值
@@ -56,133 +52,87 @@ export function useVirtualScroll(
   const scrollElementRef = useRef<HTMLDivElement>(null);
   const isScrollingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const itemHeightsRef = useRef<Map<number, number>>(new Map());
-  const offsetCacheRef = useRef<Map<number, number>>(new Map());
-  const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const measureTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // 虚拟滚动状态
   const [state, setState] = useState<VirtualScrollState>({
     scrollTop: 0,
     isScrolling: false,
-    visibleRange: { start: 0, end: 0 },
+    visibleRange: { start: 0, end: Math.min(totalItems, overscan * 2) },
     totalHeight: 0,
-    itemHeights: new Map(),
     averageHeight: itemHeight,
-    startOffset: 0,
-    endOffset: 0,
-    disableTransition: false,
   });
 
-  // 计算项目的累积偏移量
-  const calculateItemOffset = useCallback((index: number): number => {
-    // 使用缓存提高性能
-    if (offsetCacheRef.current.has(index)) {
-      return offsetCacheRef.current.get(index)!;
-    }
-
+  // 计算项目的偏移位置
+  const getItemOffset = useCallback((index: number): number => {
     let offset = 0;
-    const itemHeights = itemHeightsRef.current;
-
     for (let i = 0; i < index; i++) {
-      offset += itemHeights.get(i) || state.averageHeight;
+      offset += itemHeightsRef.current.get(i) || state.averageHeight;
     }
-
-    offsetCacheRef.current.set(index, offset);
     return offset;
   }, [state.averageHeight]);
 
-  // 根据滚动位置计算可见项目范围
+  // 计算总高度
+  const calculateTotalHeight = useCallback(() => {
+    let total = 0;
+    for (let i = 0; i < totalItems; i++) {
+      total += itemHeightsRef.current.get(i) || state.averageHeight;
+    }
+    return total;
+  }, [totalItems, state.averageHeight]);
+
+  // 计算可见范围
   const calculateVisibleRange = useCallback((scrollTop: number) => {
     if (totalItems === 0) {
       return { start: 0, end: 0 };
     }
 
     const containerHeight = window.innerHeight;
-    const itemHeights = itemHeightsRef.current;
     let start = 0;
-    let end = 0;
+    let end = totalItems;
 
     // 找到第一个可见项目
-    let accumulatedHeight = 0;
+    let currentOffset = 0;
     for (let i = 0; i < totalItems; i++) {
-      const currentItemHeight = itemHeights.get(i) || state.averageHeight;
-      if (accumulatedHeight + currentItemHeight > scrollTop) {
-        start = i;
+      const itemHeight = itemHeightsRef.current.get(i) || state.averageHeight;
+      if (currentOffset + itemHeight >= scrollTop) {
+        start = Math.max(0, i - overscan);
         break;
       }
-      accumulatedHeight += currentItemHeight;
+      currentOffset += itemHeight;
     }
 
     // 找到最后一个可见项目
-    let visibleHeight = 0;
+    currentOffset = getItemOffset(start);
     for (let i = start; i < totalItems; i++) {
-      const currentItemHeight = itemHeights.get(i) || state.averageHeight;
-      visibleHeight += currentItemHeight;
-      if (visibleHeight > containerHeight) {
-        end = i + 1;
+      const itemHeight = itemHeightsRef.current.get(i) || state.averageHeight;
+      if (currentOffset > scrollTop + containerHeight + overscan * state.averageHeight) {
+        end = Math.min(totalItems, i + overscan);
         break;
       }
+      currentOffset += itemHeight;
     }
 
-    // 如果没有找到结束位置，说明所有项目都可见
-    if (end === 0) {
-      end = totalItems;
-    }
-
-    // 添加缓冲区
-    const bufferedStart = Math.max(0, start - overscan);
-    const bufferedEnd = Math.min(totalItems, end + overscan);
-
-    return { start: bufferedStart, end: bufferedEnd };
-  }, [totalItems, state.averageHeight, overscan]);
-
-  // 更新平均高度
-  const updateAverageHeight = useCallback(() => {
-    const itemHeights = itemHeightsRef.current;
-    if (itemHeights.size > 0) {
-      const totalHeight = Array.from(itemHeights.values()).reduce((sum, height) => sum + height, 0);
-      const averageHeight = totalHeight / itemHeights.size;
-      
-      setState(prev => ({
-        ...prev,
-        averageHeight: Math.max(averageHeight, 100), // 最小高度100px
-      }));
-    }
-  }, []);
-
-  // 计算总高度
-  const calculateTotalHeight = useCallback(() => {
-    const itemHeights = itemHeightsRef.current;
-    let totalHeight = 0;
-
-    for (let i = 0; i < totalItems; i++) {
-      totalHeight += itemHeights.get(i) || state.averageHeight;
-    }
-
-    return totalHeight;
-  }, [totalItems, state.averageHeight]);
+    return { start, end };
+  }, [totalItems, overscan, state.averageHeight, getItemOffset]);
 
   // 滚动事件处理
   const handleScroll = useCallback(() => {
     const scrollTop = window.scrollY;
     const visibleRange = calculateVisibleRange(scrollTop);
-    
-    // 计算起始和结束偏移
-    const startOffset = calculateItemOffset(visibleRange.start);
-    const endOffset = calculateTotalHeight() - calculateItemOffset(visibleRange.end);
+    const totalHeight = calculateTotalHeight();
 
     setState(prev => ({
       ...prev,
       scrollTop,
       isScrolling: true,
       visibleRange,
-      startOffset,
-      endOffset,
+      totalHeight,
     }));
 
     // 触发加载更多
     if (onLoadMore && hasMore && !loading) {
       const { scrollTop: currentScrollTop, scrollHeight, clientHeight } = document.documentElement;
-      
       if (scrollHeight - currentScrollTop <= clientHeight + threshold) {
         onLoadMore();
       }
@@ -195,15 +145,7 @@ export function useVirtualScroll(
     isScrollingTimeoutRef.current = setTimeout(() => {
       setState(prev => ({ ...prev, isScrolling: false }));
     }, 150);
-  }, [
-    calculateVisibleRange,
-    calculateItemOffset,
-    calculateTotalHeight,
-    onLoadMore,
-    hasMore,
-    loading,
-    threshold,
-  ]);
+  }, [calculateVisibleRange, calculateTotalHeight, onLoadMore, hasMore, loading, threshold]);
 
   // 测量项目高度
   const measureItem = useCallback((index: number, element: HTMLElement) => {
@@ -211,78 +153,96 @@ export function useVirtualScroll(
 
     const rect = element.getBoundingClientRect();
     const height = rect.height;
-    
-    // 只有当高度有意义时才更新
+
     if (height > 0) {
       const currentHeight = itemHeightsRef.current.get(index);
-      
-      // 只有当高度发生明显变化时才更新缓存（避免1-2px的微小差异）
       if (currentHeight === undefined || Math.abs(currentHeight - height) > 2) {
         itemHeightsRef.current.set(index, height);
-        
-        // 清除相关的偏移缓存
-        for (let i = index; i < totalItems; i++) {
-          offsetCacheRef.current.delete(i);
+
+        // 更新平均高度
+        const heights = Array.from(itemHeightsRef.current.values());
+        const averageHeight = heights.reduce((sum, h) => sum + h, 0) / heights.length;
+
+        // 防抖更新状态
+        if (measureTimeoutRef.current) {
+          clearTimeout(measureTimeoutRef.current);
         }
-        
-        // 使用防抖来更新状态，避免频繁重新渲染
-        if (!updateTimeoutRef.current) {
-          updateTimeoutRef.current = setTimeout(() => {
-            updateAverageHeight();
-            
-            const visibleRange = calculateVisibleRange(state.scrollTop);
-            const startOffset = calculateItemOffset(visibleRange.start);
-            const endOffset = calculateTotalHeight() - calculateItemOffset(visibleRange.end);
-            
-            setState(prev => ({
-              ...prev,
-              visibleRange,
-              startOffset,
-              endOffset,
-              totalHeight: calculateTotalHeight(),
-            }));
-            
-            updateTimeoutRef.current = null;
-          }, 16); // 提高到60fps，让动画更流畅
-        }
+        measureTimeoutRef.current = setTimeout(() => {
+          const totalHeight = calculateTotalHeight();
+          const visibleRange = calculateVisibleRange(state.scrollTop);
+
+          setState(prev => ({
+            ...prev,
+            averageHeight: Math.max(averageHeight, 100),
+            totalHeight,
+            visibleRange,
+          }));
+        }, 50);
       }
     }
-  }, [totalItems, state.scrollTop, updateAverageHeight, calculateVisibleRange, calculateItemOffset, calculateTotalHeight]);
+  }, [calculateTotalHeight, calculateVisibleRange, state.scrollTop]);
 
-  // 强制重新测量指定项目的高度
+  // 强制重新测量 - 优化版本，保持当前视觉焦点不变
   const forceRemeasure = useCallback((index: number) => {
-    // 防止频繁调用，添加防抖，但缩短时间以支持实时动画
-    const now = Date.now();
-    const lastMeasureKey = `measure_${index}`;
-    const lastMeasureTime = (window as any)[lastMeasureKey] || 0;
+    // 记录当前滚动状态和视觉锚点
+    const currentScrollTop = window.scrollY;
+    const currentItemOffset = getItemOffset(index);
+    const currentItemHeight = itemHeightsRef.current.get(index) || state.averageHeight;
     
-    if (now - lastMeasureTime < 50) { // 缩短到50ms，允许更频繁的更新
-      return;
-    }
-    (window as any)[lastMeasureKey] = now;
+    // 计算当前项目在屏幕中的相对位置
+    const itemTopInViewport = currentItemOffset - currentScrollTop;
+    const itemBottomInViewport = itemTopInViewport + currentItemHeight;
+    const isItemPartiallyVisible = itemTopInViewport < window.innerHeight && itemBottomInViewport > 0;
     
-    console.log(`[虚拟滚动] 强制重新测量帖子 ${index} 的高度`);
-    
-    // 清除该项目的高度缓存，强制重新测量
+    // 清除该项目的高度缓存
     itemHeightsRef.current.delete(index);
     
-    // 清除相关的偏移缓存
-    for (let i = index; i < totalItems; i++) {
-      offsetCacheRef.current.delete(i);
-    }
-    
-    // 立即更新，让位置调整与动画同步
+    // 使用 requestAnimationFrame 确保在下一帧进行重新计算
     requestAnimationFrame(() => {
+      // 获取新的高度（如果DOM已经更新）
+      const element = document.querySelector(`[data-post-index="${index}"]`) as HTMLElement;
+      if (element) {
+        const rect = element.getBoundingClientRect();
+        const newHeight = rect.height;
+        
+        if (newHeight > 0) {
+          const heightDiff = newHeight - currentItemHeight;
+          
+          // 如果当前项目部分可见（用户正在查看），则不调整滚动位置
+          // 让内容在原地自然展开，用户可以手动滚动查看新内容
+          if (!isItemPartiallyVisible && Math.abs(heightDiff) > 10) {
+            // 只有当项目完全不在视口中，且滚动位置在该项目之后时，才调整滚动位置
+            // 这样可以防止下方项目位置的突然跳跃
+            if (currentScrollTop > currentItemOffset + currentItemHeight) {
+              const newScrollTop = currentScrollTop + heightDiff;
+              
+              window.scrollTo({
+                top: Math.max(0, newScrollTop),
+                behavior: 'auto'
+              });
+            }
+          }
+          
+          // 更新高度缓存
+          itemHeightsRef.current.set(index, newHeight);
+        }
+      }
+      
+      // 重新计算总高度和可见范围
+      const totalHeight = calculateTotalHeight();
+      const visibleRange = calculateVisibleRange(window.scrollY);
+      
       setState(prev => ({
         ...prev,
-        totalHeight: calculateTotalHeight(),
+        totalHeight,
+        visibleRange,
       }));
     });
-  }, [totalItems, calculateTotalHeight]);
+  }, [getItemOffset, state.averageHeight, calculateTotalHeight, calculateVisibleRange]);
 
   // 滚动到指定项目
   const scrollToItem = useCallback((index: number, align: 'start' | 'center' | 'end' = 'start') => {
-    const offset = calculateItemOffset(index);
+    const offset = getItemOffset(index);
     const itemHeight = itemHeightsRef.current.get(index) || state.averageHeight;
     
     let scrollTop = offset;
@@ -297,102 +257,74 @@ export function useVirtualScroll(
       top: Math.max(0, scrollTop),
       behavior: 'smooth',
     });
-  }, [calculateItemOffset, state.averageHeight]);
+  }, [getItemOffset, state.averageHeight]);
 
   // 滚动到顶部
   const scrollToTop = useCallback(() => {
-    console.log('[虚拟滚动] 返回顶部，重置状态和缓存');
-    
-    // 立即重置虚拟滚动状态并禁用过渡动画
-    setState(prev => ({
-      ...prev,
-      scrollTop: 0,
-      isScrolling: false,
-      visibleRange: { start: 0, end: Math.min(totalItems, overscan * 2) },
-      startOffset: 0,
-      endOffset: calculateTotalHeight() - (calculateItemOffset(Math.min(totalItems, overscan * 2)) || 0),
-      disableTransition: true, // 临时禁用过渡动画
-    }));
-    
-    // 清除所有缓存，强制重新测量
-    offsetCacheRef.current.clear();
-    
-    // 停止任何正在进行的测量更新
-    if (updateTimeoutRef.current) {
-      clearTimeout(updateTimeoutRef.current);
-      updateTimeoutRef.current = null;
-    }
-    
-    if (isScrollingTimeoutRef.current) {
-      clearTimeout(isScrollingTimeoutRef.current);
-      isScrollingTimeoutRef.current = null;
-    }
-    
-    // 滚动到顶部
     window.scrollTo({
       top: 0,
       behavior: 'smooth',
     });
-    
-    // 在滚动完成后重新计算可见范围并重新启用过渡动画
-    setTimeout(() => {
-      const visibleRange = calculateVisibleRange(0);
-      const startOffset = 0;
-      const endOffset = calculateTotalHeight() - calculateItemOffset(visibleRange.end);
-      
-      setState(prev => ({
-        ...prev,
-        scrollTop: 0,
-        isScrolling: false,
-        visibleRange,
-        startOffset,
-        endOffset,
-        disableTransition: false, // 重新启用过渡动画
-      }));
-    }, 100);
-  }, [totalItems, overscan, calculateTotalHeight, calculateItemOffset, calculateVisibleRange]);
+  }, []);
 
   // 监听滚动事件
   useEffect(() => {
-    const handleScrollThrottled = () => {
-      handleScroll();
+    // 节流滚动事件
+    let ticking = false;
+    const throttledHandleScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          handleScroll();
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
 
-    window.addEventListener('scroll', handleScrollThrottled, { passive: true });
-    return () => window.removeEventListener('scroll', handleScrollThrottled);
+    window.addEventListener('scroll', throttledHandleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', throttledHandleScroll);
+      if (isScrollingTimeoutRef.current) {
+        clearTimeout(isScrollingTimeoutRef.current);
+      }
+      if (measureTimeoutRef.current) {
+        clearTimeout(measureTimeoutRef.current);
+      }
+    };
   }, [handleScroll]);
 
   // 当总项目数变化时重新计算
   useEffect(() => {
-    const visibleRange = calculateVisibleRange(state.scrollTop);
     const totalHeight = calculateTotalHeight();
+    const visibleRange = calculateVisibleRange(state.scrollTop);
     
     setState(prev => ({
       ...prev,
-      visibleRange,
       totalHeight,
+      visibleRange,
     }));
-  }, [totalItems, calculateVisibleRange, calculateTotalHeight, state.scrollTop]);
+  }, [totalItems, calculateTotalHeight, calculateVisibleRange, state.scrollTop]);
 
   // 计算可见项目数组
   const visibleItems = useMemo(() => {
     const items = [];
     for (let i = state.visibleRange.start; i < state.visibleRange.end; i++) {
-      items.push(i);
+      if (i < totalItems) {
+        items.push(i);
+      }
     }
     return items;
-  }, [state.visibleRange]);
+  }, [state.visibleRange, totalItems]);
 
   // 容器样式
   const containerStyle: React.CSSProperties = {
     height: state.totalHeight,
     position: 'relative',
-    overflow: 'hidden',
   };
 
   // 项目样式
   const itemStyle = useCallback((index: number): React.CSSProperties => {
-    const offset = calculateItemOffset(index);
+    const offset = getItemOffset(index);
     
     return {
       position: 'absolute',
@@ -402,7 +334,7 @@ export function useVirtualScroll(
       transform: `translateY(${offset}px)`,
       willChange: 'transform',
     };
-  }, [calculateItemOffset]);
+  }, [getItemOffset]);
 
   return {
     containerStyle,
@@ -416,6 +348,6 @@ export function useVirtualScroll(
     isScrolling: state.isScrolling,
     visibleRange: state.visibleRange,
     forceRemeasure,
-    disableTransition: state.disableTransition,
+    disableTransition: false, // 简化实现，不使用动态禁用
   };
 } 

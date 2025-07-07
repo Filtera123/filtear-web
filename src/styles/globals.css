@@ -12,37 +12,39 @@ html, body {
   height: 100%;
 }
 
-/* 虚拟滚动和动画优化 */
+/* 虚拟滚动基础样式 - 简化版本 */
 .virtual-item {
-  contain: layout style paint;
   will-change: transform;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  contain: layout style paint;
 }
 
-/* 禁用虚拟滚动项目的过渡动画，用于快速跳转 */
-.virtual-item-no-transition {
-  contain: layout style paint;
-  will-change: transform;
-  transition: none !important;
+/* 简化的动画优化类 */
+.transform-gpu {
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
-.comment-section-transition {
+/* 标签容器和评论区容器的优化 */
+.tags-container,
+.comment-section-container {
+  contain: layout style;
+  will-change: max-height;
+}
+
+/* 通用的平滑过渡类 - 简化版本 */
+.animate-smooth {
   backface-visibility: hidden;
   transform: translateZ(0);
 }
 
-.post-height-transitioning {
-  transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-}
-
-.virtual-item-smooth {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* 硬件加速优化 */
-.animate-smooth {
-  animation-fill-mode: both;
-  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+/* 响应式优化 - 尊重用户的动画偏好 */
+@media (prefers-reduced-motion: reduce) {
+  .virtual-item,
+  .tags-container,
+  .comment-section-container,
+  .animate-smooth {
+    transition: none !important;
+  }
 }
 
 @media (prefers-color-scheme: dark) {

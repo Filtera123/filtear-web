@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import CommentSection from '../comment/CommentSection';
 import type { BasePost } from './post.types';
 
@@ -12,6 +12,7 @@ interface PostFooterProps {
   onBlockComment?: (commentId: string) => void;
   onReportComment?: (commentId: string) => void;
   onBlockUser?: (userId: string) => void;
+  onPostClick?: (postId: number) => void;
   onHeightChange?: () => void;
 }
 
@@ -33,33 +34,52 @@ export default function PostFooter({
   onBlockComment,
   onReportComment,
   onBlockUser,
+  onPostClick,
   onHeightChange
 }: PostFooterProps) {
   const [showCommentSection, setShowCommentSection] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const commentSectionRef = useRef<HTMLDivElement>(null);
 
-  // 使用ref来避免依赖循环
-  const onHeightChangeRef = useRef(onHeightChange);
-  onHeightChangeRef.current = onHeightChange;
-
-  // 处理评论区展开收起
-  const handleToggleComments = () => {
+  // 处理评论区展开收起 - 优化版本
+  const handleToggleComments = useCallback(() => {
+    if (isAnimating) return; // 防止动画期间重复点击
+    
     console.log(`[评论区切换] 帖子 ${post.id} ${showCommentSection ? '收起' : '展开'}评论区`);
+    
+    setIsAnimating(true);
     const newShowCommentSection = !showCommentSection;
     setShowCommentSection(newShowCommentSection);
     
-    // 立即通知高度变化开始，让虚拟滚动同步开始调整
-    if (onHeightChangeRef.current) {
-      // 立即触发第一次，开始同步动画
-      setTimeout(() => {
-        onHeightChangeRef.current?.();
-      }, 16); // 一帧后立即开始
+    // 使用更精确的动画监听
+    const commentSection = commentSectionRef.current;
+    if (commentSection) {
+      const handleTransitionEnd = (event: TransitionEvent) => {
+        // 确保只响应max-height属性的过渡结束
+        if (event.propertyName === 'max-height') {
+          setIsAnimating(false);
+          // 动画结束后通知高度变化
+          if (onHeightChange) {
+            onHeightChange();
+          }
+          commentSection.removeEventListener('transitionend', handleTransitionEnd);
+        }
+      };
       
-      // 动画结束后再次确认最终高度
+      commentSection.addEventListener('transitionend', handleTransitionEnd);
+      
+      // 备用方案：如果transitionend没有触发，使用定时器
       setTimeout(() => {
-        onHeightChangeRef.current?.();
-      }, 350); // 动画结束后确认
+        if (isAnimating) {
+          setIsAnimating(false);
+          if (onHeightChange) {
+            onHeightChange();
+          }
+          commentSection.removeEventListener('transitionend', handleTransitionEnd);
+        }
+      }, 250);
     }
-  };
+  }, [showCommentSection, isAnimating, onHeightChange, post.id]);
 
   const handleBlockComment = (commentId: string) => {
     onBlockComment?.(commentId);
@@ -109,11 +129,12 @@ export default function PostFooter({
         {/* 评论 */}
         <button 
           onClick={handleToggleComments}
+          disabled={isAnimating}
           className={`flex items-center space-x-1 transition-colors ${
             showCommentSection 
               ? 'text-blue-500' 
               : 'text-gray-500 hover:text-blue-500'
-          }`}
+          } ${isAnimating ? 'opacity-70' : ''}`}
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -122,18 +143,16 @@ export default function PostFooter({
         </button>
       </div>
 
-      {/* 评论区 */}
+      {/* 评论区 - 简化动画，只使用高度变化 */}
       <div 
-        className={`comment-section-transition transition-all duration-300 ease-out overflow-hidden transform-gpu ${
-          showCommentSection 
-            ? 'max-h-[2000px] opacity-100' 
-            : 'max-h-0 opacity-0'
-        }`}
+        ref={commentSectionRef}
+        className="comment-section-container overflow-hidden transition-all duration-200 ease-out will-change-[max-height]"
+        style={{
+          maxHeight: showCommentSection ? '2000px' : '0px',
+        }}
       >
-        <div className={`animate-smooth transition-transform duration-300 ease-out ${
-          showCommentSection ? 'translate-y-0' : '-translate-y-2'
-        }`}>
-          {showCommentSection && (
+        {(showCommentSection || isAnimating) && (
+          <div className="pt-4">
             <CommentSection
               postId={post.id}
               comments={post.commentList || []}
@@ -144,9 +163,10 @@ export default function PostFooter({
               onBlockComment={handleBlockComment}
               onReportComment={handleReportComment}
               onBlockUser={handleBlockUser}
+              onPostClick={onPostClick}
             />
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </>
   );

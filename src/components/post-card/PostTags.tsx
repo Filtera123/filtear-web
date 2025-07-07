@@ -1,15 +1,58 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Tag from '../tag/Tag';
 
 interface PostTagsProps {
   tags: string[];
   onTagClick?: (tag: string) => void;
+  onHeightChange?: () => void;
 }
 
-export default function PostTags({ tags, onTagClick }: PostTagsProps) {
+export default function PostTags({ tags, onTagClick, onHeightChange }: PostTagsProps) {
   const [showAllTags, setShowAllTags] = useState(false);
   const [needsExpansion, setNeedsExpansion] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
   const tagsContainerRef = useRef<HTMLDivElement>(null);
+  const outerContainerRef = useRef<HTMLDivElement>(null);
+
+  // 处理标签展开收起 - 优化版本
+  const handleToggleTags = useCallback(() => {
+    if (isAnimating) return; // 防止动画期间重复点击
+    
+    console.log(`[标签切换] ${showAllTags ? '收起' : '展开'}标签区域`);
+    
+    setIsAnimating(true);
+    const newShowAllTags = !showAllTags;
+    setShowAllTags(newShowAllTags);
+    
+    // 使用更精确的动画监听
+    const outerContainer = outerContainerRef.current;
+    if (outerContainer) {
+      const handleTransitionEnd = (event: TransitionEvent) => {
+        // 确保只响应max-height属性的过渡结束
+        if (event.propertyName === 'max-height') {
+          setIsAnimating(false);
+          // 动画结束后通知高度变化
+          if (onHeightChange) {
+            onHeightChange();
+          }
+          outerContainer.removeEventListener('transitionend', handleTransitionEnd);
+        }
+      };
+      
+      outerContainer.addEventListener('transitionend', handleTransitionEnd);
+      
+      // 备用方案：如果transitionend没有触发，使用定时器
+      setTimeout(() => {
+        if (isAnimating) {
+          setIsAnimating(false);
+          if (onHeightChange) {
+            onHeightChange();
+          }
+          outerContainer.removeEventListener('transitionend', handleTransitionEnd);
+        }
+      }, 250);
+    }
+  }, [showAllTags, isAnimating, onHeightChange]);
 
   // 检测标签是否需要展开功能
   useEffect(() => {
@@ -31,8 +74,8 @@ export default function PostTags({ tags, onTagClick }: PostTagsProps) {
         container.style.maxHeight = originalMaxHeight;
         container.style.overflow = originalOverflow;
         
-        // 如果完整高度大于32px（单行限制），说明需要展开功能
-        setNeedsExpansion(fullHeight > 32);
+        // 如果完整高度大于40px（单行限制加一些余量），说明需要展开功能
+        setNeedsExpansion(fullHeight > 40);
       }
     };
 
@@ -58,40 +101,47 @@ export default function PostTags({ tags, onTagClick }: PostTagsProps) {
 
   return (
     <div className="mb-4">
-      {/* 标签区域 */}
+      {/* 标签区域 - 简化动画，只使用高度变化 */}
       <div className="relative">
-        {/* 标签容器 */}
         <div 
-          ref={tagsContainerRef}
-          className="flex flex-wrap gap-2"
-          style={!showAllTags ? {
-            overflow: 'hidden',
-            maxHeight: '32px' // 限制为单行高度
-          } : {}}
+          ref={outerContainerRef}
+          className="tags-container overflow-hidden transition-all duration-200 ease-out will-change-[max-height]"
+          style={{
+            maxHeight: showAllTags ? '200px' : '40px',
+          }}
         >
-          {/* 显示标签 */}
-          {tags.map((tag, index) => (
-            <div 
-              key={`${tag}-${index}`} 
-              data-tag
-              className="flex-shrink-0"
-              onClick={() => onTagClick?.(tag)}
-            >
-              <Tag tag={tag} />
-            </div>
-          ))}
+          {/* 标签容器 */}
+          <div 
+            ref={tagsContainerRef}
+            className="flex flex-wrap gap-2"
+          >
+            {/* 显示标签 */}
+            {tags.map((tag, index) => (
+              <div 
+                key={`${tag}-${index}`} 
+                data-tag
+                className="flex-shrink-0"
+                onClick={() => onTagClick?.(tag)}
+              >
+                <Tag tag={tag} />
+              </div>
+            ))}
+          </div>
         </div>
         
         {/* 渐变遮罩 - 收起状态下在右侧显示渐变效果 */}
         {!showAllTags && needsExpansion && (
-          <div className="absolute top-0 right-0 w-16 h-8 bg-gradient-to-l from-white via-white/80 to-transparent pointer-events-none" />
+          <div className="absolute top-0 right-0 w-16 h-10 bg-gradient-to-l from-white via-white/80 to-transparent pointer-events-none" />
         )}
         
         {/* 展开/收起按钮 - 放在第一排右侧 */}
         {needsExpansion && (
           <button
-            onClick={() => setShowAllTags(!showAllTags)}
-            className="absolute top-0 right-0 flex items-center space-x-0.5 text-xs text-blue-600 hover:text-blue-800 transition-colors bg-white h-8 px-2"
+            onClick={handleToggleTags}
+            disabled={isAnimating}
+            className={`absolute top-0 right-0 flex items-center space-x-0.5 text-xs text-blue-600 hover:text-blue-800 transition-colors bg-white h-10 px-2 ${
+              isAnimating ? 'opacity-70' : ''
+            }`}
           >
             <span>{showAllTags ? '收起' : '展开'}</span>
             <svg 

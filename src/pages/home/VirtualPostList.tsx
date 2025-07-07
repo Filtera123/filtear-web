@@ -292,7 +292,6 @@ export default function VirtualPostList({ type, isActive }: VirtualPostListProps
     isScrolling,
     visibleRange,
     forceRemeasure,
-    disableTransition,
   } = useVirtualScroll(posts.length, virtualConfig);
 
   // 处理各种事件的回调函数
@@ -440,19 +439,34 @@ export default function VirtualPostList({ type, isActive }: VirtualPostListProps
     console.log('屏蔽用户:', userId);
   }, [type, removePostsByAuthor]);
 
-  // 处理帖子高度变化 - 使用ref避免依赖循环
-  const handleHeightChangeRef = useRef<(index: number) => void>(null);
+  // 处理帖子高度变化 - 优化版本，避免过度频繁的重新测量
+  const heightChangeTimeoutRef = useRef<Map<number, NodeJS.Timeout>>(new Map());
   
-  useEffect(() => {
-    handleHeightChangeRef.current = (index: number) => {
-      console.log(`[高度变化] 帖子索引 ${index} 的高度发生变化，重新测量中...`);
-      // 立即触发重新测量，让位置调整与动画同步
-      forceRemeasure(index);
-    };
-  }, [forceRemeasure]);
-
   const handleHeightChange = useCallback((index: number) => {
-    handleHeightChangeRef.current?.(index);
+    console.log(`[高度变化] 帖子索引 ${index} 的高度发生变化，准备重新测量...`);
+    
+    // 清除该索引的之前的定时器
+    const existingTimeout = heightChangeTimeoutRef.current.get(index);
+    if (existingTimeout) {
+      clearTimeout(existingTimeout);
+    }
+    
+    // 设置新的防抖定时器
+    const timeoutId = setTimeout(() => {
+      console.log(`[高度变化] 执行帖子索引 ${index} 的重新测量`);
+      forceRemeasure(index);
+      heightChangeTimeoutRef.current.delete(index);
+    }, 100); // 100ms防抖，避免动画期间的多次调用
+    
+    heightChangeTimeoutRef.current.set(index, timeoutId);
+  }, [forceRemeasure]);
+  
+  // 清理定时器
+  useEffect(() => {
+    return () => {
+      heightChangeTimeoutRef.current.forEach(timeoutId => clearTimeout(timeoutId));
+      heightChangeTimeoutRef.current.clear();
+    };
   }, []);
 
   // 只有当组件激活且未初始化时才加载第一页
@@ -549,13 +563,14 @@ export default function VirtualPostList({ type, isActive }: VirtualPostListProps
             return (
               <div
                 key={post.id}
+                data-post-index={index}
                 style={itemStyle(index)}
                 ref={(el) => {
                   if (el) {
                     measureItem(index, el);
                   }
                 }}
-                className={`w-full ${disableTransition ? 'virtual-item-no-transition' : 'virtual-item'}`}
+                className="w-full virtual-item"
               >
                 <div className="relative mb-4">
                   {/* 类型标签 */}
@@ -614,18 +629,7 @@ export default function VirtualPostList({ type, isActive }: VirtualPostListProps
           <div className="text-center py-8 text-gray-500">{config.emptyText}</div>
         )}
 
-        {/* 回到顶部按钮 */}
-        {posts.length > 5 && (
-          <button
-            onClick={scrollToTop}
-            className="fixed bottom-6 right-6 w-12 h-12 bg-blue-500 text-white rounded-full shadow-lg hover:bg-blue-600 transition-colors flex items-center justify-center z-50"
-            title="回到顶部"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
-            </svg>
-          </button>
-        )}
+
 
 
       </div>
