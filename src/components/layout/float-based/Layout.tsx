@@ -1,4 +1,5 @@
 import { Outlet } from 'react-router-dom';
+import { ScrollRestoration } from '../../ScrollRestoration';
 import RightSideBar from './RightSideBar';
 import SideBar from './SideBar';
 
@@ -12,7 +13,10 @@ export default function FloatBasedLayout() {
       
       {/* 主内容区域 - 使用全局滚动 */}
       <main className="flex-1 px-3 min-h-screen">
-        <Outlet />
+        {/* 为每个页面提供独立的滚动位置管理 */}
+        <ScrollRestoration>
+          <Outlet />
+        </ScrollRestoration>
       </main>
       
       {/* 右侧边栏 - 使用sticky定位，允许内部滚动 */}
