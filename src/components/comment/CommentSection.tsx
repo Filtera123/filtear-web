@@ -161,7 +161,7 @@ export default function CommentSection({
           <button
             onClick={handleSubmitComment}
             disabled={!newComment.trim()}
-            className="px-4 py-2 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors self-end"
+            className="px-4 py-2 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors self-center"
           >
             发送
           </button>
@@ -194,7 +194,7 @@ export default function CommentSection({
 
           {/* 查看帖子详情按钮 */}
           {hasMoreComments && (
-            <div className="py-3 text-center border-t border-gray-50">
+            <div className="py-3 border-t border-gray-50">
               <button
                 onClick={() => onPostClick?.(postId)}
                 className="text-sm text-blue-600 hover:text-blue-800 transition-colors flex items-center justify-center space-x-1"

@@ -34,10 +34,10 @@ export default function Home() {
         onValueChange={(details) => {
           setCurrentTab(details.value as HomeTabs);
         }}
-        className="sticky! top-0 bg-white z-50 "
-        size='lg'
+        className="sticky! top-0 bg-white/75 z-50 backdrop-blur-sm"
+        size="lg"
       >
-        <Tabs.List className="flex justify-center items-center">
+        <Tabs.List className="flex justify-center items-center gap-4">
           {tabs.map((tab) => (
             <Tabs.Trigger key={tab.key} value={tab.key}>
               {tab.name}

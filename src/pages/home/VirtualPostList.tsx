@@ -69,7 +69,7 @@ const VirtualPostList: React.FC<Props> = () => {
   // 虚拟化配置
   const virtualizer = useWindowVirtualizer({
     count: hasNextPage ? allPosts.length + 1 : allPosts.length,
-    estimateSize: () => 160,
+    estimateSize: () => 200,
     overscan: 5,
     initialOffset: currentTabState.scrollOffset,
     getScrollElement: () => window,
@@ -175,14 +175,12 @@ const VirtualPostList: React.FC<Props> = () => {
         >
           {items.map((virtualItem) => {
             const post = allPosts[virtualItem.index];
-            const height = 120 + (virtualItem.index % 3) * 40; // 动态高
 
             return (
               <div
                 key={virtualItem.key}
                 ref={virtualizer.measureElement}
                 data-index={virtualItem.index}
-                style={{ minHeight: `${height}px` }}
               >
                 {post && (
                   <div className="relative">

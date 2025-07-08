@@ -180,14 +180,6 @@ export default function DynamicContent({ post, onPostClick }: DynamicContentProp
 
   return (
     <div>
-      {/* 帖子标题 */}
-      <h2
-        className="text-lg font-semibold text-gray-900 mb-2 leading-tight cursor-pointer hover:text-blue-600 transition-colors"
-        onClick={() => onPostClick?.(post.id)}
-      >
-        {post.title}
-      </h2>
-
       {/* 动态内容 */}
       <div
         className="text-gray-700 text-sm leading-relaxed mb-3 cursor-pointer hover:text-gray-900 transition-colors"
