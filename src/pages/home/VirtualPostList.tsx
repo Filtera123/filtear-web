@@ -1,7 +1,6 @@
-import React, { Fragment, useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { useHomePostListStore } from '@pages/home/Home.store.ts';
 import type { HomeTabs } from '@pages/home/type.ts';
-import type { PostListType } from '@pages/home/VirtualPostListOld.tsx';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import { BasePostCard } from '../../components/post-card';
