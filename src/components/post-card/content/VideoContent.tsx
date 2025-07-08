@@ -34,7 +34,7 @@ export default function VideoContent({ post, onPostClick }: VideoContentProps) {
   return (
     <div>
       {/* 帖子标题 */}
-      <h2 
+      <h2
         className="text-lg font-semibold text-gray-900 mb-2 leading-tight cursor-pointer hover:text-blue-600 transition-colors"
         onClick={() => onPostClick?.(post.id)}
       >
@@ -43,7 +43,7 @@ export default function VideoContent({ post, onPostClick }: VideoContentProps) {
 
       {/* 视频描述 */}
       {post.content && (
-        <div 
+        <div
           className="text-gray-700 text-sm leading-relaxed mb-3 cursor-pointer hover:text-gray-900 transition-colors"
           onClick={() => onPostClick?.(post.id)}
         >
@@ -58,7 +58,7 @@ export default function VideoContent({ post, onPostClick }: VideoContentProps) {
             <>
               {!isPlaying ? (
                 // 视频封面
-                <div 
+                <div
                   className="relative w-full h-full cursor-pointer group"
                   onClick={handleVideoClick}
                 >
@@ -68,7 +68,7 @@ export default function VideoContent({ post, onPostClick }: VideoContentProps) {
                     className="w-full h-full object-cover"
                     onError={handleVideoError}
                   />
-                  
+
                   {/* 播放按钮覆层 */}
                   <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center group-hover:bg-opacity-40 transition-all">
                     <div className="w-16 h-16 bg-white bg-opacity-90 rounded-full flex items-center justify-center shadow-lg transform group-hover:scale-105 transition-transform">
@@ -99,7 +99,7 @@ export default function VideoContent({ post, onPostClick }: VideoContentProps) {
             </>
           ) : (
             // 视频加载错误时的占位符
-            <div 
+            <div
               className="w-full h-full flex flex-col items-center justify-center text-gray-400 cursor-pointer hover:text-gray-500 transition-colors"
               onClick={() => onPostClick?.(post.id)}
             >
@@ -130,17 +130,9 @@ export default function VideoContent({ post, onPostClick }: VideoContentProps) {
               </div>
             )}
           </div>
-          
-          {!isPlaying && (
-            <button
-              onClick={handleVideoClick}
-              className="text-blue-500 hover:text-blue-600 transition-colors"
-            >
-              播放视频
-            </button>
-          )}
+
         </div>
       </div>
     </div>
   );
-} 
+}

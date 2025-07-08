@@ -165,7 +165,7 @@ const generateMockPosts = (count: number, type: HomeTabs): PostItem[] => {
         return {
           ...basePost,
           type: PostType.ARTICLE,
-          title: `${author}的专业分享：${i % 3 === 0 ? '技术深度解析' : i % 3 === 1 ? '实战经验总结' : '行业趋势观察'} - 第 ${i + 1} 篇`,
+          title: `${i % 3 === 0 ? '技术深度解析' : i % 3 === 1 ? '实战经验总结' : '行业趋势观察'} - 第 ${i + 1} 篇`,
           abstract: `Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit,Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit,
 无人爱苦，亦无人寻之欲之，乃因其苦`,
           content: `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce molestie elit ac ante ultrices pellentesque. Sed nec sapien sed dolor porttitor aliquam a ac nisi. Nullam vestibulum dui eu luctus lacinia. Nam eu congue elit. Sed condimentum neque nisi, quis fringilla urna viverra non. Cras scelerisque, odio at rutrum aliquam, ante metus placerat lectus, ut tempor libero ante in dui. Phasellus pulvinar malesuada libero, vitae vehicula mauris luctus eget. Proin cursus condimentum varius. Morbi eros libero, pulvinar eget volutpat et, eleifend nec neque.
@@ -179,7 +179,7 @@ Suspendisse nec vehicula justo. In a mauris ultricies, laoreet eros at, fermentu
         return {
           ...basePost,
           type: PostType.IMAGE,
-          title: `${author}的精选作品：${i % 2 === 0 ? '创意设计展示' : '摄影作品分享'} - 第 ${i + 1} 组`,
+          title: `${i % 2 === 0 ? '创意设计展示' : '摄影作品分享'} - 第 ${i + 1} 组`,
 
           content: `分享一组精心创作的作品，希望能够带给大家视觉上的享受和创作灵感。`,
           images: Array.from({ length: imageCount }, (_, imgIndex) => ({
@@ -194,7 +194,7 @@ Suspendisse nec vehicula justo. In a mauris ultricies, laoreet eros at, fermentu
         return {
           ...basePost,
           type: PostType.VIDEO,
-          title: `${author}的视频教程：${i % 2 === 0 ? '实用技巧分享' : '深度知识讲解'} - 第 ${i + 1} 期`,
+          title:`${i % 2 === 0 ? '实用技巧分享' : '深度知识讲解'} - 第 ${i + 1} 期`,
           content: `本期视频为大家带来${Math.floor(Math.random() * 20) + 10}分钟的精彩内容，希望对大家的学习和工作有所帮助。`,
           video: {
             url: `https://sample-videos.com/zip/10/mp4/SampleVideo_${1200 + (i % 4)}x${800 + (i % 2) * 100}_2mb.mp4`,
@@ -210,7 +210,7 @@ Suspendisse nec vehicula justo. In a mauris ultricies, laoreet eros at, fermentu
         return {
           ...basePost,
           type: PostType.DYNAMIC,
-          title: `${author}的日常分享：${i % 3 === 0 ? '工作日常' : i % 3 === 1 ? '学习心得' : '生活感悟'} ✨`,
+          title: `${i % 3 === 0 ? '工作日常' : i % 3 === 1 ? '学习心得' : '生活感悟'} ✨`,
           content: `记录日常生活中的美好瞬间，分享一些工作和学习的心得体会。生活就是要在这些小小的瞬间中找到快乐 🌟`,
           images:
             dynamicImageCount > 0

@@ -26,8 +26,25 @@ export default function BasePostCard(props: PostCardProps) {
   };
 
   return (
-    <div className={`bg-white border border-gray-100 p-4`}>
+    <div className={`bg-white border border-gray-100 p-4 flex gap-2`}>
       {/* 头部：用户信息和关注按钮 */}
+      {/* 用户头像 */}
+      <div
+        className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all"
+        onClick={() => onUserClick?.(post.author)}
+      >
+        <img
+          src={post.authorAvatar}
+          alt={post.author}
+          className="w-10 h-10 rounded-full object-cover"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.style.display = 'none';
+            target.parentElement!.innerHTML = `<span class="text-white font-medium text-sm">${post.author[0]}</span>`;
+          }}
+        />
+      </div>
+     <div className='flex-1'>
       <PostHeader post={post} />
 
       {/* 根据类型渲染不同的内容 */}
@@ -38,6 +55,7 @@ export default function BasePostCard(props: PostCardProps) {
 
       {/* 底部交互按钮和评论区 */}
       <PostFooter post={post} />
+    </div>
     </div>
   );
 }

@@ -17,7 +17,7 @@ const formatTime = (dateString: string): string => {
   const diffMs = now.getTime() - postTime.getTime();
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
   const diffDays = Math.floor(diffHours / 24);
-  
+
   if (diffHours < 1) {
     const diffMinutes = Math.floor(diffMs / (1000 * 60));
     return diffMinutes < 1 ? '刚刚' : `${diffMinutes}分钟前`;
@@ -49,26 +49,11 @@ export default function PostHeader({ post, onFollow, onUserClick, onReport, onBl
   return (
     <div className="flex items-center justify-between mb-3">
       <div className="flex items-center space-x-3">
-        {/* 用户头像 */}
-        <div 
-          className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all"
-          onClick={() => onUserClick?.(post.author)}
-        >
-          <img 
-            src={post.authorAvatar} 
-            alt={post.author} 
-            className="w-10 h-10 rounded-full object-cover"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.style.display = 'none';
-              target.parentElement!.innerHTML = `<span class="text-white font-medium text-sm">${post.author[0]}</span>`;
-            }}
-          />
-        </div>
-        
+
+
         {/* 用户名和时间 */}
         <div>
-          <div 
+          <div
             className="font-medium text-gray-900 text-sm cursor-pointer hover:text-blue-600 transition-colors"
             onClick={() => onUserClick?.(post.author)}
           >
@@ -77,24 +62,24 @@ export default function PostHeader({ post, onFollow, onUserClick, onReport, onBl
           <div className="text-gray-500 text-xs">{formatTime(post.createdAt)}</div>
         </div>
       </div>
-      
+
       {/* 关注按钮和更多选项 */}
       <div className="flex items-center space-x-2">
-        <button 
+        <button
           onClick={post.isFollowing ? undefined : () => onFollow?.(post.author)}
           className={`px-4 py-1 rounded-full text-sm font-medium transition-colors ${
-            post.isFollowing 
-              ? 'bg-gray-100 text-gray-600 cursor-not-allowed' 
+            post.isFollowing
+              ? 'bg-gray-100 text-gray-600 cursor-not-allowed'
               : 'bg-blue-500 text-white hover:bg-blue-600 cursor-pointer'
           }`}
           disabled={post.isFollowing}
         >
           {post.isFollowing ? '已关注' : '关注'}
         </button>
-        
+
         {/* 更多选项按钮 */}
         <div className="relative" ref={moreMenuRef}>
-          <button 
+          <button
             onClick={() => setShowMoreMenu(!showMoreMenu)}
             className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
           >
@@ -102,7 +87,7 @@ export default function PostHeader({ post, onFollow, onUserClick, onReport, onBl
               <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
             </svg>
           </button>
-          
+
           {/* 下拉菜单 */}
           {showMoreMenu && (
             <div className="absolute top-full right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
@@ -159,4 +144,4 @@ export default function PostHeader({ post, onFollow, onUserClick, onReport, onBl
       </div>
     </div>
   );
-} 
+}
