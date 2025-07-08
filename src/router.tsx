@@ -29,6 +29,9 @@ const PostCardsDemo = loadable(() => import('./pages/PostCardsDemo'), {
 const Login = loadable(() => import('./modules/login/Login'), {
   fallback: <Loading />,
 });
+const Settings = loadable(() => import('./pages/Settings'), {
+  fallback: <Loading />,
+});
 
 const router = createBrowserRouter([
   {
@@ -69,6 +72,10 @@ const router = createBrowserRouter([
   {
     path: '/login',
     element: <Login />,
+  },
+  {
+    path: '/settings',
+    element: <Settings />,
   },
   {
     path: '*',
