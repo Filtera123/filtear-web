@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import type { ImagePost } from '../post.types';
 
 interface ImageContentProps {
@@ -6,156 +6,111 @@ interface ImageContentProps {
   onPostClick?: (postId: number) => void;
 }
 
-export default function ImageContent({ post, onPostClick }: ImageContentProps) {
-  const [imageLoadErrors, setImageLoadErrors] = useState<Set<number>>(new Set());
+// 单个图片项的组件，用于复用样式
+const ImageItem: React.FC<{ imageUrl: string; className?: string; alt?: string }> = ({
+  imageUrl,
+  className = '',
+  alt = '',
+}) => (
+  <div
+    className={`cursor-pointer transition-all duration-200 hover:brightness-90 w-full h-full ${className}`}
+  >
+    <img src={imageUrl} alt={alt} className={`w-full h-full object-cover object-center`} />
+  </div>
+);
 
-  const handleImageError = (index: number) => {
-    setImageLoadErrors(prev => new Set(prev).add(index));
-  };
+export default function ImageContent({ post, onPostClick }: ImageContentProps) {
+  const [aspectRatio, setAspectRatio] = useState<string | undefined>();
+  const count = post.images.length;
 
   // 限制最多20张图片
   const limitedImages = post.images.slice(0, 20);
   const imageCount = limitedImages.length;
 
-  // 根据图片数量决定布局样式
-  const getImageLayout = () => {
-    switch (imageCount) {
-      case 1:
-        return 'single';
-      case 2:
-        return 'double';
-      case 4:
-        return 'grid2x2';
-      default:
-        return 'grid3x3';
+  // 这是处理单张图片的关键:
+  // 当只有一张图片时，我们需要加载它来获取原始宽高比
+  useEffect(() => {
+    if (count === 1) {
+      let isMounted = true;
+      const img = new Image();
+      img.onload = () => {
+        if (isMounted) {
+          setAspectRatio(`${img.naturalWidth} / ${img.naturalHeight}`);
+        }
+      };
+      img.src = limitedImages[0].url;
+
+      // 清理函数，防止组件卸载后仍然尝试设置 state
+      return () => {
+        isMounted = false;
+      };
     }
-  };
+  }, [limitedImages, count]);
 
-  const layout = getImageLayout();
+  // 使用 useMemo 缓存要渲染的图片，最多渲染 9 张
+  const imagesToRender = useMemo(() => limitedImages.slice(0, 9), [limitedImages]);
 
-  // 单张图片布局
-  const renderSingleImage = () => (
-    <div 
-      className="relative rounded-lg overflow-hidden bg-gray-100 cursor-pointer hover:opacity-95 transition-opacity aspect-square max-w-sm"
-      onClick={() => onPostClick?.(post.id)}
-    >
-      {!imageLoadErrors.has(0) ? (
-        <img
-          src={limitedImages[0].url}
-          alt={limitedImages[0].alt || post.title}
-          className="w-full h-full object-cover"
-          onError={() => handleImageError(0)}
-        />
-      ) : (
-        <div className="w-full h-full flex items-center justify-center text-gray-400">
-          <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
+  // 主容器的通用样式
+  const containerClasses = 'grid h-[410px] rounded-2xl overflow-hidden gap-[2px] mb-3';
+
+  const handleImageGalleryRender = () => {
+    // 根据图片数量返回不同的布局
+
+    if (count === 1) {
+      return (
+        <div className="h-[410px] rounded-2xl overflow-hidden" style={{ aspectRatio }}>
+          <ImageItem imageUrl={limitedImages[0].url} className="w-full h-full" />
         </div>
-      )}
-    </div>
-  );
+      );
+    }
 
-  // 两张图片布局
-  const renderDoubleImages = () => (
-    <div className="grid grid-cols-2 gap-2 max-w-sm">
-      {limitedImages.slice(0, 2).map((image, index) => (
-        <div 
-          key={index}
-          className="relative rounded-lg overflow-hidden bg-gray-100 cursor-pointer hover:opacity-95 transition-opacity aspect-square"
-          onClick={() => onPostClick?.(post.id)}
-        >
-          {!imageLoadErrors.has(index) ? (
-            <img
-              src={image.url}
-              alt={image.alt || `${post.title} - 图片 ${index + 1}`}
-              className="w-full h-full object-cover"
-              onError={() => handleImageError(index)}
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-gray-400">
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-            </div>
-          )}
+    if (count === 2) {
+      return (
+        <div className={`${containerClasses} grid-cols-2`}>
+          {imagesToRender.map((img, index) => (
+            <ImageItem key={index} imageUrl={img.url} />
+          ))}
         </div>
-      ))}
-    </div>
-  );
+      );
+    }
 
-  // 四张图片田字格布局
-  const renderGrid2x2 = () => (
-    <div className="grid grid-cols-2 gap-2 max-w-md">
-      {limitedImages.slice(0, 4).map((image, index) => (
-        <div 
-          key={index}
-          className="relative rounded-lg overflow-hidden bg-gray-100 cursor-pointer hover:opacity-95 transition-opacity aspect-[4/3]"
-          onClick={() => onPostClick?.(post.id)}
-        >
-          {!imageLoadErrors.has(index) ? (
-            <img
-              src={image.url}
-              alt={image.alt || `${post.title} - 图片 ${index + 1}`}
-              className="w-full h-full object-cover"
-              onError={() => handleImageError(index)}
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-gray-400">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-            </div>
-          )}
+    if (count === 3) {
+      return (
+        <div className={`${containerClasses} grid-cols-2 grid-rows-2`}>
+          {/* 左侧大图，占据两行 */}
+          <ImageItem imageUrl={imagesToRender[0].url} className="row-span-2" />
+          {/* 右侧两张小图 */}
+          <ImageItem imageUrl={imagesToRender[1].url} />
+          <ImageItem imageUrl={imagesToRender[2].url} />
         </div>
-      ))}
-    </div>
-  );
+      );
+    }
 
-  // 九宫格布局
-  const renderGrid3x3 = () => {
-    const displayImages = limitedImages.slice(0, 9);
-    const remainingCount = imageCount - 9;
+    if (count === 4) {
+      return (
+        <div className={`${containerClasses} grid-cols-2 grid-rows-2`}>
+          {imagesToRender.map((img, index) => (
+            <ImageItem key={index} imageUrl={img.url} alt={img.alt} />
+          ))}
+        </div>
+      );
+    }
+
+    if (count <= 6) {
+      return (
+        <div className={`${containerClasses} grid-cols-3 grid-rows-2`}>
+          {imagesToRender.map((img, index) => (
+            <ImageItem key={index} imageUrl={img.url} alt={img.alt} />
+          ))}
+        </div>
+      );
+    }
 
     return (
-      <div className="grid grid-cols-3 gap-2">
-        {displayImages.map((image, index) => {
-          const isLastItem = index === 8 && remainingCount > 0;
-          
-          return (
-            <div 
-              key={index}
-              className="relative rounded-lg overflow-hidden bg-gray-100 cursor-pointer hover:opacity-95 transition-opacity aspect-square"
-              onClick={() => onPostClick?.(post.id)}
-            >
-              {!imageLoadErrors.has(index) ? (
-                <>
-                  <img
-                    src={image.url}
-                    alt={image.alt || `${post.title} - 图片 ${index + 1}`}
-                    className="w-full h-full object-cover"
-                    onError={() => handleImageError(index)}
-                  />
-                  
-                  {/* 显示剩余图片数量 */}
-                  {isLastItem && (
-                    <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center">
-                      <span className="text-white text-lg font-medium">
-                        +{remainingCount}
-                      </span>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-gray-400">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                </div>
-              )}
-            </div>
-          );
-        })}
+      <div className={`${containerClasses} grid-cols-3 grid-rows-2`}>
+        {imagesToRender.map((img, index) => (
+          <ImageItem key={index} imageUrl={img.url} alt={img.alt} />
+        ))}
       </div>
     );
   };
@@ -163,7 +118,7 @@ export default function ImageContent({ post, onPostClick }: ImageContentProps) {
   return (
     <div>
       {/* 帖子标题 */}
-      <h2 
+      <h2
         className="text-lg font-semibold text-gray-900 mb-2 leading-tight cursor-pointer hover:text-blue-600 transition-colors"
         onClick={() => onPostClick?.(post.id)}
       >
@@ -172,7 +127,7 @@ export default function ImageContent({ post, onPostClick }: ImageContentProps) {
 
       {/* 图片描述 */}
       {post.content && (
-        <div 
+        <div
           className="text-gray-700 text-sm leading-relaxed mb-3 cursor-pointer hover:text-gray-900 transition-colors"
           onClick={() => onPostClick?.(post.id)}
         >
@@ -181,23 +136,23 @@ export default function ImageContent({ post, onPostClick }: ImageContentProps) {
       )}
 
       {/* 图片展示区域 */}
-      <div className="mb-3">
-        {layout === 'single' && renderSingleImage()}
-        {layout === 'double' && renderDoubleImages()}
-        {layout === 'grid2x2' && renderGrid2x2()}
-        {layout === 'grid3x3' && renderGrid3x3()}
-      </div>
+      <div className="mb-3">{handleImageGalleryRender()}</div>
 
       {/* 图片数量和查看全部提示 */}
       {imageCount > 1 && (
         <div className="flex items-center justify-between text-gray-500 text-xs">
           <div className="flex items-center">
             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
             </svg>
             <span>共 {imageCount} 张图片</span>
           </div>
-          
+
           <button
             onClick={() => onPostClick?.(post.id)}
             className="text-blue-500 hover:text-blue-600 transition-colors"
@@ -208,4 +163,4 @@ export default function ImageContent({ post, onPostClick }: ImageContentProps) {
       )}
     </div>
   );
-} 
+}

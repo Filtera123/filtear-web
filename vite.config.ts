@@ -9,6 +9,10 @@ const __dirname = dirname(__filename);
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  optimizeDeps: {
+    // 在这里配置
+    exclude: ['@tabler/icons-react'],
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -17,7 +21,7 @@ export default defineConfig({
       '@hooks': path.resolve(__dirname, './src/hooks'),
       '@utils': path.resolve(__dirname, './src/utils'),
       '@api': path.resolve(__dirname, './src/api'),
-      '@tabler/icons-react': '@tabler/icons-react/dist/esm/icons/index.mjs',
+      '@tabler/icons-react': '@tabler/icons-react/dist/esm/tabler-icons-react.mjs',
     },
   },
   server: {

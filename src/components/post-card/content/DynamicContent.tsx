@@ -3,14 +3,14 @@ import type { DynamicPost } from '../post.types';
 
 interface DynamicContentProps {
   post: DynamicPost;
-  onPostClick?: (postId: number) => void;
+  onPostClick?: (postId: string) => void;
 }
 
 export default function DynamicContent({ post, onPostClick }: DynamicContentProps) {
   const [imageLoadErrors, setImageLoadErrors] = useState<Set<number>>(new Set());
 
   const handleImageError = (index: number) => {
-    setImageLoadErrors(prev => new Set(prev).add(index));
+    setImageLoadErrors((prev) => new Set(prev).add(index));
   };
 
   // 限制最多9张图片
@@ -35,7 +35,7 @@ export default function DynamicContent({ post, onPostClick }: DynamicContentProp
 
   // 单张图片布局
   const renderSingleImage = () => (
-    <div 
+    <div
       className="relative rounded-lg overflow-hidden bg-gray-100 cursor-pointer hover:opacity-95 transition-opacity aspect-square max-w-sm"
       onClick={() => onPostClick?.(post.id)}
     >
@@ -49,7 +49,12 @@ export default function DynamicContent({ post, onPostClick }: DynamicContentProp
       ) : (
         <div className="w-full h-full flex items-center justify-center text-gray-400">
           <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+            />
           </svg>
         </div>
       )}
@@ -60,7 +65,7 @@ export default function DynamicContent({ post, onPostClick }: DynamicContentProp
   const renderDoubleImages = () => (
     <div className="grid grid-cols-2 gap-2 max-w-sm">
       {limitedImages.slice(0, 2).map((image, index) => (
-        <div 
+        <div
           key={index}
           className="relative rounded-lg overflow-hidden bg-gray-100 cursor-pointer hover:opacity-95 transition-opacity aspect-square"
           onClick={() => onPostClick?.(post.id)}
@@ -75,7 +80,12 @@ export default function DynamicContent({ post, onPostClick }: DynamicContentProp
           ) : (
             <div className="w-full h-full flex items-center justify-center text-gray-400">
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
               </svg>
             </div>
           )}
@@ -88,7 +98,7 @@ export default function DynamicContent({ post, onPostClick }: DynamicContentProp
   const renderGrid2x2 = () => (
     <div className="grid grid-cols-2 gap-2 max-w-md">
       {limitedImages.slice(0, 4).map((image, index) => (
-        <div 
+        <div
           key={index}
           className="relative rounded-lg overflow-hidden bg-gray-100 cursor-pointer hover:opacity-95 transition-opacity aspect-[4/3]"
           onClick={() => onPostClick?.(post.id)}
@@ -103,7 +113,12 @@ export default function DynamicContent({ post, onPostClick }: DynamicContentProp
           ) : (
             <div className="w-full h-full flex items-center justify-center text-gray-400">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
               </svg>
             </div>
           )}
@@ -121,9 +136,9 @@ export default function DynamicContent({ post, onPostClick }: DynamicContentProp
       <div className="grid grid-cols-3 gap-2">
         {displayImages.map((image, index) => {
           const isLastItem = index === 8 && remainingCount > 0;
-          
+
           return (
-            <div 
+            <div
               key={index}
               className="relative rounded-lg overflow-hidden bg-gray-100 cursor-pointer hover:opacity-95 transition-opacity aspect-square"
               onClick={() => onPostClick?.(post.id)}
@@ -136,20 +151,23 @@ export default function DynamicContent({ post, onPostClick }: DynamicContentProp
                     className="w-full h-full object-cover"
                     onError={() => handleImageError(index)}
                   />
-                  
+
                   {/* 显示剩余图片数量 */}
                   {isLastItem && (
                     <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center">
-                      <span className="text-white text-lg font-medium">
-                        +{remainingCount}
-                      </span>
+                      <span className="text-white text-lg font-medium">+{remainingCount}</span>
                     </div>
                   )}
                 </>
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-gray-400">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
                   </svg>
                 </div>
               )}
@@ -163,7 +181,7 @@ export default function DynamicContent({ post, onPostClick }: DynamicContentProp
   return (
     <div>
       {/* 帖子标题 */}
-      <h2 
+      <h2
         className="text-lg font-semibold text-gray-900 mb-2 leading-tight cursor-pointer hover:text-blue-600 transition-colors"
         onClick={() => onPostClick?.(post.id)}
       >
@@ -171,13 +189,13 @@ export default function DynamicContent({ post, onPostClick }: DynamicContentProp
       </h2>
 
       {/* 动态内容 */}
-      <div 
+      <div
         className="text-gray-700 text-sm leading-relaxed mb-3 cursor-pointer hover:text-gray-900 transition-colors"
         style={{
           display: '-webkit-box',
           WebkitLineClamp: 7,
           WebkitBoxOrient: 'vertical',
-          overflow: 'hidden'
+          overflow: 'hidden',
         }}
         onClick={() => onPostClick?.(post.id)}
       >
@@ -197,11 +215,16 @@ export default function DynamicContent({ post, onPostClick }: DynamicContentProp
             <div className="flex items-center justify-between mt-2 text-gray-500 text-xs">
               <div className="flex items-center">
                 <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
                 </svg>
                 <span>共 {imageCount} 张图片</span>
               </div>
-              
+
               <button
                 onClick={() => onPostClick?.(post.id)}
                 className="text-blue-500 hover:text-blue-600 transition-colors"
@@ -214,4 +237,4 @@ export default function DynamicContent({ post, onPostClick }: DynamicContentProp
       )}
     </div>
   );
-} 
+}
