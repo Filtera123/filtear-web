@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 export default function UserProfile() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [activeAccount, setActiveAccount] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   // 账号数据：第一个为当前登录账号，后续为其他可切换账号
   const accounts = [
@@ -30,6 +31,12 @@ export default function UserProfile() {
   const currentAccount = accounts[activeAccount];
   // 获取其他账号列表（排除当前登录账号）
   const otherAccounts = accounts.filter((_, index) => index !== activeAccount);
+
+  // 处理退出登录
+  const handleLogout = () => {
+    setIsExpanded(false);
+    navigate('/login');
+  };
 
   return (
     <div className="w-64 bg-white p-4 rounded-b-sm relative" ref={containerRef}>
@@ -99,7 +106,10 @@ export default function UserProfile() {
           </div>
 
           <div className="border-t">
-            <button className="w-full text-left text-sm text-red-500 hover:bg-gray-100 p-3">
+            <button 
+              onClick={handleLogout}
+              className="w-full text-left text-sm text-red-500 hover:bg-gray-100 p-3"
+            >
               退出登录
             </button>
           </div>
