@@ -185,7 +185,7 @@ const VirtualPostList: React.FC<Props> = () => {
                 style={{ minHeight: `${height}px` }}
               >
                 {post && (
-                  <div className="relative mb-4">
+                  <div className="relative">
                     {/* 类型标签 */}
                     <div className="absolute -top-2 -left-2 z-10">
                       <div

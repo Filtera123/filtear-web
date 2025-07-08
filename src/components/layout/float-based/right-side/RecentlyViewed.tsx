@@ -80,7 +80,7 @@ export default function RecentlyViewed() {
   }, [viewRecords]);
 
   return (
-    <div className="bg-white p-4 rounded-b-sm">
+    <div className="bg-white rounded-sm border border-gray-200 p-4">
       {/* 将标题和查看更多按钮放在同一行 */}
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-lg font-semibold">最近浏览</h1>

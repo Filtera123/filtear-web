@@ -1,7 +1,6 @@
 import React from 'react';
+import { Blockquote, Float } from '@chakra-ui/react';
 import type { ArticlePost } from '../post.types';
-
-import '@mui/material';
 
 interface ArticleContentProps {
   post: ArticlePost;
@@ -19,16 +18,20 @@ export default function ArticleContent({ post, onPostClick }: ArticleContentProp
         {post.title}
       </h2>
 
-      {/* 文章引言 */}
       {post.abstract && (
-        <blockquote className="mb-3">
-          <div
-            className="text-gray-600 text-sm leading-relaxed italic cursor-pointer hover:text-gray-800 transition-colors  line-clamp-3"
-            onClick={() => onPostClick?.(post.id)}
-          >
-            {post.abstract}
-          </div>
-        </blockquote>
+        <Blockquote.Root
+          variant="plain"
+          className="text-gray-700 ml-4 cursor-pointer hover:text-gray-900 mb-2"
+          onClick={() => onPostClick?.(post.id)}
+        >
+          <Float placement="top-start" offsetY="2">
+            <Blockquote.Icon />
+          </Float>
+          <Blockquote.Content cite="Uzumaki Naruto">{post.abstract}</Blockquote.Content>
+          <Blockquote.Caption>
+            — <cite>{post.author}</cite>
+          </Blockquote.Caption>
+        </Blockquote.Root>
       )}
 
       {/* 帖子内容 */}

@@ -26,7 +26,7 @@ export default function BasePostCard(props: PostCardProps) {
   };
 
   return (
-    <div className={`bg-white rounded-lg shadow-sm border border-gray-100 p-4 mb-4`}>
+    <div className={`bg-white border border-gray-100 p-4`}>
       {/* 头部：用户信息和关注按钮 */}
       <PostHeader post={post} />
 

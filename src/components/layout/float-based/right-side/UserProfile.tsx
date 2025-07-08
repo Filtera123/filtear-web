@@ -39,7 +39,7 @@ export default function UserProfile() {
   };
 
   return (
-    <div className=" bg-white p-4 rounded-b-sm relative" ref={containerRef}>
+    <div className=" bg-white p-4 relative border border-gray-200 rounded-sm" ref={containerRef}>
       {/* 用户信息头部 - 显示当前登录账号 */}
       <div
         className="flex items-center justify-between cursor-pointer"

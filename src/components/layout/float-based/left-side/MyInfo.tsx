@@ -10,7 +10,7 @@ export default function MyInfo() {
     { path: '/settings', label: '设置' },
   ];
   return (
-    <div className="bg-white p-4 rounded-b-sm">
+    <div className="bg-white p-4 border border-gray-200 rounded-sm">
       <h1 className="text-lg font-semibold mb-2">Filtera Fanarts</h1>
       <nav className="flex flex-col space-y-1">
         {navItems.map(({ path, label }) => (

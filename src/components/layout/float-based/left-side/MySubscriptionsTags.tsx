@@ -32,7 +32,7 @@ export default function MySubscriptionTags() {
   };
 
   return (
-    <div className="bg-white p-4 rounded-b-sm">
+    <div className="bg-white border border-gray-200 rounded-sm p-4">
       <div className="flex justify-between items-center mb-3">
         <h1 className="text-base font-semibold">我的订阅</h1>
         <button

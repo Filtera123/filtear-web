@@ -8,8 +8,10 @@
   scrollbar-width: none;
 }
 
-html, body {
+html,
+body {
   height: 100%;
+  font-family: var(--global-font-body, var(--font-fallback));
 }
 
 /* 虚拟滚动基础样式 - 简化版本 */
