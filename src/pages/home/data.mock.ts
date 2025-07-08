@@ -174,7 +174,8 @@ Suspendisse nec vehicula justo. In a mauris ultricies, laoreet eros at, fermentu
         };
 
       case PostType.IMAGE:
-        const imageCount = Math.floor(Math.random() * 5) + 2;
+        const imageCount = Math.floor(Math.random() * 20) + 1;
+        console.log(imageCount);
         return {
           ...basePost,
           type: PostType.IMAGE,
