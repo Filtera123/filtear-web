@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Tag from '../tag/Tag';
+import type { TagItem } from '@components/tag/tag.type.ts';
 
 interface PostTagsProps {
-  tags: string[];
+  tags: TagItem[];
   onTagClick?: (tag: string) => void;
   onHeightChange?: () => void;
 }

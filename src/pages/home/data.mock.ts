@@ -4,6 +4,7 @@ import type { Comment } from '@components/comment/comment.type.ts';
 import { HOME_TABS, type HomeTabs } from '@pages/home/type.ts';
 import { v4 as uuidv4 } from 'uuid';
 import { PostType, type PostItem } from '@/components';
+import type { TagItem } from '@components/tag/tag.type.ts';
 
 const generateMockComments = (postId: number, type: HomeTabs): Comment[] => {
   const commentCount = Math.floor(Math.random() * 12) + 3;
@@ -46,7 +47,7 @@ const generateMockComments = (postId: number, type: HomeTabs): Comment[] => {
 };
 
 // 生成模拟标签的函数
-const generateMockTags = (postId: number, type: HomeTabs): string[] => {
+const generateMockTags = (postId: number, type: HomeTabs): TagItem[] => {
   const tagSets = {
     recommended: ['推荐', '热门', '讨论', '分享', '技术', '生活', '学习', '工作', '娱乐', '游戏'],
     subscriptions: [
@@ -80,7 +81,12 @@ const generateMockTags = (postId: number, type: HomeTabs): string[] => {
   }
 
   const shuffled = [...allTags].sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, tagCount);
+  // return shuffled.slice(0, tagCount);
+  return shuffled.slice(0, tagCount).map((tag) => ({
+    id: uuidv4(),
+    name: tag,
+    isPopular: Math.random() > 0.9, // 随机决定是否为热门标签
+  }));
 };
 
 const allImageUrls = [
