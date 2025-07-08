@@ -60,7 +60,7 @@ export default function MySubscriptionTags() {
         {tags.map((tag) => (
           <div className="flex justify-between items-center" key={tag.name}>
             <div onClick={() => handleTagClick(tag.name)} className="cursor-pointer">
-              <Tag className="text-xs py-1 px-2" tag={tag.name} />
+              <Tag className="text-xs py-1 px-2" tag={tag} />
             </div>
             <span className="text-xs text-gray-500">+12.3k</span>
           </div>
