@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { IconAB2 } from '@tabler/icons-react';
 
 export default function MyInfo() {
   const navItems = [
@@ -11,15 +12,16 @@ export default function MyInfo() {
   ];
   return (
     <div className="bg-white p-4 border border-gray-200 rounded-sm">
-      <h1 className="text-lg font-semibold mb-2">Filtera Fanarts</h1>
+      <h1 className="text-lg font-semibold mb-2 pl-4">Filtera Fanarts</h1>
       <nav className="flex flex-col space-y-1">
         {navItems.map(({ path, label }) => (
           <Link
             key={path}
             to={path}
-            className="py-1 px-4 transition-colors hover:bg-gray-100 rounded text-sm"
+            className="py-2 px-4 w-fit flex gap-2 transition-colors hover:bg-gray-100 rounded-xl text-md"
           >
-            {label}
+            <IconAB2 stroke={2} />
+            <span>{label}</span>
           </Link>
         ))}
       </nav>

@@ -154,7 +154,7 @@ const VirtualPostList: React.FC<Props> = () => {
   };
 
   return (
-    <div>
+    <div className="min-h-screen">
       <PostArea />
 
       <div

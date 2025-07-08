@@ -28,14 +28,16 @@ export default function Home() {
   const { currentTab, setCurrentTab } = useHomePostListStore();
 
   return (
-    <div className="w-full min-h-screen">
+    <div className="w-full min-h-screen relative">
       <Tabs.Root
         defaultValue={currentTab}
         onValueChange={(details) => {
           setCurrentTab(details.value as HomeTabs);
         }}
+        className="sticky! top-0 bg-white z-50 "
+        size='lg'
       >
-        <Tabs.List className="flex justify-center items-center sticky top-0 bg-white z-50 border-b border-gray-200">
+        <Tabs.List className="flex justify-center items-center">
           {tabs.map((tab) => (
             <Tabs.Trigger key={tab.key} value={tab.key}>
               {tab.name}
@@ -44,9 +46,7 @@ export default function Home() {
         </Tabs.List>
       </Tabs.Root>
 
-      <div className="min-h-screen">
-        <VirtualPostList />
-      </div>
+      <VirtualPostList />
     </div>
   );
 }
