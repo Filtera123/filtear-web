@@ -37,12 +37,93 @@ html, body {
   transform: translateZ(0);
 }
 
+/* 帖子卡片内容样式优化 */
+.post-content-truncated {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
+  hyphens: auto;
+}
+
+.post-content-line-clamp-7 {
+  -webkit-line-clamp: 7;
+}
+
+/* 帖子高度变化动画 */
+.post-height-transitioning {
+  transition: height 0.3s ease-in-out;
+}
+
+/* 图片网格布局优化 */
+.image-grid-container {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.image-grid-item {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  background-color: #f3f4f6;
+  cursor: pointer;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.image-grid-item:hover {
+  opacity: 0.95;
+}
+
+.image-grid-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.2s ease-in-out;
+}
+
+.image-grid-item:hover img {
+  transform: scale(1.02);
+}
+
+/* 图片加载失败占位符 */
+.image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+  background-color: #f9fafb;
+}
+
+/* 剩余图片数量覆盖层 */
+.remaining-count-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.125rem;
+  font-weight: 500;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.remaining-count-overlay:hover {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
 /* 响应式优化 - 尊重用户的动画偏好 */
 @media (prefers-reduced-motion: reduce) {
   .virtual-item,
   .tags-container,
   .comment-section-container,
-  .animate-smooth {
+  .animate-smooth,
+  .post-height-transitioning,
+  .image-grid-item,
+  .image-grid-item img,
+  .remaining-count-overlay {
     transition: none !important;
   }
 }
@@ -54,5 +135,14 @@ html, body {
     --color-muted: #1e293b;
     --color-muted-foreground: #94a3b8;
     --color-border: #334155;
+  }
+
+  .image-grid-item {
+    background-color: #374151;
+  }
+
+  .image-placeholder {
+    background-color: #1f2937;
+    color: #6b7280;
   }
 }

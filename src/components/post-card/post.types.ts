@@ -35,6 +35,7 @@ export interface BasePost {
 export interface ArticlePost extends BasePost {
   type: typeof PostType.ARTICLE;
   content: string;
+  abstract?: string;  // 新增：文章引言/摘要
   wordCount: number;  // 文章全文字数
 }
 
@@ -47,7 +48,7 @@ export interface ImagePost extends BasePost {
     alt?: string;
     width?: number;
     height?: number;
-  }>;
+  }>;  // 最多20张图片
 }
 
 // 视频类型帖子
