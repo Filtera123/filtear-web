@@ -1,35 +1,264 @@
-import { useLocation, useParams } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
 import type { ArticlePost } from '@components/post-card/post.types';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import CommentSection from '@/components/comment/CommentSection';
+import { UserProfile } from '@/components/layout/float-based/right-side';
+import { usePostActions } from '@/hooks/usePostActions';
 
 export default function ArticleDetail() {
   const { state } = useLocation();
   const { id } = useParams();
-
+  const navigate = useNavigate();
   const post = state as ArticlePost | undefined;
-
+  const [showCommentSection, setShowCommentSection] = useState(false);
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const moreMenuRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (moreMenuRef.current && !moreMenuRef.current.contains(event.target as Node)) {
+        setShowMoreMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
   if (!post) {
     return <div className="text-center py-20">Not Found</div>;
   }
-
+  const {
+    likes,
+    isLike,
+    handleLike,
+    isFollowing,
+    handleFollow,
+    handleUnfollow,
+    handleUserClick,
+    handleBlockUser,
+    handleReportUser,
+    handleBlockPost,
+    handleReportPost,
+    comments,
+    views,
+    formatNumber,
+  } = usePostActions(post);
   return (
-    <main className="flex justify-center px-4 py-10">
-      <article className="w-full max-w-3xl bg-white p-6">
-        {/* 标题 */}
-        <h1 className="text-3xl font-bold text-center mb-2">{post.title}</h1>
-
-        {/* 作者 */}
-        <p className="text-center text-gray-500 mb-4">by AlexYYYY</p>
-
-        {/* 分隔线 */}
-        <hr className="my-6 border-t border-gray-300" />
-
-        {/* 正文内容 */}
-        <div className="text-base leading-relaxed space-y-4 text-gray-800">
-          {post.content.split('\n').map((para, index) => (
-            <p key={index}>{para}</p>
-          ))}
+    <>
+      {/* 导航栏 */}
+      <div className="flex justify-between">
+        <div className="flex space-x-4">
+          <button
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            onClick={() => navigate(-1)}
+          >
+            返回
+          </button>
+          <button
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            onClick={() => navigate('/')}
+          >
+            主页
+          </button>
         </div>
-      </article>
-    </main>
+        <UserProfile />
+      </div>
+
+      <div className="flex justify-center px-4 py-10 bg-gray-50">
+        {/* 左侧 */}
+        <aside className="hidden lg:flex flex-col items-center space-y-4 fixed top-32 left-[calc(50%-384px-48px)]">
+          {/* 点赞 */}
+          <button
+            onClick={handleLike}
+            className={`text-xl transition-colors ${
+              isLike ? 'text-red-500' : 'text-red-600 hover:text-red-500'
+            }`}
+          >
+            {isLike ? (
+              <svg className="w-6 h-6 fill-red-500" viewBox="0 0 24 24">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+              </svg>
+            ) : (
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                />
+              </svg>
+            )}
+          </button>
+          <span className="text-sm text-gray-600">{formatNumber(likes)}</span>
+
+          {/* 评论 */}
+          <button
+            onClick={() => {
+              setShowCommentSection(true);
+              document.getElementById('comment-section')?.scrollIntoView({ behavior: 'smooth' });
+            }}
+            className="text-gray-600 hover:text-blue-500 text-xl"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+              />
+            </svg>
+          </button>
+          <span className="text-sm text-gray-600">{formatNumber(comments)}</span>
+
+          {/* 浏览量 */}
+          <div className="text-gray-600 text-xl">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+              />
+            </svg>
+          </div>
+          <span className="text-sm text-gray-600">{formatNumber(views)}</span>
+          <div className="relative" ref={moreMenuRef}>
+            <button
+              onClick={() => setShowMoreMenu(!showMoreMenu)}
+              className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
+            >
+              <svg className="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
+                <circle cx="5" cy="12" r="2" />
+                <circle cx="12" cy="12" r="2" />
+                <circle cx="19" cy="12" r="2" />
+              </svg>
+            </button>
+
+            {showMoreMenu && (
+              <div className="absolute top-full right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
+                <button
+                  onClick={() => {
+                    handleReportPost();
+                    setShowMoreMenu(false);
+                  }}
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                >
+                  举报帖子
+                </button>
+                <button
+                  onClick={() => {
+                    handleBlockPost();
+                    setShowMoreMenu(false);
+                  }}
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                >
+                  屏蔽帖子
+                </button>
+                {isFollowing && (
+                  <button
+                    onClick={() => {
+                      handleUnfollow();
+                      setShowMoreMenu(false);
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                  >
+                    取消关注
+                  </button>
+                )}
+                <button
+                  onClick={() => {
+                    handleBlockUser();
+                    setShowMoreMenu(false);
+                  }}
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                >
+                  屏蔽用户
+                </button>
+                <button
+                  onClick={() => {
+                    handleReportUser();
+                    setShowMoreMenu(false);
+                  }}
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                >
+                  举报用户
+                </button>
+              </div>
+            )}
+          </div>
+        </aside>
+
+        {/* 主体区域 */}
+        <main className="w-full max-w-3xl bg-white px-6 py-8 shadow-sm rounded">
+          {/* 返回与主页 */}
+
+          {/* 标签 */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            {post.tags.map((tag) => (
+              <span key={tag.id} className="text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
+                #{tag.name}
+              </span>
+            ))}
+          </div>
+
+          {/* 标题 */}
+          <h1 className="text-3xl font-bold mb-4 text-center">{post.title}</h1>
+
+          {/* 作者信息 */}
+          <div className="flex items-center justify-center mb-2">
+            <img
+              src={post.authorAvatar}
+              alt="作者头像"
+              className="w-10 h-10 rounded-full mr-2 cursor-pointer"
+              onClick={handleUserClick}
+            />
+            <div className="flex flex-col items-center cursor-pointer" onClick={handleUserClick}>
+              <span className="font-semibold">{post.author}</span>
+            </div>
+            {!isFollowing ? (
+              <button
+                onClick={handleFollow}
+                className="ml-4 px-2 py-1 text-sm text-blue-500 border border-blue-500 rounded hover:bg-blue-50"
+              >
+                + 关注
+              </button>
+            ) : (
+              <button
+                onClick={handleUnfollow}
+                className="ml-4 px-2 py-1 text-sm text-gray-500 border border-gray-300 rounded"
+              >
+                已关注
+              </button>
+            )}
+          </div>
+
+          {/* 引言/摘要（如果有） */}
+          {post.abstract && (
+            <blockquote className="border-l-4 border-blue-400 pl-4 text-gray-700 italic mb-6">
+              {post.abstract}
+            </blockquote>
+          )}
+
+          {/* 正文 */}
+          <div className="text-base leading-relaxed space-y-4 text-gray-800">
+            {post.content.split('\n').map((para, index) => (
+              <p key={index}>{para}</p>
+            ))}
+          </div>
+
+          {/* 字数提示 */}
+          <div className="mt-8 text-xs text-gray-400 text-center">全文 {post.wordCount} 字</div>
+          {showCommentSection && (
+            <div id="comment-section" className="mt-8">
+              <CommentSection postId={post.id} comments={post.commentList || []} />
+            </div>
+          )}
+        </main>
+      </div>
+    </>
   );
 }
