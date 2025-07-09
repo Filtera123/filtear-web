@@ -1,31 +1,43 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { ImagePost } from '../post.types';
 
 interface ImageContentProps {
   post: ImagePost;
-  onPostClick?: (postId: number) => void;
 }
 
 // 单个图片项的组件，用于复用样式
-const ImageItem: React.FC<{ imageUrl: string; className?: string; alt?: string }> = ({
+const ImageItem: React.FC<{ imageUrl: string; className?: string; alt?: string; onClick?: () => void }> = ({
   imageUrl,
   className = '',
   alt = '',
+  onClick,
 }) => (
   <div
-    className={`cursor-pointer transition-all duration-200 hover:brightness-90 w-full h-full ${className}`}
+    className={`cursor-pointer transition-all duration-200 hover:brightness-90 ${className.includes('object-contain') ? '' : 'w-full h-full'} ${className}`}
+    onClick={onClick}
   >
-    <img src={imageUrl} alt={alt} className={`w-full h-full object-cover object-center`} />
+    <img 
+      src={imageUrl} 
+      alt={alt} 
+      className={className.includes('object-contain') ? 'object-contain object-center' : 'w-full h-full object-cover object-center'} 
+    />
   </div>
 );
 
-export default function ImageContent({ post, onPostClick }: ImageContentProps) {
+export default function ImageContent({ post }: ImageContentProps) {
   const [aspectRatio, setAspectRatio] = useState<string | undefined>();
+  const navigate = useNavigate();
   const count = post.images.length;
 
   // 限制最多20张图片
   const limitedImages = post.images.slice(0, 20);
   const imageCount = limitedImages.length;
+
+  // 处理帖子内容点击事件
+  const handlePostClick = () => {
+    navigate(`/post/${post.id}`);
+  };
 
   // 这是处理单张图片的关键:
   // 当只有一张图片时，我们需要加载它来获取原始宽高比
@@ -58,8 +70,12 @@ export default function ImageContent({ post, onPostClick }: ImageContentProps) {
 
     if (count === 1) {
       return (
-        <div className="h-[410px] rounded-2xl overflow-hidden" style={{ aspectRatio }}>
-          <ImageItem imageUrl={limitedImages[0].url} className="w-full h-full" />
+        <div className="w-full max-w-full rounded-2xl overflow-hidden bg-gray-100">
+          <ImageItem 
+            imageUrl={limitedImages[0].url} 
+            className="w-full max-h-[410px] object-contain flex items-center justify-center" 
+            onClick={handlePostClick} 
+          />
         </div>
       );
     }
@@ -68,7 +84,7 @@ export default function ImageContent({ post, onPostClick }: ImageContentProps) {
       return (
         <div className={`${containerClasses} grid-cols-2`}>
           {imagesToRender.map((img, index) => (
-            <ImageItem key={index} imageUrl={img.url} />
+            <ImageItem key={index} imageUrl={img.url} onClick={handlePostClick} />
           ))}
         </div>
       );
@@ -78,10 +94,10 @@ export default function ImageContent({ post, onPostClick }: ImageContentProps) {
       return (
         <div className={`${containerClasses} grid-cols-2 grid-rows-2`}>
           {/* 左侧大图，占据两行 */}
-          <ImageItem imageUrl={imagesToRender[0].url} className="row-span-2" />
+          <ImageItem imageUrl={imagesToRender[0].url} className="row-span-2" onClick={handlePostClick} />
           {/* 右侧两张小图 */}
-          <ImageItem imageUrl={imagesToRender[1].url} />
-          <ImageItem imageUrl={imagesToRender[2].url} />
+          <ImageItem imageUrl={imagesToRender[1].url} onClick={handlePostClick} />
+          <ImageItem imageUrl={imagesToRender[2].url} onClick={handlePostClick} />
         </div>
       );
     }
@@ -90,7 +106,7 @@ export default function ImageContent({ post, onPostClick }: ImageContentProps) {
       return (
         <div className={`${containerClasses} grid-cols-2 grid-rows-2`}>
           {imagesToRender.map((img, index) => (
-            <ImageItem key={index} imageUrl={img.url} alt={img.alt} />
+            <ImageItem key={index} imageUrl={img.url} alt={img.alt} onClick={handlePostClick} />
           ))}
         </div>
       );
@@ -100,7 +116,7 @@ export default function ImageContent({ post, onPostClick }: ImageContentProps) {
       return (
         <div className={`${containerClasses} grid-cols-3 grid-rows-2`}>
           {imagesToRender.map((img, index) => (
-            <ImageItem key={index} imageUrl={img.url} alt={img.alt} />
+            <ImageItem key={index} imageUrl={img.url} alt={img.alt} onClick={handlePostClick} />
           ))}
         </div>
       );
@@ -109,7 +125,7 @@ export default function ImageContent({ post, onPostClick }: ImageContentProps) {
     return (
       <div className={`${containerClasses} grid-cols-3 grid-rows-3`}>
         {imagesToRender.map((img, index) => (
-          <ImageItem key={index} imageUrl={img.url} alt={img.alt} />
+          <ImageItem key={index} imageUrl={img.url} alt={img.alt} onClick={handlePostClick} />
         ))}
       </div>
     );
@@ -120,7 +136,7 @@ export default function ImageContent({ post, onPostClick }: ImageContentProps) {
       {/* 帖子标题 */}
       <h2
         className="text-lg font-semibold text-gray-900 mb-2 leading-tight cursor-pointer hover:text-blue-600 transition-colors"
-        onClick={() => onPostClick?.(post.id)}
+        onClick={handlePostClick}
       >
         {post.title}
       </h2>
@@ -129,7 +145,7 @@ export default function ImageContent({ post, onPostClick }: ImageContentProps) {
       {post.content && (
         <div
           className="text-gray-700 text-sm leading-relaxed mb-3 cursor-pointer hover:text-gray-900 transition-colors"
-          onClick={() => onPostClick?.(post.id)}
+          onClick={handlePostClick}
         >
           {post.content}
         </div>

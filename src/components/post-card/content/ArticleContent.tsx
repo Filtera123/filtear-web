@@ -1,19 +1,26 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Blockquote, Float } from '@chakra-ui/react';
 import type { ArticlePost } from '../post.types';
 
 interface ArticleContentProps {
   post: ArticlePost;
-  onPostClick?: (postId: number) => void;
 }
 
-export default function ArticleContent({ post, onPostClick }: ArticleContentProps) {
+export default function ArticleContent({ post }: ArticleContentProps) {
+  const navigate = useNavigate();
+
+  // 处理帖子内容点击事件
+  const handlePostClick = () => {
+    navigate(`/post/${post.id}`);
+  };
+
   return (
     <div>
       {/* 帖子标题 */}
       <h2
         className="text-lg font-semibold text-gray-900 mb-3 leading-tight cursor-pointer hover:text-blue-600 transition-colors"
-        onClick={() => onPostClick?.(post.id)}
+        onClick={handlePostClick}
       >
         {post.title}
       </h2>
@@ -22,12 +29,14 @@ export default function ArticleContent({ post, onPostClick }: ArticleContentProp
         <Blockquote.Root
           variant="plain"
           className="text-gray-700 ml-4 cursor-pointer hover:text-gray-900 mb-2"
-          onClick={() => onPostClick?.(post.id)}
+          onClick={handlePostClick}
         >
           <Float placement="top-start" offsetY="2">
             <Blockquote.Icon />
           </Float>
-          <Blockquote.Content cite="Uzumaki Naruto">{post.abstract}</Blockquote.Content>
+          <Blockquote.Content cite="Uzumaki Naruto">
+            <span className="line-clamp-3">{post.abstract}</span>
+          </Blockquote.Content>
           <Blockquote.Caption>
             — <cite>{post.author}</cite>
           </Blockquote.Caption>
@@ -36,8 +45,10 @@ export default function ArticleContent({ post, onPostClick }: ArticleContentProp
 
       {/* 帖子内容 */}
       <div
-        className="text-gray-700 text-sm leading-relaxed mb-3 cursor-pointer hover:text-gray-900 transition-colors line-clamp-7"
-        onClick={() => onPostClick?.(post.id)}
+        className={`text-gray-700 text-sm leading-relaxed mb-3 cursor-pointer hover:text-gray-900 transition-colors ${
+          post.abstract ? 'line-clamp-7' : 'line-clamp-9'
+        }`}
+        onClick={handlePostClick}
       >
         {post.content}
       </div>

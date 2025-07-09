@@ -1,19 +1,25 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import Tag from '../tag/Tag';
+import { useNavigate } from 'react-router-dom';
 import type { TagItem } from '@components/tag/tag.type.ts';
+import Tag from '../tag/Tag';
 
 interface PostTagsProps {
   tags: TagItem[];
-  onTagClick?: (tag: string) => void;
   onHeightChange?: () => void;
 }
 
-export default function PostTags({ tags, onTagClick, onHeightChange }: PostTagsProps) {
+export default function PostTags({ tags, onHeightChange }: PostTagsProps) {
   const [showAllTags, setShowAllTags] = useState(false);
   const [needsExpansion, setNeedsExpansion] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const tagsContainerRef = useRef<HTMLDivElement>(null);
   const outerContainerRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+
+  // 处理标签点击事件
+  const handleTagClick = (tag: string) => {
+    navigate(`/tag/${encodeURIComponent(tag)}`);
+  };
 
   // 处理标签展开收起 - 优化版本
   const handleToggleTags = useCallback(() => {
@@ -112,14 +118,14 @@ export default function PostTags({ tags, onTagClick, onHeightChange }: PostTagsP
           }}
         >
           {/* 标签容器 */}
-          <div ref={tagsContainerRef} className="flex flex-wrap gap-2">
+          <div ref={tagsContainerRef} className="flex flex-wrap gap-2 pr-8">
             {/* 显示标签 */}
             {tags.map((tag, index) => (
               <div
-                key={`${tag}-${index}`}
+                key={`${tag.name}-${index}`}
                 data-tag
                 className="flex-shrink-0"
-                onClick={() => onTagClick?.(tag)}
+                onClick={() => handleTagClick(tag.name)}
               >
                 <Tag tag={tag} />
               </div>
@@ -131,7 +137,7 @@ export default function PostTags({ tags, onTagClick, onHeightChange }: PostTagsP
         {needsExpansion && (
           <button
             onClick={handleToggleTags}
-            className={`absolute top-0 right-0 flex items-center space-x-0.5 text-xs text-blue-600 hover:text-blue-800 transition-colors bg-white h-6 px-2`}
+            className={`absolute top-0 right-0 flex items-center space-x-0.5 text-xs text-blue-600 hover:text-blue-800 transition-colors bg-white h-6 px-3`}
           >
             <span>{showAllTags ? '收起' : '展开'}</span>
             <svg

@@ -1,4 +1,5 @@
 import { type Comment } from '../comment/comment.type';
+import { type TagItem } from '../tag/tag.type';
 
 // 帖子类型常量
 export const PostType = {
@@ -22,7 +23,7 @@ export interface BasePost {
   category: string;
   categorySlug: string;
   title: string;
-  tags: string[];
+  tags: TagItem[];
   isLike: boolean;
   likes: number;
   comments: number;
@@ -85,14 +86,14 @@ export type PostListType = 'recommended' | 'subscriptions' | 'following';
 export interface PostCardProps {
   post: PostItem;
   onFollow?: (userId: string) => void;
-  onLike?: (postId: number) => void;
+  onLike?: (postId: string) => void;
   onUserClick?: (userId: string) => void;
-  onPostClick?: (postId: number) => void;
+  onPostClick?: (postId: string) => void;
   onTagClick?: (tag: string) => void;
-  onReport?: (postId: number, type: 'post' | 'user') => void;
-  onBlock?: (postId: number, type: 'post' | 'user') => void;
+  onReport?: (postId: string, type: 'post' | 'user') => void;
+  onBlock?: (postId: string, type: 'post' | 'user') => void;
   onUnfollow?: (userId: string) => void;
-  onAddComment?: (postId: number, content: string) => void;
+  onAddComment?: (postId: string, content: string) => void;
   onLikeComment?: (commentId: string) => void;
   onReplyComment?: (commentId: string, content: string) => void;
   onBlockComment?: (commentId: string) => void;

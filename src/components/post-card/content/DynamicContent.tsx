@@ -1,13 +1,19 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { DynamicPost } from '../post.types';
 
 interface DynamicContentProps {
   post: DynamicPost;
-  onPostClick?: (postId: string) => void;
 }
 
-export default function DynamicContent({ post, onPostClick }: DynamicContentProps) {
+export default function DynamicContent({ post }: DynamicContentProps) {
   const [imageLoadErrors, setImageLoadErrors] = useState<Set<number>>(new Set());
+  const navigate = useNavigate();
+
+  // 处理帖子内容点击事件
+  const handlePostClick = () => {
+    navigate(`/post/${post.id}`);
+  };
 
   const handleImageError = (index: number) => {
     setImageLoadErrors((prev) => new Set(prev).add(index));
@@ -36,18 +42,18 @@ export default function DynamicContent({ post, onPostClick }: DynamicContentProp
   // 单张图片布局
   const renderSingleImage = () => (
     <div
-      className="relative rounded-lg overflow-hidden bg-gray-100 cursor-pointer hover:opacity-95 transition-opacity aspect-square max-w-sm"
-      onClick={() => onPostClick?.(post.id)}
+      className="relative rounded-lg overflow-hidden bg-gray-100 cursor-pointer hover:opacity-95 transition-opacity max-w-md max-h-[360px] flex items-center justify-center"
+      onClick={handlePostClick}
     >
       {!imageLoadErrors.has(0) ? (
         <img
           src={limitedImages[0].url}
           alt={limitedImages[0].alt || post.title}
-          className="w-full h-full object-cover"
+          className="max-w-full max-h-full object-contain"
           onError={() => handleImageError(0)}
         />
       ) : (
-        <div className="w-full h-full flex items-center justify-center text-gray-400">
+        <div className="w-full h-full flex items-center justify-center text-gray-400 min-h-[200px]">
           <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
@@ -68,7 +74,7 @@ export default function DynamicContent({ post, onPostClick }: DynamicContentProp
         <div
           key={index}
           className="relative rounded-lg overflow-hidden bg-gray-100 cursor-pointer hover:opacity-95 transition-opacity aspect-square"
-          onClick={() => onPostClick?.(post.id)}
+          onClick={handlePostClick}
         >
           {!imageLoadErrors.has(index) ? (
             <img
@@ -101,7 +107,7 @@ export default function DynamicContent({ post, onPostClick }: DynamicContentProp
         <div
           key={index}
           className="relative rounded-lg overflow-hidden bg-gray-100 cursor-pointer hover:opacity-95 transition-opacity aspect-[4/3]"
-          onClick={() => onPostClick?.(post.id)}
+          onClick={handlePostClick}
         >
           {!imageLoadErrors.has(index) ? (
             <img
@@ -141,7 +147,7 @@ export default function DynamicContent({ post, onPostClick }: DynamicContentProp
             <div
               key={index}
               className="relative rounded-lg overflow-hidden bg-gray-100 cursor-pointer hover:opacity-95 transition-opacity aspect-square"
-              onClick={() => onPostClick?.(post.id)}
+              onClick={handlePostClick}
             >
               {!imageLoadErrors.has(index) ? (
                 <>
@@ -189,7 +195,7 @@ export default function DynamicContent({ post, onPostClick }: DynamicContentProp
           WebkitBoxOrient: 'vertical',
           overflow: 'hidden',
         }}
-        onClick={() => onPostClick?.(post.id)}
+        onClick={handlePostClick}
       >
         {post.content}
       </div>
@@ -218,7 +224,7 @@ export default function DynamicContent({ post, onPostClick }: DynamicContentProp
               </div>
 
               <button
-                onClick={() => onPostClick?.(post.id)}
+                onClick={handlePostClick}
                 className="text-blue-500 hover:text-blue-600 transition-colors"
               >
                 查看全部

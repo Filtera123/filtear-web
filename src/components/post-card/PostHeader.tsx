@@ -1,13 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { BasePost } from './post.types';
 
 interface PostHeaderProps {
   post: BasePost;
-  onFollow?: (userId: string) => void;
-  onUserClick?: (userId: string) => void;
-  onReport?: (postId: number, type: 'post' | 'user') => void;
-  onBlock?: (postId: number, type: 'post' | 'user') => void;
-  onUnfollow?: (userId: string) => void;
 }
 
 // 格式化时间显示
@@ -30,9 +26,11 @@ const formatTime = (dateString: string): string => {
   }
 };
 
-export default function PostHeader({ post, onFollow, onUserClick, onReport, onBlock, onUnfollow }: PostHeaderProps) {
+export default function PostHeader({ post }: PostHeaderProps) {
   const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(post.isFollowing);
   const moreMenuRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   // 点击外部关闭菜单
   useEffect(() => {
@@ -46,16 +44,64 @@ export default function PostHeader({ post, onFollow, onUserClick, onReport, onBl
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // 处理用户名点击
+  const handleUserClick = () => {
+    navigate(`/user/${post.author}`);
+  };
+
+  // 处理关注按钮点击
+  const handleFollowClick = () => {
+    if (!isFollowing) {
+      setIsFollowing(true);
+      // 这里可以添加API调用逻辑
+      console.log(`关注用户: ${post.author}`);
+    }
+  };
+
+  // 处理取消关注
+  const handleUnfollowClick = () => {
+    setIsFollowing(false);
+    setShowMoreMenu(false);
+    // 这里可以添加API调用逻辑
+    console.log(`取消关注用户: ${post.author}`);
+  };
+
+  // 处理举报帖子
+  const handleReportPost = () => {
+    console.log(`举报帖子: ${post.id}`);
+    setShowMoreMenu(false);
+    // 这里可以添加API调用逻辑
+  };
+
+  // 处理屏蔽帖子
+  const handleBlockPost = () => {
+    console.log(`屏蔽帖子: ${post.id}`);
+    setShowMoreMenu(false);
+    // 这里可以添加API调用逻辑
+  };
+
+  // 处理举报用户
+  const handleReportUser = () => {
+    console.log(`举报用户: ${post.author}`);
+    setShowMoreMenu(false);
+    // 这里可以添加API调用逻辑
+  };
+
+  // 处理屏蔽用户
+  const handleBlockUser = () => {
+    console.log(`屏蔽用户: ${post.author}`);
+    setShowMoreMenu(false);
+    // 这里可以添加API调用逻辑
+  };
+
   return (
     <div className="flex items-center justify-between mb-3">
       <div className="flex items-center space-x-3">
-
-
         {/* 用户名和时间 */}
         <div>
           <div
             className="font-medium text-gray-900 text-sm cursor-pointer hover:text-blue-600 transition-colors"
-            onClick={() => onUserClick?.(post.author)}
+            onClick={handleUserClick}
           >
             {post.author}
           </div>
@@ -66,15 +112,15 @@ export default function PostHeader({ post, onFollow, onUserClick, onReport, onBl
       {/* 关注按钮和更多选项 */}
       <div className="flex items-center space-x-2">
         <button
-          onClick={post.isFollowing ? undefined : () => onFollow?.(post.author)}
+          onClick={isFollowing ? undefined : handleFollowClick}
           className={`px-4 py-1 rounded-full text-sm font-medium transition-colors ${
-            post.isFollowing
+            isFollowing
               ? 'bg-gray-100 text-gray-600 cursor-not-allowed'
               : 'bg-blue-500 text-white hover:bg-blue-600 cursor-pointer'
           }`}
-          disabled={post.isFollowing}
+          disabled={isFollowing}
         >
-          {post.isFollowing ? '已关注' : '关注'}
+          {isFollowing ? '已关注' : '关注'}
         </button>
 
         {/* 更多选项按钮 */}
@@ -92,48 +138,33 @@ export default function PostHeader({ post, onFollow, onUserClick, onReport, onBl
           {showMoreMenu && (
             <div className="absolute top-full right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
               <button
-                onClick={() => {
-                  onReport?.(post.id, 'post');
-                  setShowMoreMenu(false);
-                }}
+                onClick={handleReportPost}
                 className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
               >
                 举报帖子
               </button>
               <button
-                onClick={() => {
-                  onBlock?.(post.id, 'post');
-                  setShowMoreMenu(false);
-                }}
+                onClick={handleBlockPost}
                 className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
               >
                 屏蔽帖子
               </button>
-              {post.isFollowing && (
+              {isFollowing && (
                 <button
-                  onClick={() => {
-                    onUnfollow?.(post.author);
-                    setShowMoreMenu(false);
-                  }}
+                  onClick={handleUnfollowClick}
                   className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                 >
                   取消关注
                 </button>
               )}
               <button
-                onClick={() => {
-                  onBlock?.(post.id, 'user');
-                  setShowMoreMenu(false);
-                }}
+                onClick={handleBlockUser}
                 className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
               >
                 屏蔽用户
               </button>
               <button
-                onClick={() => {
-                  onReport?.(post.id, 'user');
-                  setShowMoreMenu(false);
-                }}
+                onClick={handleReportUser}
                 className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
               >
                 举报用户

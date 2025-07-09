@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { PostType, type PostItem } from '@/components';
 import type { TagItem } from '@components/tag/tag.type.ts';
 
-const generateMockComments = (postId: number, type: HomeTabs): Comment[] => {
+const generateMockComments = (postId: string, type: HomeTabs): Comment[] => {
   const commentCount = Math.floor(Math.random() * 12) + 3;
   const userPrefix =
     type === 'subscriptions' ? '订阅用户' : type === 'following' ? '关注用户' : '推荐用户';
@@ -140,7 +140,7 @@ const generateMockPosts = (count: number, type: HomeTabs): PostItem[] => {
 
   return Array.from({ length: count }).map((_, i): PostItem => {
     const id = uuidv4(); // 使用时间戳加上索引作为唯一ID
-    const commentList = generateMockComments(i, type);
+    const commentList = generateMockComments(id, type);
     const tags = generateMockTags(i, type);
     const typeIndex = i % 4;
     const postType = postTypes[typeIndex];
