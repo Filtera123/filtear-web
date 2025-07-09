@@ -1,10 +1,10 @@
 // 生成模拟评论的函数
 
 import type { Comment } from '@components/comment/comment.type.ts';
+import type { TagItem } from '@components/tag/tag.type.ts';
 import { HOME_TABS, type HomeTabs } from '@pages/home/type.ts';
 import { v4 as uuidv4 } from 'uuid';
 import { PostType, type PostItem } from '@/components';
-import type { TagItem } from '@components/tag/tag.type.ts';
 
 const generateMockComments = (postId: string, type: HomeTabs): Comment[] => {
   const commentCount = Math.floor(Math.random() * 12) + 3;
@@ -181,7 +181,6 @@ Suspendisse nec vehicula justo. In a mauris ultricies, laoreet eros at, fermentu
 
       case PostType.IMAGE:
         const imageCount = Math.floor(Math.random() * 20) + 1;
-        console.log(imageCount);
         return {
           ...basePost,
           type: PostType.IMAGE,
@@ -200,7 +199,7 @@ Suspendisse nec vehicula justo. In a mauris ultricies, laoreet eros at, fermentu
         return {
           ...basePost,
           type: PostType.VIDEO,
-          title:`${i % 2 === 0 ? '实用技巧分享' : '深度知识讲解'} - 第 ${i + 1} 期`,
+          title: `${i % 2 === 0 ? '实用技巧分享' : '深度知识讲解'} - 第 ${i + 1} 期`,
           content: `本期视频为大家带来${Math.floor(Math.random() * 20) + 10}分钟的精彩内容，希望对大家的学习和工作有所帮助。`,
           video: {
             url: `https://sample-videos.com/zip/10/mp4/SampleVideo_${1200 + (i % 4)}x${800 + (i % 2) * 100}_2mb.mp4`,

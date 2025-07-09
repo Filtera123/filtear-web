@@ -28,7 +28,7 @@ export default function Home() {
   const { currentTab, setCurrentTab } = useHomePostListStore();
 
   return (
-    <div className="w-full min-h-screen relative">
+    <div className="w-full relative">
       <Tabs.Root
         defaultValue={currentTab}
         onValueChange={(details) => {

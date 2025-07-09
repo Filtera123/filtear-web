@@ -1,8 +1,8 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React from 'react';
 import { useMutation } from '@tanstack/react-query';
+import { useCommentStore } from '@/components/comment/Comment.store';
 import { useHomePostListStore } from '@/pages/home/Home.store.ts';
 import { rootQueryClient } from '@/RootQuery.provider.tsx';
-import CommentSection from '../comment/CommentSection';
 import type { BasePost } from './post.types';
 
 // 模拟点赞 API
@@ -42,8 +42,6 @@ const toggleRetweet = async (
 
 interface PostFooterProps {
   post: BasePost;
-  showCommentSection: boolean;
-  onCommentToggle: () => void;
   onLike?: (postId: string) => void;
   onAddComment?: (postId: string, content: string) => void;
   onLikeComment?: (commentId: string) => void;
@@ -64,14 +62,11 @@ const formatNumber = (num: number): string => {
   return num.toString();
 };
 
-export default function PostFooter({
-  post,
-  showCommentSection,
-  onCommentToggle,
-}: PostFooterProps) {
-  const commentSectionRef = useRef<HTMLDivElement>(null);
+export default function PostFooter({ post }: PostFooterProps) {
 
   const { currentTab } = useHomePostListStore();
+  const { expandedComments, toggleComments } = useCommentStore();
+
 
   // 点赞 mutation
   const likeMutation = useMutation({
@@ -128,6 +123,12 @@ export default function PostFooter({
     likeMutation.mutate(!post.isLike);
   };
 
+  const onCommentToggle = () => {
+    // 向父组件发出锁定请求
+    toggleComments(post.id);
+  };
+
+
   return (
     <div className="flex justify-between flex-col border-t border-gray-100">
       {/* 底部交互按钮 */}
@@ -159,7 +160,7 @@ export default function PostFooter({
             <button
               onClick={onCommentToggle}
               className={`flex items-center space-x-1 transition-colors cursor-pointer ${
-                showCommentSection ? 'text-blue-500' : 'text-gray-500 hover:text-blue-500'
+                expandedComments[post.id] ? 'text-blue-500' : 'text-gray-500 hover:text-blue-500'
               }`}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -201,17 +202,7 @@ export default function PostFooter({
         <div>SC</div>
       </div>
 
-      {/* 评论区 - 简单直接的显示/隐藏 */}
-      <div
-        ref={commentSectionRef}
-        className="comment-section-container"
-      >
-        {showCommentSection && (
-          <div className="pt-4">
-            <CommentSection postId={post.id} comments={post.commentList || []} />
-          </div>
-        )}
-      </div>
+
     </div>
   );
 }

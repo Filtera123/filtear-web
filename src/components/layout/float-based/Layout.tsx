@@ -4,14 +4,14 @@ import SideBar from './SideBar';
 
 export default function FloatBasedLayout() {
   return (
-    <div className="relative min-h-screen flex lg:max-w-8/12 mx-auto">
+    <div className="relative flex lg:max-w-8/12 mx-auto min-h-screen">
       {/* 左侧边栏 - 使用sticky定位，允许内部滚动 */}
       <div className="flex-1 sticky top-0 h-screen overflow-hidden border-gray-200 border-r pr-4">
         <SideBar />
       </div>
 
       {/* 主内容区域 - 使用全局滚动 */}
-      <main className="w-[55%] min-h-screen">
+      <main className="w-[55%] h-full">
         <Outlet />
       </main>
 
