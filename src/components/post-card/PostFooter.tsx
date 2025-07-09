@@ -201,13 +201,10 @@ export default function PostFooter({
         <div>SC</div>
       </div>
 
-      {/* 评论区 - 完全禁用动画，瞬间显示/隐藏 */}
+      {/* 评论区 - 简单直接的显示/隐藏 */}
       <div
         ref={commentSectionRef}
-        className="comment-section-container overflow-hidden"
-        style={{
-          maxHeight: showCommentSection ? 'none' : '0px',
-        }}
+        className="comment-section-container"
       >
         {showCommentSection && (
           <div className="pt-4">

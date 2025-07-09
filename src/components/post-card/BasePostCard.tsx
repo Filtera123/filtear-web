@@ -10,62 +10,80 @@ export default function BasePostCard(props: PostCardProps) {
   const { post } = props;
   const [showCommentSection, setShowCommentSection] = React.useState(false);
   const postCardRef = React.useRef<HTMLDivElement>(null);
-  const targetScrollPositionRef = React.useRef<number | null>(null);
+  const scrollLockRef = React.useRef<{ locked: boolean; position: number }>({ locked: false, position: 0 });
   const navigate = useNavigate();
 
-  React.useLayoutEffect(() => {
-    if (targetScrollPositionRef.current === null || !postCardRef.current) return;
-
-    const targetViewportOffset = targetScrollPositionRef.current;
-    let attempts = 0;
-    const maxAttempts = 20;
+  // 真正阻止滚动的函数
+  const preventAllScroll = React.useCallback(() => {
+    const currentPosition = window.scrollY;
     
-    const maintainPosition = () => {
-      if (!postCardRef.current || attempts >= maxAttempts) {
-        targetScrollPositionRef.current = null;
-        return;
-      }
-      
-      attempts++;
-      
-      // 获取帖子当前的位置
-      const currentRect = postCardRef.current.getBoundingClientRect();
-      const currentOffset = currentRect.top;
-      const offsetDiff = currentOffset - targetViewportOffset;
-      
-      // 如果位置不正确，立即纠正
-      if (Math.abs(offsetDiff) > 0.5) {
-        window.scrollBy(0, offsetDiff);
-        
-        // 继续监控
-        setTimeout(maintainPosition, 5);
-      } else {
-        // 位置已稳定，继续监控几次确保不再变动
-        if (attempts < 5) {
-          setTimeout(maintainPosition, 10);
-        } else {
-          targetScrollPositionRef.current = null;
-        }
+    // 计算滚动条宽度
+    const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
+    
+    // 阻止各种滚动事件
+    const preventScrollEvent = (e: Event) => {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    };
+    
+    // 阻止键盘滚动
+    const preventKeyScroll = (e: KeyboardEvent) => {
+      const scrollKeys = ['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '];
+      if (scrollKeys.includes(e.key)) {
+        e.preventDefault();
+        return false;
       }
     };
     
-    // 开始维持位置
-    setTimeout(maintainPosition, 0);
-  }, [showCommentSection]);
-
-  const handleCommentToggle = () => {
-    if (!postCardRef.current) return;
-
-    // 记录当前帖子顶部在视口中的位置（距离视口顶部的距离）
-    const rect = postCardRef.current.getBoundingClientRect();
-    const viewportOffset = rect.top;
+    // 添加所有滚动相关的事件监听器
+    const eventOptions = { passive: false };
     
-    // 记录这个视口偏移量，稍后用它来计算目标滚动位置
-    targetScrollPositionRef.current = viewportOffset;
+    window.addEventListener('wheel', preventScrollEvent, eventOptions);
+    window.addEventListener('touchmove', preventScrollEvent, eventOptions);
+    window.addEventListener('scroll', preventScrollEvent, eventOptions);
+    window.addEventListener('keydown', preventKeyScroll, eventOptions);
     
-    // 切换状态
+    // CSS层面也阻止滚动，同时补偿滚动条宽度
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.width = '100%';
+    document.body.style.top = `-${currentPosition}px`;
+    document.body.style.left = '0';
+    // 关键：补偿滚动条宽度，防止横向抖动
+    document.body.style.paddingRight = `${scrollBarWidth}px`;
+    
+    // 返回清理函数
+    return () => {
+      window.removeEventListener('wheel', preventScrollEvent);
+      window.removeEventListener('touchmove', preventScrollEvent);
+      window.removeEventListener('scroll', preventScrollEvent);
+      window.removeEventListener('keydown', preventKeyScroll);
+      
+      // 恢复CSS样式和滚动位置
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.body.style.top = '';
+      document.body.style.left = '';
+      document.body.style.paddingRight = '';
+      
+      window.scrollTo(0, currentPosition);
+    };
+  }, []);
+
+  const handleCommentToggle = React.useCallback(() => {
+    // 完全阻止滚动
+    const restoreScroll = preventAllScroll();
+    
+    // 切换评论区状态
     setShowCommentSection((prev) => !prev);
-  };
+    
+    // 极短时间后恢复滚动，避免闪烁
+    setTimeout(() => {
+      restoreScroll();
+    }, 10);
+  }, [preventAllScroll]);
 
   // 处理用户头像点击事件
   const handleUserAvatarClick = () => {
