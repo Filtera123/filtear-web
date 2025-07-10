@@ -61,6 +61,14 @@ body {
   -webkit-line-clamp: 7;
 }
 
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  word-break: break-word;
+}
+
 /* 帖子高度变化动画 */
 .post-height-transitioning {
   transition: height 0.3s ease-in-out;

@@ -32,6 +32,9 @@ const Login = loadable(() => import('./modules/login/Login'), {
 const Settings = loadable(() => import('./pages/Settings'), {
   fallback: <Loading />,
 });
+const Notifications = loadable(() => import('./pages/Notifications'), {
+  fallback: <Loading />,
+});
 
 const router = createBrowserRouter([
   {
@@ -50,6 +53,10 @@ const router = createBrowserRouter([
       {
         path: 'demo/post-cards',
         element: <PostCardsDemo />,
+      },
+      {
+        path: 'notifications',
+        element: <Notifications />,
       },
     ],
   },
