@@ -21,7 +21,7 @@ const formatDuration = (seconds: number): string => {
 export default function VideoContent({ post}: VideoContentProps) {
   const navigate = useNavigate();
   const onPostClick = () => {
-    navigate(`/post/video/${post.id}`);
+    navigate(`/post/video/${post.id}`,{state:{post}});
   };
   const [videoError, setVideoError] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
