@@ -45,7 +45,9 @@ const Settings = loadable(() => import('./pages/Settings'), {
 const Notifications = loadable(() => import('./pages/Notifications'), {
   fallback: <Loading />,
 });
+const SearchResults = loadable(() => import('./components/layout/float-based/right-side/SearchResults'), { fallback: <Loading /> }); // 使用相对路径引入 SearchResults
 
+// 配置路由
 const router = createBrowserRouter([
   {
     path: '/',
@@ -67,6 +69,10 @@ const router = createBrowserRouter([
       {
         path: 'notifications',
         element: <Notifications />,
+      },
+      {
+        path: 'search-results/:query',  // 新增路由，处理搜索结果页面
+        element: <SearchResults />, // 路由跳转到 SearchResults
       },
     ],
   },
