@@ -44,7 +44,7 @@ const menuItems: MenuItem[] = [
     icon: <IconUser size={18} />,
     hasSubmenu: true,
     submenu: [
-      { id: 'account-info', label: '账号信息', parent: 'account' },
+      { id: 'account-info', label: '编辑资料', parent: 'account' },
       { id: 'account-security', label: '账号安全', parent: 'account' },
     ],
   },

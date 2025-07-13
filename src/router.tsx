@@ -75,15 +75,15 @@ const router = createBrowserRouter([
         path: 'search-results/:query',  // 新增路由，处理搜索结果页面
         element: <SearchResults />, // 路由跳转到 SearchResults
       },
+      {
+        path: 'user/:userId',
+        element: <UserProfile />,
+      },
     ],
   },
   {
     path: '/editor/:user/normal',
     element: <ArticleEditor />,
-  },
-  {
-    path: '/user/:userId',
-    element: <UserProfile />,
   },
   {
     path: '/post/article/:postId',

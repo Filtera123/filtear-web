@@ -45,7 +45,7 @@ export default function UserProfile() {
         className="flex items-center justify-between cursor-pointer"
         onClick={() => setIsExpanded(!isExpanded)}
       >
-        <Link to="/profile" className="flex items-center">
+        <Link to="/user/user123" className="flex items-center">
           <img
             src={currentAccount.avatar}
             alt="User Avatar"

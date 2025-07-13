@@ -50,11 +50,75 @@ export default function AccountInfo() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">账号信息</h1>
-        <p className="text-gray-600">管理您的个人信息和基本资料</p>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">编辑资料</h1>
+        <p className="text-gray-600">管理您的个人信息、头像和封面图</p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        {/* 个人形象 */}
+        <Card>
+          <CardContent className="p-6">
+            <Typography variant="h6" className="font-semibold mb-4">
+              个人形象
+            </Typography>
+            
+            <div className="space-y-6">
+              {/* 头像上传 */}
+              <div>
+                <Typography variant="body2" className="mb-2 font-medium">
+                  头像
+                </Typography>
+                <div className="flex items-center space-x-4">
+                  <div className="w-20 h-20 rounded-full border-2 border-gray-200 overflow-hidden flex items-center justify-center bg-gray-50">
+                    {watch('nickname') && (
+                      <img 
+                        src={`https://picsum.photos/id/64/100/100`} 
+                        alt="用户头像" 
+                        className="w-full h-full object-cover"
+                      />
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Button variant="outlined" size="small">
+                      上传头像
+                    </Button>
+                    <Typography variant="caption" className="block text-gray-500">
+                      支持 JPG、PNG 格式，最大 5MB
+                    </Typography>
+                  </div>
+                </div>
+              </div>
+
+              {/* 背景图片上传 */}
+              <div>
+                <Typography variant="body2" className="mb-2 font-medium">
+                  个人主页背景
+                </Typography>
+                <div className="flex flex-col space-y-3">
+                  <div className="w-full h-32 rounded-md border-2 border-gray-200 overflow-hidden flex items-center justify-center bg-gray-50">
+                    <img 
+                      src={`https://picsum.photos/id/29/800/300`} 
+                      alt="背景图片" 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button variant="outlined" size="small">
+                      上传背景图
+                    </Button>
+                    <Button variant="text" size="small" color="error">
+                      移除背景图
+                    </Button>
+                  </div>
+                  <Typography variant="caption" className="text-gray-500">
+                    推荐尺寸 1500×500 像素，支持 JPG、PNG 格式，最大 10MB
+                  </Typography>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
         {/* 基础信息 */}
         <Card>
           <CardContent className="p-6">
