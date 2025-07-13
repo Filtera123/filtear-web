@@ -2,6 +2,7 @@ import loadable from '@loadable/component';
 import Home from '@pages/home/index';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import FloatBasedLayout from '@/components/layout/float-based/Layout';
+import TagPageLayout from '@/components/layout/TagPageLayout';
 
 const Loading = () => <div className="flex items-center justify-center">Loading...</div>;
 
@@ -102,7 +103,13 @@ const router = createBrowserRouter([
   },
   {
     path: '/tag/:tag',
-    element: <TagPage />,
+    element: <TagPageLayout />,
+    children: [
+      {
+        index: true,
+        element: <TagPage />,
+      },
+    ],
   },
   {
     path: '/login',

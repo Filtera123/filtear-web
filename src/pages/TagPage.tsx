@@ -1,101 +1,211 @@
-import React from 'react';
-import { useParams, Link } from 'react-router-dom';
-import Tag from '../components/tag/Tag';
+import React, { useEffect, useMemo } from 'react';
+import { useParams } from 'react-router-dom';
+import { useTagPageStore } from './TagPage.store';
+import { Tabs } from '@chakra-ui/react';
+import { 
+  TAG_PAGE_TABS, 
+  LATEST_SUB_TABS, 
+  HOT_SUB_TABS, 
+  CONTENT_FILTERS,
+  type TagPageTab,
+  type LatestSubTab,
+  type HotSubTab,
+  type ContentFilter,
+  type TagDetail 
+} from './TagPage.types';
+import TagVirtualPostList from './TagVirtualPostList';
+import { cn } from '../utils/cn';
+import { useScrollDirection } from '../hooks/useScrollDirection';
 
 export default function TagPage() {
   const { tag } = useParams<{ tag: string }>();
+  const tagName = tag || '';
+  
+  const {
+    currentTab,
+    currentLatestSubTab,
+    currentHotSubTab,
+    currentContentFilter,
+    tagDetail,
+    setCurrentTab,
+    setCurrentLatestSubTab,
+    setCurrentHotSubTab,
+    setCurrentContentFilter,
+    setTagDetail,
+    resetState,
+  } = useTagPageStore();
 
-  // 模拟该标签下的文章数据
-  const posts = [
-    {
-      id: 1,
-      title: '《满月浮的月夜》- 原神同人小说',
-      author: '墨染青花',
-      createdAt: '2024-01-15',
-      views: 1567,
-      likes: 234,
-      comments: 12,
-    },
-    {
-      id: 2,
-      title: '璃月港的传说与故事',
-      author: '云中君',
-      createdAt: '2024-01-14',
-      views: 892,
-      likes: 156,
-      comments: 8,
-    },
-  ];
+  // 使用滚动方向检测hook
+  const { isVisible } = useScrollDirection({ 
+    threshold: 20 // 滚动20px后才触发显示/隐藏
+  });
+
+  // 初始化标签详情数据
+  useEffect(() => {
+    if (tagName) {
+      // 这里应该调用真实的API获取标签详情
+      const mockTagDetail: TagDetail = {
+        id: tagName,
+        name: tagName,
+        description: `这是关于 ${tagName} 的专栏页面`,
+        stats: {
+          viewCount: Math.floor(Math.random() * 100000) + 10000,
+          postCount: Math.floor(Math.random() * 5000) + 100,
+          followerCount: Math.floor(Math.random() * 10000) + 500,
+        },
+        isSubscribed: Math.random() > 0.5,
+        isBlocked: false,
+        color: '#3b82f6',
+      };
+      setTagDetail(mockTagDetail);
+    }
+  }, [tagName, setTagDetail]);
+
+  // 清理状态
+  useEffect(() => {
+    return () => {
+      resetState();
+    };
+  }, [resetState]);
+
+  // 获取当前子分类选项
+  const getSubTabs = () => {
+    switch (currentTab) {
+      case 'latest':
+        return [
+          { key: LATEST_SUB_TABS.LatestPublish, name: '最新发布', current: currentLatestSubTab === 'latest_publish' },
+          { key: LATEST_SUB_TABS.LatestComment, name: '最新评论', current: currentLatestSubTab === 'latest_comment' },
+        ];
+      case 'hot':
+        return [
+          { key: HOT_SUB_TABS.Daily, name: '日榜', current: currentHotSubTab === 'daily' },
+          { key: HOT_SUB_TABS.Weekly, name: '周榜', current: currentHotSubTab === 'weekly' },
+          { key: HOT_SUB_TABS.Monthly, name: '月榜', current: currentHotSubTab === 'monthly' },
+          { key: HOT_SUB_TABS.All, name: '全部', current: currentHotSubTab === 'all' },
+        ];
+      case 'dynamic':
+        return []; // 动态tab没有子分类
+      default:
+        return [];
+    }
+  };
+
+  // 处理子分类切换
+  const handleSubTabChange = (subTab: string) => {
+    if (currentTab === 'latest') {
+      setCurrentLatestSubTab(subTab as LatestSubTab);
+    } else if (currentTab === 'hot') {
+      setCurrentHotSubTab(subTab as HotSubTab);
+    }
+  };
+
+  // 当切换到动态tab时，自动设置内容过滤器为'all'
+  useEffect(() => {
+    if (currentTab === 'dynamic' && currentContentFilter !== 'all') {
+      setCurrentContentFilter('all');
+    }
+  }, [currentTab, currentContentFilter, setCurrentContentFilter]);
+
+  // 获取可用的内容过滤器选项（动态tab只有全部选项）
+  const availableFilters = useMemo(() => {
+    if (currentTab === 'dynamic') {
+      return [{ key: CONTENT_FILTERS.All, name: '全部' }];
+    }
+    return [
+      { key: CONTENT_FILTERS.All, name: '全部' },
+      { key: CONTENT_FILTERS.Image, name: '图片' },
+      { key: CONTENT_FILTERS.Text, name: '文字' },
+    ];
+  }, [currentTab]);
+
+  // 即使标签详情还未加载完成，也显示tab栏和帖子列表
+  // 标签详情的加载状态由右侧栏组件处理
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto p-6">
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-        {/* 返回按钮 */}
-        <Link 
-          to="/" 
-          className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-6"
+    <div className="w-full relative">
+      {/* Tab切换区 - 固定在顶部，支持智能显示/隐藏 */}
+      <div 
+        className={cn(
+          'sticky top-0 bg-white/75 z-50 backdrop-blur-sm border-b border-gray-200',
+          'transition-transform duration-300 ease-in-out',
+          isVisible ? 'translate-y-0' : '-translate-y-full'
+        )}
+      >
+        {/* 第一级Tab - 进一步缩小高度，增大字体 */}
+        <Tabs.Root
+          value={currentTab}
+          onValueChange={(details) => setCurrentTab(details.value as TagPageTab)}
         >
-          ← 返回首页
-        </Link>
+          <Tabs.List className="flex justify-center items-center gap-8 px-6 py-1">
+            <Tabs.Trigger 
+              value={TAG_PAGE_TABS.Latest}
+              className="text-base font-medium"
+            >
+              最新
+            </Tabs.Trigger>
+            <Tabs.Trigger 
+              value={TAG_PAGE_TABS.Hot}
+              className="text-base font-medium"
+            >
+              最热
+            </Tabs.Trigger>
+            <Tabs.Trigger 
+              value={TAG_PAGE_TABS.Dynamic}
+              className="text-base font-medium"
+            >
+              动态
+            </Tabs.Trigger>
+          </Tabs.List>
+        </Tabs.Root>
 
-        {/* 标签信息 */}
-        <div className="mb-8">
-          <div className="flex items-center space-x-4 mb-4">
-            <Tag tag={tag || ''} className="text-lg px-4 py-2" />
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">#{tag} 专栏</h1>
-              <p className="text-gray-600">探索与 "{tag}" 相关的精彩内容</p>
+        {/* 第二级Tab - 子分类和内容过滤器放在同一行 */}
+        {currentTab !== 'dynamic' && (
+          <div className="flex justify-between items-center px-6 py-2.5 border-t border-gray-100">
+            {/* 左侧：子分类切换 */}
+            <div className="flex items-center gap-4">
+                              {getSubTabs().map((subTab) => (
+                  <button
+                    key={subTab.key}
+                    onClick={() => handleSubTabChange(subTab.key)}
+                    className={cn(
+                      'px-4 py-1.5 rounded-full text-sm font-medium transition-colors',
+                      subTab.current
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    )}
+                  >
+                    {subTab.name}
+                  </button>
+                ))}
             </div>
-          </div>
 
-          {/* 标签统计 */}
-          <div className="grid grid-cols-3 gap-4 bg-gray-50 rounded-lg p-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-gray-900">{posts.length}</div>
-              <div className="text-sm text-gray-600">文章数</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-gray-900">
-                {posts.reduce((sum, post) => sum + post.views, 0)}
-              </div>
-              <div className="text-sm text-gray-600">总浏览量</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-gray-900">
-                {posts.reduce((sum, post) => sum + post.likes, 0)}
-              </div>
-              <div className="text-sm text-gray-600">总点赞数</div>
-            </div>
-          </div>
-        </div>
-
-        {/* 文章列表 */}
-        <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">相关文章</h2>
-          <div className="space-y-4">
-            {posts.map((post) => (
-              <div key={post.id} className="border border-gray-100 rounded-lg p-4 hover:shadow-md transition-shadow">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <Link 
-                      to={`/post/${post.id}`}
-                      className="text-lg font-medium text-gray-900 hover:text-blue-600 transition-colors"
+            {/* 右侧：内容过滤器按钮组 */}
+            {availableFilters.length > 1 && (
+              <div className="bg-gray-50 rounded-full p-1 border border-gray-200">
+                <div className="flex gap-0">
+                  {availableFilters.map((filter) => (
+                    <button
+                      key={filter.key}
+                      onClick={() => setCurrentContentFilter(filter.key as ContentFilter)}
+                      className={cn(
+                        'px-16 py-2.5 rounded-full text-sm font-medium transition-all duration-200',
+                        currentContentFilter === filter.key
+                          ? 'bg-white text-blue-600 shadow-sm border border-blue-200 font-semibold'
+                          : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
+                      )}
                     >
-                      {post.title}
-                    </Link>
-                    <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
-                      <span>by {post.author}</span>
-                      <span>{post.createdAt}</span>
-                    </div>
-                  </div>
+                      {filter.name}
+                    </button>
+                  ))}
                 </div>
               </div>
-            ))}
+            )}
           </div>
-        </div>
+        )}
       </div>
-    </div>
+
+      {/* 帖子列表 */}
+      <TagVirtualPostList tagName={tagName} />
     </div>
   );
 } 
