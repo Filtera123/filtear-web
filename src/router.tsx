@@ -43,6 +43,9 @@ const Login = loadable(() => import('./modules/login/Login'), {
 const Settings = loadable(() => import('./pages/Settings'), {
   fallback: <Loading />,
 });
+const CreatorCenter = loadable(() => import('./pages/CreatorCenter'), {
+  fallback: <Loading />,
+});
 const Notifications = loadable(() => import('./pages/Notifications'), {
   fallback: <Loading />,
 });
@@ -118,6 +121,10 @@ const router = createBrowserRouter([
   {
     path: '/settings',
     element: <Settings />,
+  },
+  {
+    path: '/creator-center',
+    element: <CreatorCenter />,
   },
   {
     path: '*',

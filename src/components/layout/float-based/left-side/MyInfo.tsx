@@ -5,9 +5,8 @@ export default function MyInfo() {
   const navItems = [
     { path: '/', label: '首页' },
     { path: '/notifications', label: '消息通知' },
-    { path: '/likes', label: '我的喜欢' },
-    { path: '/creator', label: '创作者中心' },
-    { path: '/blocked', label: '屏蔽设置' },
+    { path: '/creator-center', label: '创作者中心' },
+    { path: '/blocked', label: '屏蔽管理' },
     { path: '/settings', label: '设置' },
   ];
   return (
