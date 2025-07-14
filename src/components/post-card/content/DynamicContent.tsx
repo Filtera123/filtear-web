@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { DynamicPost } from '../post.types';
 
-interface DynamicContentProps {
+export interface DynamicContentProps {
   post: DynamicPost;
 }
 
 export default function DynamicContent({ post }: DynamicContentProps) {
   const navigate = useNavigate();
   const onPostClick = () => {
-    navigate(`/post/dynamic/${post.id}`);
+    navigate(`/post/dynamic/${post.id}`,{state:{post}});
   };
   const [imageLoadErrors, setImageLoadErrors] = useState<Set<number>>(new Set());
 

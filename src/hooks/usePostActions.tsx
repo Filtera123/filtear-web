@@ -5,7 +5,8 @@ import { useHomePostListStore } from '@/pages/home/Home.store.ts';
 import { rootQueryClient } from '@/RootQuery.provider.tsx';
 import type { BasePost } from '@/components/post-card/post.types';
 
-export const formatNumber = (num: number): string => {
+export const formatNumber = (num?: number): string => {
+  if (typeof num !== 'number') return '0'; // 防御性处理
   if (num >= 1000) {
     return (num / 1000).toFixed(1) + 'k';
   }

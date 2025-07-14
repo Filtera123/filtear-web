@@ -32,7 +32,7 @@ const ImageItem: React.FC<{
 export default function ImageContent({ post }: ImageContentProps) {
   const navigate = useNavigate();
   const onPostClick = () => {
-    navigate(`/post/image/${post.id}`);
+    navigate(`/post/image/${post.id}`,{state: { post }});
   };
 
   const [aspectRatio, setAspectRatio] = useState<string | undefined>();
