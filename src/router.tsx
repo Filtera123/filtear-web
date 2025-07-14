@@ -1,55 +1,71 @@
 import loadable from '@loadable/component';
-import Home from '@pages/home/index';
+import Home from './pages/home/index';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import FloatBasedLayout from '@/components/layout/float-based/Layout';
-import TagPageLayout from '@/components/layout/TagPageLayout';
+import FloatBasedLayout from './components/layout/float-based/Layout';
+import TagPageLayout from './components/layout/TagPageLayout';
 
 const Loading = () => <div className="flex items-center justify-center">Loading...</div>;
 
 const ArticleEditor = loadable(() => import('./pages/article-editor'), {
   fallback: <Loading />,
 });
+
 const About = loadable(() => import('./pages/About'), {
   fallback: <Loading />,
 });
-const UserProfile = loadable(() => import('./pages/UserProfile'), {
+
+const PostCardsDemo = loadable(() => import('./pages/PostCardsDemo'), {
+  fallback: <Loading />,
+});
+
+const Notifications = loadable(() => import('./pages/Notifications'), {
   fallback: <Loading />,
 });
 
 const ArticleDetail = loadable(() => import('./pages/post-details/ArticleDetail'), {
   fallback: <Loading />,
 });
+
 const VideoDetail = loadable(() => import('./pages/post-details/VideoDetail'), {
   fallback: <Loading />,
 });
+
 const ImageDetail = loadable(() => import('./pages/post-details/ImageDetail'), {
   fallback: <Loading />,
 });
+
 const DynamicDetail = loadable(() => import('./pages/post-details/DynamicDetail'), {
   fallback: <Loading />,
 });
+
+const UserProfile = loadable(() => import('./pages/UserProfile'), {
+  fallback: <Loading />,
+});
+
 const TagPage = loadable(() => import('./pages/TagPage'), {
   fallback: <Loading />,
 });
+
+const Login = loadable(() => import('./modules/login').then(module => ({ default: module.Login })), {
+  fallback: <Loading />,
+});
+
 const NotFound = loadable(() => import('./pages/NotFound'), {
   fallback: <Loading />,
 });
-const PostCardsDemo = loadable(() => import('./pages/PostCardsDemo'), {
-  fallback: <Loading />,
-});
-const Login = loadable(() => import('./modules/login/Login'), {
-  fallback: <Loading />,
-});
+
 const Settings = loadable(() => import('./pages/Settings'), {
   fallback: <Loading />,
 });
+
 const CreatorCenter = loadable(() => import('./pages/CreatorCenter'), {
   fallback: <Loading />,
 });
-const Notifications = loadable(() => import('./pages/Notifications'), {
+
+// Import SearchResults from pages directory
+const SearchResults = loadable(() => import('./pages/SearchResults'), {
   fallback: <Loading />,
 });
-const SearchResults = loadable(() => import('./components/layout/float-based/right-side/SearchResults'), { fallback: <Loading /> }); // 使用相对路径引入 SearchResults
 
 // 配置路由
 const router = createBrowserRouter([
