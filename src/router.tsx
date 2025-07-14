@@ -22,6 +22,10 @@ const Notifications = loadable(() => import('./pages/Notifications'), {
   fallback: <Loading />,
 });
 
+const TagManagement = loadable(() => import('./pages/TagManagement'), {
+  fallback: <Loading />,
+});
+
 const ArticleDetail = loadable(() => import('./pages/post-details/ArticleDetail'), {
   fallback: <Loading />,
 });
@@ -89,6 +93,10 @@ const router = createBrowserRouter([
       {
         path: 'notifications',
         element: <Notifications />,
+      },
+      {
+        path: 'tag-management',
+        element: <TagManagement />,
       },
       {
         path: 'search-results/:query',  // 新增路由，处理搜索结果页面

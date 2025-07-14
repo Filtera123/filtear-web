@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   IconChevronDown, 
   IconChevronUp,
@@ -11,7 +11,7 @@ import {
   IconArrowLeft
 } from '@tabler/icons-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import AccountInfo from './settings/AccountInfo';
 import AccountSecurity from './settings/AccountSecurity';
 import MessageSettings from './settings/MessageSettings';
@@ -71,8 +71,37 @@ const menuItems: MenuItem[] = [
 
 export default function Settings() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [activeItem, setActiveItem] = useState('account-info');
   const [expandedMenus, setExpandedMenus] = useState<string[]>(['account']);
+
+  // Handle query parameters on component mount
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const section = queryParams.get('section');
+    
+    if (section) {
+      // Set active item based on the section parameter
+      setActiveItem(section);
+      
+      // Find parent menu of this section to expand it
+      for (const item of menuItems) {
+        if (item.hasSubmenu && item.submenu) {
+          for (const subItem of item.submenu) {
+            if (subItem.id === section) {
+              setExpandedMenus(prev => 
+                prev.includes(subItem.parent) ? prev : [...prev, subItem.parent]
+              );
+              break;
+            }
+          }
+        }
+      }
+      
+      // Clean up the URL (optional)
+      navigate('/settings', { replace: true });
+    }
+  }, [location, navigate]);
 
   const toggleMenu = (menuId: string) => {
     setExpandedMenus(prev =>

@@ -6,7 +6,7 @@ export default function MyInfo() {
     { path: '/', label: '首页' },
     { path: '/notifications', label: '消息通知' },
     { path: '/creator-center', label: '创作者中心' },
-    { path: '/blocked', label: '屏蔽管理' },
+    { path: '/settings?section=privacy-block', label: '屏蔽管理' },
     { path: '/settings', label: '设置' },
   ];
   return (

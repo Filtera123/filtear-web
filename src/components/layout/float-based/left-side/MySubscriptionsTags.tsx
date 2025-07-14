@@ -1,30 +1,11 @@
 import { useNavigate } from 'react-router-dom';
 import { Tag } from '../../../index';
+import { useTagSubscriptionStore } from '../../../../stores/tagSubscriptionStore';
 
 export default function MySubscriptionTags() {
   const navigate = useNavigate();
-  const tags = [
-    { name: '前端', color: 'blue' },
-    { name: '后端', color: 'green' },
-    { name: '全栈', color: 'purple' },
-    { name: 'AI', color: 'red' },
-    { name: '云计算', color: 'orange' },
-    { name: '大数据', color: 'indigo' },
-    { name: '区块链', color: 'teal' },
-    { name: '移动开发', color: 'pink' },
-    { name: 'UI/UX', color: 'amber' },
-    { name: '测试', color: 'emerald' },
-    { name: 'DevOps', color: 'slate' },
-    { name: '网络安全', color: 'rose' },
-    { name: '游戏开发', color: 'violet' },
-    { name: '嵌入式', color: 'lime' },
-    { name: '数据分析', color: 'sky' },
-    { name: '机器学习', color: 'fuchsia' },
-    { name: '深度学习', color: 'cyan' },
-    { name: '自然语言处理', color: 'amber' },
-    { name: '计算机视觉', color: 'emerald' },
-    { name: '强化学习', color: 'rose' },
-  ];
+  const { getTopTags } = useTagSubscriptionStore();
+  const subscribedTags = getTopTags(9999); // Get all subscribed tags for sidebar display
 
   // 处理标签点击
   const handleTagClick = (tagName: string) => {
@@ -36,7 +17,7 @@ export default function MySubscriptionTags() {
       <div className="flex justify-between items-center mb-3">
         <h1 className="text-base font-semibold">我的订阅</h1>
         <button
-          onClick={() => console.log('打开设置')}
+          onClick={() => navigate('/tag-management')}
           className="text-gray-500 hover:text-blue-600 transition-colors cursor-pointer"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -57,8 +38,8 @@ export default function MySubscriptionTags() {
         </button>
       </div>
       <div className="flex flex-col gap-2 max-h-[300px] overflow-y-auto pr-1 scrollbar-hide">
-        {tags.map((tag) => (
-          <div className="flex justify-between items-center" key={tag.name}>
+        {subscribedTags.map((tag) => (
+          <div className="flex justify-between items-center" key={tag.id || tag.name}>
             <div onClick={() => handleTagClick(tag.name)} className="cursor-pointer">
               <Tag className="text-xs py-1 px-2" tag={tag} />
             </div>
