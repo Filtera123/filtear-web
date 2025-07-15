@@ -1,12 +1,24 @@
 import { create } from 'zustand';
-import type { UserProfileInfo, UserProfileState, ProfileTab, WorksFilterType } from './UserProfile.types';
-import { ProfileTabs, WorksFilter } from './UserProfile.types';
+import type { UserProfileInfo, UserProfileState, ProfileTab, WorksFilterType, ViewMode } from './UserProfile.types';
+import { ProfileTabs, WorksFilter, VIEW_MODES } from './UserProfile.types';
+
+// 从localStorage获取保存的视图模式，如果没有则使用默认值
+const getSavedViewMode = (): ViewMode => {
+  try {
+    const savedViewMode = localStorage.getItem('userProfileViewMode');
+    return savedViewMode === VIEW_MODES.Grid ? VIEW_MODES.Grid : VIEW_MODES.List;
+  } catch (error) {
+    // 如果发生错误（如隐私模式下），则返回默认值
+    return VIEW_MODES.List;
+  }
+};
 
 export const useUserProfileStore = create<UserProfileState & {
   // Actions
   setUserInfo: (userInfo: UserProfileInfo) => void;
   setCurrentTab: (tab: ProfileTab) => void;
   setCurrentWorksFilter: (filter: WorksFilterType) => void;
+  setViewMode: (mode: ViewMode) => void;
   setIsLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   setPosts: (posts: any[]) => void;
@@ -18,6 +30,7 @@ export const useUserProfileStore = create<UserProfileState & {
   userInfo: null,
   currentTab: ProfileTabs.WORKS,
   currentWorksFilter: WorksFilter.ALL,
+  viewMode: getSavedViewMode(),
   isLoading: false,
   error: null,
   posts: [],
@@ -29,6 +42,20 @@ export const useUserProfileStore = create<UserProfileState & {
   setCurrentTab: (tab) => set({ currentTab: tab }),
   
   setCurrentWorksFilter: (filter) => set({ currentWorksFilter: filter }),
+  
+  setViewMode: (mode) => {
+    // 保存视图模式到localStorage
+    try {
+      localStorage.setItem('userProfileViewMode', mode);
+    } catch (error) {
+      // 忽略可能的错误（如隐私模式）
+      console.warn('Failed to save view mode to localStorage', error);
+    }
+    
+    return set(() => ({
+      viewMode: mode,
+    }));
+  },
   
   setIsLoading: (loading) => set({ isLoading: loading }),
   
@@ -55,6 +82,7 @@ export const useUserProfileStore = create<UserProfileState & {
     userInfo: null,
     currentTab: ProfileTabs.WORKS,
     currentWorksFilter: WorksFilter.ALL,
+    viewMode: getSavedViewMode(), // 保留当前视图模式，不重置
     isLoading: false,
     error: null,
     posts: [],
