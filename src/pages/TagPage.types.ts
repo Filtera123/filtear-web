@@ -7,6 +7,14 @@ export const TAG_PAGE_TABS = {
   Dynamic: 'dynamic',
 } as const;
 
+// 视图模式类型
+export type ViewMode = 'list' | 'grid';
+
+export const VIEW_MODES = {
+  List: 'list',
+  Grid: 'grid',
+} as const;
+
 // 最新tab的子分类
 export type LatestSubTab = 'latest_publish' | 'latest_comment';
 
@@ -59,6 +67,7 @@ export interface TagPageState {
   currentLatestSubTab: LatestSubTab;
   currentHotSubTab: HotSubTab;
   currentContentFilter: ContentFilter;
+  viewMode: ViewMode;
   tagDetail: TagDetail | null;
   isLoading: boolean;
 } 

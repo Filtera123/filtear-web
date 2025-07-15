@@ -85,7 +85,7 @@ export default function RecentlyViewed() {
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-lg font-semibold">最近浏览</h1>
         {showMore && (
-          <Link to="/profile/recent-views" className="text-sm text-blue-500 hover:underline">
+          <Link to="/recently-viewed" className="text-sm text-blue-500 hover:underline">
             查看更多
           </Link>
         )}

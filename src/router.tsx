@@ -46,6 +46,10 @@ const UserProfile = loadable(() => import('./pages/UserProfile'), {
   fallback: <Loading />,
 });
 
+const RecentlyViewed = loadable(() => import('./pages/RecentlyViewed'), {
+  fallback: <Loading />,
+});
+
 const TagPage = loadable(() => import('./pages/TagPage'), {
   fallback: <Loading />,
 });
@@ -105,6 +109,10 @@ const router = createBrowserRouter([
       {
         path: 'user/:userId',
         element: <UserProfile />,
+      },
+      {
+        path: 'recently-viewed',
+        element: <RecentlyViewed />,
       },
     ],
   },

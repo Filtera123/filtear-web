@@ -7,10 +7,12 @@ import {
   LATEST_SUB_TABS, 
   HOT_SUB_TABS, 
   CONTENT_FILTERS,
+  VIEW_MODES,
   type TagPageTab,
   type LatestSubTab,
   type HotSubTab,
   type ContentFilter,
+  type ViewMode,
   type TagDetail 
 } from './TagPage.types';
 import TagVirtualPostList from './TagVirtualPostList';
@@ -26,11 +28,13 @@ export default function TagPage() {
     currentLatestSubTab,
     currentHotSubTab,
     currentContentFilter,
+    viewMode,
     tagDetail,
     setCurrentTab,
     setCurrentLatestSubTab,
     setCurrentHotSubTab,
     setCurrentContentFilter,
+    setViewMode,
     setTagDetail,
     resetState,
   } = useTagPageStore();
@@ -118,6 +122,11 @@ export default function TagPage() {
     ];
   }, [currentTab]);
 
+  // 切换视图模式
+  const toggleViewMode = () => {
+    setViewMode(viewMode === VIEW_MODES.List ? VIEW_MODES.Grid : VIEW_MODES.List);
+  };
+
   // 即使标签详情还未加载完成，也显示tab栏和帖子列表
   // 标签详情的加载状态由右侧栏组件处理
 
@@ -136,26 +145,55 @@ export default function TagPage() {
           value={currentTab}
           onValueChange={(details) => setCurrentTab(details.value as TagPageTab)}
         >
-          <Tabs.List className="flex justify-center items-center gap-8 px-6 py-1">
-            <Tabs.Trigger 
-              value={TAG_PAGE_TABS.Latest}
-              className="text-base font-medium"
+          <div className="flex justify-between items-center px-6 py-1">
+            <Tabs.List className="flex justify-center items-center gap-8">
+              <Tabs.Trigger 
+                value={TAG_PAGE_TABS.Latest}
+                className="text-base font-medium"
+              >
+                最新
+              </Tabs.Trigger>
+              <Tabs.Trigger 
+                value={TAG_PAGE_TABS.Hot}
+                className="text-base font-medium"
+              >
+                最热
+              </Tabs.Trigger>
+              <Tabs.Trigger 
+                value={TAG_PAGE_TABS.Dynamic}
+                className="text-base font-medium"
+              >
+                动态
+              </Tabs.Trigger>
+            </Tabs.List>
+            
+            {/* 视图切换按钮 - 移到第一级tab栏 */}
+            <button
+              onClick={toggleViewMode}
+              className={cn(
+                'p-2 rounded-md border',
+                viewMode === VIEW_MODES.Grid 
+                  ? 'bg-blue-50 border-blue-200 text-blue-600'
+                  : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+              )}
             >
-              最新
-            </Tabs.Trigger>
-            <Tabs.Trigger 
-              value={TAG_PAGE_TABS.Hot}
-              className="text-base font-medium"
-            >
-              最热
-            </Tabs.Trigger>
-            <Tabs.Trigger 
-              value={TAG_PAGE_TABS.Dynamic}
-              className="text-base font-medium"
-            >
-              动态
-            </Tabs.Trigger>
-          </Tabs.List>
+              {viewMode === VIEW_MODES.List ? (
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="7" height="7" />
+                  <rect x="14" y="3" width="7" height="7" />
+                  <rect x="14" y="14" width="7" height="7" />
+                  <rect x="3" y="14" width="7" height="7" />
+                </svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="21" y1="10" x2="3" y2="10" />
+                  <line x1="21" y1="6" x2="3" y2="6" />
+                  <line x1="21" y1="14" x2="3" y2="14" />
+                  <line x1="21" y1="18" x2="3" y2="18" />
+                </svg>
+              )}
+            </button>
+          </div>
         </Tabs.Root>
 
         {/* 第二级Tab - 子分类和内容过滤器放在同一行 */}
@@ -179,27 +217,29 @@ export default function TagPage() {
                 ))}
             </div>
 
-            {/* 右侧：内容过滤器按钮组 */}
-            {availableFilters.length > 1 && (
-              <div className="bg-gray-50 rounded-full p-1 border border-gray-200">
-                <div className="flex gap-0">
-                  {availableFilters.map((filter) => (
-                    <button
-                      key={filter.key}
-                      onClick={() => setCurrentContentFilter(filter.key as ContentFilter)}
-                      className={cn(
-                        'px-16 py-2.5 rounded-full text-sm font-medium transition-all duration-200',
-                        currentContentFilter === filter.key
-                          ? 'bg-white text-blue-600 shadow-sm border border-blue-200 font-semibold'
-                          : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
-                      )}
-                    >
-                      {filter.name}
-                    </button>
-                  ))}
+            <div className="flex items-center gap-4">
+              {/* 右侧：内容过滤器按钮组 */}
+              {availableFilters.length > 1 && (
+                <div className="bg-gray-50 rounded-full p-1 border border-gray-200">
+                  <div className="flex gap-0">
+                    {availableFilters.map((filter) => (
+                      <button
+                        key={filter.key}
+                        onClick={() => setCurrentContentFilter(filter.key as ContentFilter)}
+                        className={cn(
+                          'px-16 py-2.5 rounded-full text-sm font-medium transition-all duration-200',
+                          currentContentFilter === filter.key
+                            ? 'bg-white text-blue-600 shadow-sm border border-blue-200 font-semibold'
+                            : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
+                        )}
+                      >
+                        {filter.name}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         )}
       </div>
