@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { type Comment } from './comment.type';
 
 interface Props {
@@ -27,6 +28,28 @@ export default function ReplyModal({
     }
   }, [isOpen]);
 
+  // 防止背景滚动，同时避免页面偏移
+  useEffect(() => {
+    if (isOpen) {
+      // 获取滚动条宽度
+      const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
+      
+      // 保存当前样式
+      const originalOverflow = document.body.style.overflow;
+      const originalPaddingRight = document.body.style.paddingRight;
+      
+      // 禁止body滚动并补偿滚动条宽度
+      document.body.style.overflow = 'hidden';
+      document.body.style.paddingRight = `${scrollBarWidth}px`;
+      
+      return () => {
+        // 恢复body样式
+        document.body.style.overflow = originalOverflow;
+        document.body.style.paddingRight = originalPaddingRight;
+      };
+    }
+  }, [isOpen]);
+
   const handleSubmit = () => {
     if (replyContent.trim() && comment) {
       onReply(comment.id, replyContent.trim());
@@ -49,13 +72,16 @@ export default function ReplyModal({
 
   if (!isOpen || !comment) return null;
 
-  return (
-    <div
-      className="fixed inset-0 flex items-center justify-center z-50 p-4"
-      style={{ background: 'rgba(0,0,0,0.3)' }}
+  const modalContent = (
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}
       onClick={handleBackdropClick}
     >
-      <div className="bg-white rounded-lg shadow-xl max-w-lg w-full max-h-[80vh] overflow-y-auto">
+      <div 
+        className="bg-white rounded-lg shadow-xl max-w-lg w-full max-h-[80vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* 弹窗头部 */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900">回复@{comment.userName}</h3>
@@ -146,4 +172,7 @@ export default function ReplyModal({
       </div>
     </div>
   );
+
+  // 使用 Portal 将模态框渲染到 document.body
+  return createPortal(modalContent, document.body);
 } 

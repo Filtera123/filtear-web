@@ -56,6 +56,28 @@ const ReportModal: React.FC<ReportModalProps> = ({
       setDialogLevel(1);
     }
   }, [isOpen]);
+
+  // 防止背景滚动，同时避免页面偏移
+  useEffect(() => {
+    if (isOpen) {
+      // 获取滚动条宽度
+      const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
+      
+      // 保存当前样式
+      const originalOverflow = document.body.style.overflow;
+      const originalPaddingRight = document.body.style.paddingRight;
+      
+      // 禁止body滚动并补偿滚动条宽度
+      document.body.style.overflow = 'hidden';
+      document.body.style.paddingRight = `${scrollBarWidth}px`;
+      
+      return () => {
+        // 恢复body样式
+        document.body.style.overflow = originalOverflow;
+        document.body.style.paddingRight = originalPaddingRight;
+      };
+    }
+  }, [isOpen]);
   
   if (!isOpen) return null;
   
@@ -75,6 +97,12 @@ const ReportModal: React.FC<ReportModalProps> = ({
     if (dialogLevel === 2) {
       setDialogLevel(1);
     } else {
+      onClose();
+    }
+  };
+
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
       onClose();
     }
   };
@@ -626,8 +654,12 @@ const ReportModal: React.FC<ReportModalProps> = ({
     <div 
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
       style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}
+      onClick={handleBackdropClick}
     >
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+      <div 
+        className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
         {dialogLevel === 1 ? renderFirstLevel() : renderSecondLevel()}
       </div>
     </div>

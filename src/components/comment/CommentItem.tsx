@@ -183,7 +183,7 @@ export default function CommentItem({
 
               {/* 下拉菜单 */}
               {showMoreMenu && (
-                <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-10 min-w-[120px]">
+                <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-[9999] min-w-[120px]">
                   <button
                     onClick={() => handleMenuAction('block')}
                     className="w-full px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition-colors"
