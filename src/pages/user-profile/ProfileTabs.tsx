@@ -131,29 +131,7 @@ export default function ProfileTabs({
         </div>
       </Tabs.Root>
 
-      {/* 作品Tab的过滤器 */}
-      {currentTab === ProfileTabsConstant.WORKS && (
-        <div className="flex justify-center items-center px-6 py-3 border-t border-gray-100">
-          <div className="bg-gray-50 rounded-full p-1 border border-gray-200">
-            <div className="flex gap-0">
-              {worksFilters.map((filter) => (
-                <button
-                  key={filter.key}
-                  onClick={() => onWorksFilterChange(filter.key as WorksFilterType)}
-                  className={cn(
-                    'px-6 py-2 rounded-full text-sm font-medium transition-all duration-200',
-                    filter.current
-                      ? 'bg-white text-blue-600 shadow-sm border border-blue-200 font-semibold'
-                      : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
-                  )}
-                >
-                  {filter.name}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+
     </div>
   );
 } 

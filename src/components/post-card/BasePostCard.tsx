@@ -7,6 +7,7 @@ import PostHeader from './PostHeader';
 import PostTags from './PostTags';
 import CommentSection from '@components/comment/CommentSection.tsx';
 import { useCommentStore } from '@/components/comment/Comment.store';
+import { Image } from '../ui';
 
 export default function BasePostCard(props: PostCardProps) {
   const { post } = props;
@@ -45,15 +46,11 @@ export default function BasePostCard(props: PostCardProps) {
           className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all"
           onClick={handleUserAvatarClick}
         >
-          <img
+          <Image
             src={post.authorAvatar}
             alt={post.author}
             className="w-10 h-10 rounded-full object-cover"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.style.display = 'none';
-              target.parentElement!.innerHTML = `<span class="text-white font-medium text-sm">${post.author[0]}</span>`;
-            }}
+            fallbackSrc={`https://via.placeholder.com/40x40?text=${post.author[0]}`}
           />
         </div>
         <div className="flex-1">

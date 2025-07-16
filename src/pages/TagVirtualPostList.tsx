@@ -6,6 +6,7 @@ import { PostType, type PostTypeValue } from '../components/post-card/post.types
 import { useTagPageStore } from './TagPage.store';
 import type { TagPageTab, LatestSubTab, HotSubTab, ContentFilter, ViewMode } from './TagPage.types';
 import { useNavigate } from 'react-router-dom';
+import { Image } from '../components/ui';
 
 // 定义返回类型
 interface TagPostsResponse {
@@ -339,18 +340,14 @@ export default function TagVirtualPostList({ tagName }: TagVirtualPostListProps)
         <div className="flex-grow relative">
           {/* 图片 / 视频 / 纯文本预览 */}
           {post.type === PostType.IMAGE && post.images && post.images.length > 0 ? (
-            <img
+            <Image
               src={post.images[0].url}
               alt={post.images[0].alt || '图片'}
               className="w-full h-full object-cover"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.src = 'https://via.placeholder.com/300x200?text=图片加载失败';
-              }}
             />
           ) : post.type === PostType.VIDEO && post.video ? (
             <div className="h-full w-full bg-gray-100 relative">
-              <img
+              <Image
                 src={post.video.thumbnail}
                 alt="视频缩略图"
                 className="w-full h-full object-cover"
@@ -383,10 +380,11 @@ export default function TagVirtualPostList({ tagName }: TagVirtualPostListProps)
               onClick={(e) => handleUserProfileClick(e, post)}
             >
               <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center overflow-hidden">
-                <img
+                <Image
                   src={post.authorAvatar}
                   alt={post.author}
                   className="w-full h-full object-cover"
+                  fallbackSrc="https://via.placeholder.com/50x50?text=User"
                 />
               </div>
               <span className="truncate max-w-[80px]">{post.author}</span>

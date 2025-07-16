@@ -91,11 +91,25 @@ export const useUserProfileStore = create<UserProfileState & {
 }));
 
 // 模拟获取用户信息的API
-export const mockGetUserInfo = (userId: string): Promise<UserProfileInfo> => {
-  return new Promise((resolve) => {
+export const mockGetUserInfo = (userId: string): Promise<UserProfileInfo | null> => {
+  return new Promise((resolve, reject) => {
     setTimeout(() => {
       // 模拟当前用户为 "user123"
       const isCurrentUser = userId === 'user123';
+      
+      // 模拟一个无效的用户ID
+      if (userId === 'invalid' || userId === 'notfound') {
+        // 返回null表示找不到用户，而不是抛出错误
+        // 实际API可能返回404状态码
+        resolve(null);
+        return;
+      }
+      
+      // 模拟服务器错误
+      if (userId === 'error') {
+        reject(new Error('服务器错误'));
+        return;
+      }
       
       resolve({
         id: userId,

@@ -52,4 +52,7 @@ export interface UserProfileState {
   error: string | null;
   posts: any[]; // 使用现有的帖子类型
   isFollowing: boolean;
-} 
+}
+
+// 定义API响应类型
+export type UserProfileResponse = UserProfileInfo | null; 

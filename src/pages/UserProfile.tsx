@@ -42,14 +42,22 @@ export default function UserProfile() {
         setIsLoading(true);
         setError(null);
         
-        const userInfo = await mockGetUserInfo(userId);
-        setUserInfo(userInfo);
+        const userData = await mockGetUserInfo(userId);
         
-        if (userInfo.isFollowing !== undefined) {
-          setIsFollowing(userInfo.isFollowing);
+        // 如果API返回了用户信息，则设置状态
+        if (userData) {
+          setUserInfo(userData);
+          
+          if (userData.isFollowing !== undefined) {
+            setIsFollowing(userData.isFollowing);
+          }
+        } else {
+          // 如果API明确返回null表示用户不存在
+          setError('找不到指定的用户');
         }
       } catch (error) {
-        setError('获取用户信息失败');
+        // 处理网络错误、服务器错误等
+        setError('获取用户信息失败，请稍后再试');
         console.error('获取用户信息失败:', error);
       } finally {
         setIsLoading(false);
@@ -145,7 +153,7 @@ export default function UserProfile() {
   }
 
   // 加载状态
-  if (isLoading && !userInfo) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="flex flex-col items-center space-y-4">
@@ -155,19 +163,39 @@ export default function UserProfile() {
       </div>
     );
   }
-
-  // 没有用户信息
-  if (!userInfo) {
+  
+  // 如果不是加载中，但没有用户信息，且没有错误信息，则继续等待数据
+  if (!userInfo && !error) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">用户不存在</h1>
-          <p className="text-gray-600">找不到指定的用户</p>
+        <div className="flex flex-col items-center space-y-4">
+          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          <span className="text-gray-500">正在获取用户信息...</span>
         </div>
       </div>
     );
   }
 
+  // 确保用户信息存在
+  if (!userInfo) {
+    // 这种情况通常不会发生，因为前面已经处理了所有情况
+    // 但为了类型安全和以防万一，我们仍然添加这个检查
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">无法加载用户资料</h1>
+          <p className="text-gray-600">请刷新页面重试</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+          >
+            刷新页面
+          </button>
+        </div>
+      </div>
+    );
+  }
+  
   return (
     <div className="w-full">
       {/* 用户信息头部 */}

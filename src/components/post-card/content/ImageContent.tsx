@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { ImagePost } from '../post.types';
+import { Image } from '../../ui';
 
 interface ImageContentProps {
   post: ImagePost;
@@ -17,7 +18,7 @@ const ImageItem: React.FC<{
     className={`cursor-pointer transition-all duration-200 hover:brightness-90 w-full h-full ${className}`}
     onClick={onClick}
   >
-    <img
+    <Image
       src={imageUrl}
       alt={alt}
       className={
@@ -25,6 +26,7 @@ const ImageItem: React.FC<{
           ? 'object-contain object-center'
           : 'w-full h-full object-cover object-center'
       }
+      fallbackText={alt || '图片加载失败'}
     />
   </div>
 );

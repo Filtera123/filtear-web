@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { BaseNotification } from '../../mocks/notifications/data';
+import { Image } from '../ui';
 
 // 格式化时间显示
 const formatTime = (dateString: string): string => {
@@ -98,10 +99,11 @@ export default function NotificationItem({ notification }: NotificationItemProps
         onClick={handleUserClick}
       >
         {notification.user?.avatar ? (
-          <img 
+          <Image 
             src={notification.user.avatar} 
             alt={notification.user.name}
             className="w-full h-full object-cover"
+            fallbackSrc={`https://via.placeholder.com/40x40?text=${notification.user?.name?.[0] || '?'}`}
           />
         ) : (
           <div className="w-full h-full bg-gray-300 flex items-center justify-center">
@@ -143,10 +145,11 @@ export default function NotificationItem({ notification }: NotificationItemProps
             <div className="flex items-start space-x-3">
               {notification.post.image && (
                 <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
-                  <img 
+                  <Image 
                     src={notification.post.image} 
                     alt="帖子图片"
                     className="w-full h-full object-cover"
+                    fallbackText="帖子图片"
                   />
                 </div>
               )}
