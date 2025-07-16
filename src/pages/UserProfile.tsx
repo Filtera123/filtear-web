@@ -122,6 +122,8 @@ export default function UserProfile() {
     navigate('/settings'); // 默认就会打开编辑资料页面
   };
 
+
+
   // 如果没有用户ID，显示错误
   if (!userId) {
     return (

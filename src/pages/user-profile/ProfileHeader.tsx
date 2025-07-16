@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { IconUser, IconUsers, IconHeart, IconEdit, IconSettings, IconUserPlus, IconUserMinus, IconChevronLeft } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom';
+import { useReportContext } from '../../components/report';
 import type { UserProfileInfo } from '../UserProfile.types';
 
 interface ProfileHeaderProps {
@@ -16,11 +17,14 @@ export default function ProfileHeader({
   isFollowing, 
   onToggleFollow, 
   onEditProfile, 
-  onAccountSettings 
+  onAccountSettings
 }: ProfileHeaderProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editingBio, setEditingBio] = useState(userInfo.bio);
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const moreMenuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const { openReportModal } = useReportContext();
 
   const handleSaveBio = () => {
     // 这里应该调用API保存bio
@@ -44,6 +48,32 @@ export default function ProfileHeader({
   // 返回上一页
   const handleGoBack = () => {
     navigate(-1);
+  };
+
+  // 点击外部关闭菜单
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (moreMenuRef.current && !moreMenuRef.current.contains(event.target as Node)) {
+        setShowMoreMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // 处理举报用户
+  const handleReportUser = () => {
+    console.log(`举报用户: ${userInfo.id}`);
+    setShowMoreMenu(false);
+    openReportModal(userInfo.id, 'user', userInfo.id);
+  };
+
+  // 处理屏蔽用户
+  const handleBlockUser = () => {
+    console.log(`屏蔽用户: ${userInfo.id}`);
+    setShowMoreMenu(false);
+    // TODO: 调用API屏蔽用户
   };
 
   return (
@@ -100,15 +130,21 @@ export default function ProfileHeader({
           <div className="flex-1 min-w-0">
             {/* 粉丝和关注等数据 */}
             <div className="flex items-center space-x-6 mb-3">
-              <div className="flex flex-col items-center">
+              <button 
+                onClick={() => navigate(`/user/${userInfo.id}/followers`)}
+                className="flex flex-col items-center hover:bg-gray-50 px-3 py-2 rounded-lg transition-colors"
+              >
                 <span className="font-semibold text-lg">{formatNumber(userInfo.followerCount)}</span>
                 <span className="text-sm text-gray-500">关注者</span>
-              </div>
-              <div className="flex flex-col items-center">
+              </button>
+              <button 
+                onClick={() => navigate(`/user/${userInfo.id}/following`)}
+                className="flex flex-col items-center hover:bg-gray-50 px-3 py-2 rounded-lg transition-colors"
+              >
                 <span className="font-semibold text-lg">{formatNumber(userInfo.followingCount)}</span>
                 <span className="text-sm text-gray-500">粉丝</span>
-              </div>
-              <div className="flex flex-col items-center">
+              </button>
+              <div className="flex flex-col items-center px-3 py-2">
                 <span className="font-semibold text-lg">{formatNumber(userInfo.likeCount)}</span>
                 <span className="text-sm text-gray-500">热度</span>
               </div>
@@ -177,37 +213,56 @@ export default function ProfileHeader({
                 <span>编辑资料</span>
               </button>
             ) : (
-              // 他人的主页：显示关注/取消关注和留言按钮
-              <>
-                <button
-                  onClick={onToggleFollow}
-                  className={`flex items-center space-x-1 px-3 py-1.5 rounded-full text-sm transition-colors ${
-                    isFollowing
-                      ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      : 'bg-blue-500 text-white hover:bg-blue-600'
-                  }`}
-                >
-                  {isFollowing ? (
-                    <span>已关注</span>
-                  ) : (
-                    <span>关注</span>
-                  )}
-                </button>
-                
-                <button
-                  className="flex items-center space-x-1 px-3 py-1.5 bg-white/90 text-gray-700 rounded-full text-sm hover:bg-white transition-colors"
-                >
-                  <span>留言</span>
-                </button>
-              </>
+              // 他人的主页：显示关注/取消关注按钮
+              <button
+                onClick={onToggleFollow}
+                className={`flex items-center space-x-1 px-3 py-1.5 rounded-full text-sm transition-colors ${
+                  isFollowing
+                    ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-blue-500 text-white hover:bg-blue-600'
+                }`}
+              >
+                {isFollowing ? (
+                  <span>已关注</span>
+                ) : (
+                  <span>关注</span>
+                )}
+              </button>
             )}
             
             {/* 更多选项按钮 */}
-            <button className="w-8 h-8 flex items-center justify-center rounded-full bg-white/90 text-gray-700 hover:bg-white">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                <path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-              </svg>
-            </button>
+            <div className="relative" ref={moreMenuRef}>
+              <button 
+                onClick={() => setShowMoreMenu(!showMoreMenu)}
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-white/90 text-gray-700 hover:bg-white transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                </svg>
+              </button>
+
+              {/* 下拉菜单 */}
+              {showMoreMenu && (
+                <div className="absolute top-full right-0 mt-1 w-32 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                  {!userInfo.isCurrentUser && (
+                    <>
+                      <button
+                        onClick={handleBlockUser}
+                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                      >
+                        屏蔽
+                      </button>
+                      <button
+                        onClick={handleReportUser}
+                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                      >
+                        举报
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
