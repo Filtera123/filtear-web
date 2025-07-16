@@ -88,10 +88,7 @@ export default function BasePostCard(props: PostCardProps) {
       </div>
       {/* 评论区 - 简单直接的显示/隐藏 */}
       <div className="comment-section-container w-full">
-        <div
-          className="pt-4 absolute top-[17px] w-full bg-white z-50 overflow-y-auto"
-          ref={commentRef}
-        >
+        <div className="absolute top-[17px] w-full bg-white z-50 overflow-y-auto" ref={commentRef}>
           {expandedComments[post.id] && (
             <CommentSection postId={post.id} comments={post.commentList || []} />
           )}

@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
+import { useNavigate } from 'react-router-dom';
 import { BasePostCard } from '../components/post-card';
 import { PostType, type PostTypeValue } from '../components/post-card/post.types';
-import { useTagPageStore } from './TagPage.store';
-import type { TagPageTab, LatestSubTab, HotSubTab, ContentFilter, ViewMode } from './TagPage.types';
-import { useNavigate } from 'react-router-dom';
 import { Image } from '../components/ui';
+import { useTagPageStore } from './TagPage.store';
+import type { ContentFilter, HotSubTab, LatestSubTab, TagPageTab, ViewMode } from './TagPage.types';
 
 // 定义返回类型
 interface TagPostsResponse {
@@ -25,7 +25,7 @@ const fetchTagPosts = async (
 ): Promise<TagPostsResponse> => {
   // 这里应该调用真实的API，现在用模拟数据
   await new Promise((resolve) => setTimeout(resolve, 500));
-  
+
   const pageSize = 10;
   const posts = Array.from({ length: pageSize }, (_, i) => {
     const postType = getPostTypeByFilter(contentFilter, i);
@@ -66,7 +66,7 @@ const fetchTagPosts = async (
               alt: `图片${i}`,
               width: 400,
               height: 300,
-            }
+            },
           ],
         };
       case PostType.VIDEO:
@@ -83,12 +83,15 @@ const fetchTagPosts = async (
       case PostType.DYNAMIC:
         return {
           ...basePost,
-          images: Math.random() > 0.5 ? [
-            {
-              url: `https://picsum.photos/400/300?random=${i}`,
-              alt: `动态图片${i}`,
-            }
-          ] : undefined,
+          images:
+            Math.random() > 0.5
+              ? [
+                  {
+                    url: `https://picsum.photos/400/300?random=${i}`,
+                    alt: `动态图片${i}`,
+                  },
+                ]
+              : undefined,
         };
       default:
         return basePost;
@@ -124,13 +127,8 @@ interface TagVirtualPostListProps {
 
 export default function TagVirtualPostList({ tagName }: TagVirtualPostListProps) {
   const navigate = useNavigate();
-  const {
-    currentTab,
-    currentLatestSubTab,
-    currentHotSubTab,
-    currentContentFilter,
-    viewMode
-  } = useTagPageStore();
+  const { currentTab, currentLatestSubTab, currentHotSubTab, currentContentFilter, viewMode } =
+    useTagPageStore();
 
   // 本地状态管理点赞状态
   const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({});
@@ -150,30 +148,28 @@ export default function TagVirtualPostList({ tagName }: TagVirtualPostListProps)
   }, [currentTab, currentLatestSubTab, currentHotSubTab]);
 
   // 生成查询key
-  const queryKey = useMemo(() => [
-    'tag-posts',
-    tagName,
-    currentTab,
-    currentSubTab,
-    currentContentFilter,
-  ], [tagName, currentTab, currentSubTab, currentContentFilter]);
+  const queryKey = useMemo(
+    () => ['tag-posts', tagName, currentTab, currentSubTab, currentContentFilter],
+    [tagName, currentTab, currentSubTab, currentContentFilter]
+  );
 
   // 使用 React Query 获取数据
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetching,
-    isFetchingNextPage,
-    isLoading,
-  } = useInfiniteQuery<TagPostsResponse>({
-    queryKey,
-    queryFn: ({ pageParam = 0 }) =>
-      fetchTagPosts(tagName, currentTab, currentSubTab, currentContentFilter, pageParam as number),
-    getNextPageParam: (lastPage: TagPostsResponse) => (lastPage.hasMore ? lastPage.page + 1 : undefined),
-    initialPageParam: 0,
-    staleTime: 1000 * 60 * 5, // 5分钟内认为数据是新鲜的
-  });
+  const { data, fetchNextPage, hasNextPage, isFetching, isFetchingNextPage, isLoading } =
+    useInfiniteQuery<TagPostsResponse>({
+      queryKey,
+      queryFn: ({ pageParam = 0 }) =>
+        fetchTagPosts(
+          tagName,
+          currentTab,
+          currentSubTab,
+          currentContentFilter,
+          pageParam as number
+        ),
+      getNextPageParam: (lastPage: TagPostsResponse) =>
+        lastPage.hasMore ? lastPage.page + 1 : undefined,
+      initialPageParam: 0,
+      staleTime: 1000 * 60 * 5, // 5分钟内认为数据是新鲜的
+    });
 
   // 展平所有页面的数据
   const allPosts = useMemo(() => {
@@ -183,14 +179,15 @@ export default function TagVirtualPostList({ tagName }: TagVirtualPostListProps)
   // 过滤帖子类型（对于动态tab，只显示动态类型的帖子）
   const filteredPosts = useMemo(() => {
     if (currentTab === 'dynamic') {
-      return allPosts.filter(post => post.type === PostType.DYNAMIC);
+      return allPosts.filter((post) => post.type === PostType.DYNAMIC);
     }
     return allPosts;
   }, [allPosts, currentTab]);
 
   // 虚拟化配置 - 仅在列表视图下使用
   const virtualizer = useWindowVirtualizer({
-    count: viewMode === 'list' ? (hasNextPage ? filteredPosts.length + 1 : filteredPosts.length) : 0,
+    count:
+      viewMode === 'list' ? (hasNextPage ? filteredPosts.length + 1 : filteredPosts.length) : 0,
     estimateSize: () => 200,
     overscan: 5,
     getScrollElement: () => window,
@@ -202,7 +199,7 @@ export default function TagVirtualPostList({ tagName }: TagVirtualPostListProps)
   // 无限滚动逻辑 - 列表视图
   useEffect(() => {
     if (viewMode !== 'list') return;
-    
+
     const [lastItem] = [...items].reverse();
 
     if (!lastItem) return;
@@ -215,24 +212,32 @@ export default function TagVirtualPostList({ tagName }: TagVirtualPostListProps)
     ) {
       fetchNextPage();
     }
-  }, [items, filteredPosts.length, hasNextPage, isFetching, isFetchingNextPage, fetchNextPage, viewMode]);
+  }, [
+    items,
+    filteredPosts.length,
+    hasNextPage,
+    isFetching,
+    isFetchingNextPage,
+    fetchNextPage,
+    viewMode,
+  ]);
 
   // 无限滚动逻辑 - 网格视图
   useEffect(() => {
     if (viewMode !== 'grid') return;
-    
+
     const handleScroll = () => {
       if (!hasNextPage || isFetching || isFetchingNextPage) return;
-      
+
       const scrollHeight = document.documentElement.scrollHeight;
       const scrollTop = document.documentElement.scrollTop;
       const clientHeight = document.documentElement.clientHeight;
-      
+
       if (scrollTop + clientHeight >= scrollHeight - 300) {
         fetchNextPage();
       }
     };
-    
+
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, [hasNextPage, isFetching, isFetchingNextPage, fetchNextPage, viewMode]);
@@ -286,40 +291,49 @@ export default function TagVirtualPostList({ tagName }: TagVirtualPostListProps)
   }, []);
 
   // 处理帖子点击
-  const handlePostClick = useCallback((post: any) => {
-    navigate(getPostDetailUrl(post), { state: post });
-  }, [navigate, getPostDetailUrl]);
+  const handlePostClick = useCallback(
+    (post: any) => {
+      navigate(getPostDetailUrl(post), { state: post });
+    },
+    [navigate, getPostDetailUrl]
+  );
 
   // 处理用户点击
-  const handleUserProfileClick = useCallback((e: React.MouseEvent, post: any) => {
-    e.stopPropagation();
-    navigate(`/user/${post.author}`);
-  }, [navigate]);
+  const handleUserProfileClick = useCallback(
+    (e: React.MouseEvent, post: any) => {
+      e.stopPropagation();
+      navigate(`/user/${post.author}`);
+    },
+    [navigate]
+  );
 
   // 处理点赞点击
   const handleLikeClick = useCallback((e: React.MouseEvent, post: any) => {
     e.stopPropagation(); // 阻止事件冒泡，防止触发卡片点击事件
-    
+
     // 更新本地点赞状态
-    setLikedPosts(prev => {
+    setLikedPosts((prev) => {
       const currentLikeState = prev[post.id] !== undefined ? prev[post.id] : post.isLike;
       const newLikeState = !currentLikeState;
-      
+
       // 在真实场景下，这里应该调用API更新点赞状态
       console.log(`${newLikeState ? '点赞' : '取消点赞'}帖子:`, post.id);
-      
+
       return {
         ...prev,
-        [post.id]: newLikeState
+        [post.id]: newLikeState,
       };
     });
   }, []);
 
   // 获取帖子当前的点赞状态
-  const getPostLikeStatus = useCallback((post: any) => {
-    // 如果本地状态中有该帖子的点赞状态，则使用本地状态，否则使用帖子原始状态
-    return likedPosts[post.id] !== undefined ? likedPosts[post.id] : post.isLike;
-  }, [likedPosts]);
+  const getPostLikeStatus = useCallback(
+    (post: any) => {
+      // 如果本地状态中有该帖子的点赞状态，则使用本地状态，否则使用帖子原始状态
+      return likedPosts[post.id] !== undefined ? likedPosts[post.id] : post.isLike;
+    },
+    [likedPosts]
+  );
 
   // 获取内容预览
   const getContentPreview = (content: string) => {
@@ -467,7 +481,6 @@ export default function TagVirtualPostList({ tagName }: TagVirtualPostListProps)
                   key={virtualItem.key}
                   ref={virtualizer.measureElement}
                   data-index={virtualItem.index}
-                  className="mb-4"
                 >
                   {post && (
                     <div className="relative">
@@ -500,9 +513,7 @@ export default function TagVirtualPostList({ tagName }: TagVirtualPostListProps)
         {/* 没有更多内容提示 */}
         {!hasNextPage && filteredPosts.length > 0 && (
           <div className="text-center py-6 text-gray-500">
-            <div className="bg-gray-100 rounded-lg p-4">
-              🎉 已加载全部内容
-            </div>
+            <div className="bg-gray-100 rounded-lg p-4">🎉 已加载全部内容</div>
           </div>
         )}
       </div>
@@ -533,11 +544,9 @@ export default function TagVirtualPostList({ tagName }: TagVirtualPostListProps)
       {/* 没有更多内容提示 */}
       {!hasNextPage && filteredPosts.length > 0 && (
         <div className="text-center py-6 text-gray-500">
-          <div className="bg-gray-100 rounded-lg p-4">
-            🎉 已加载全部内容
-          </div>
+          <div className="bg-gray-100 rounded-lg p-4">🎉 已加载全部内容</div>
         </div>
       )}
     </div>
   );
-} 
+}
