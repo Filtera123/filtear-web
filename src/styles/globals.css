@@ -8,14 +8,6 @@
   scrollbar-width: none;
 }
 
-button {
-  cursor: pointer;
-  background-color: transparent;
-  color: inherit;
-  border: none;
-  outline: none;
-  padding: 0;
-}
 
 html,
 body {

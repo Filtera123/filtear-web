@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { ChakraProvider, createSystem, defaultConfig } from '@chakra-ui/react';
 
 export const system = createSystem(defaultConfig, {

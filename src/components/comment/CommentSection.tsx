@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Button, Textarea } from '@chakra-ui/react';
 import { type Comment } from './comment.type';
 import CommentItem from './CommentItem';
 import ReplyModal from './ReplyModal';
@@ -132,39 +133,39 @@ export default function CommentSection({
   return (
     <div className="mt-4">
       {/* 新评论输入框 */}
-      <div className="flex space-x-3 mb-4">
+      <div className=" mb-4">
         {/* 当前用户头像 */}
-        <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
-          <img
-            src={currentUserAvatar}
-            alt={currentUserName}
-            className="w-8 h-8 rounded-full object-cover"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.style.display = 'none';
-              target.parentElement!.innerHTML = `<span class="text-white font-medium text-xs">${currentUserName[0]}</span>`;
-            }}
-          />
-        </div>
 
         {/* 输入框和发送按钮 */}
-        <div className="flex-1 flex space-x-2">
-          <textarea
+        <div className="flex-1 flex space-x-2 items-center">
+          <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+            <img
+              src={currentUserAvatar}
+              alt={currentUserName}
+              className="w-8 h-8 rounded-full object-cover"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                target.parentElement!.innerHTML = `<span class="text-white font-medium text-xs">${currentUserName[0]}</span>`;
+              }}
+            />
+          </div>
+
+          <Textarea
+            className="resize-none"
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="写下你的评论..."
-            className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
             rows={2}
             maxLength={500}
           />
-          <button
-            onClick={handleSubmitComment}
-            disabled={!newComment.trim()}
-            className="px-4 py-2 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors self-center"
-          >
+        </div>
+
+        <div className="flex justify-end mt-2">
+          <Button variant="subtle" onClick={handleSubmitComment} disabled={!newComment.trim()}>
             发送
-          </button>
+          </Button>
         </div>
       </div>
 

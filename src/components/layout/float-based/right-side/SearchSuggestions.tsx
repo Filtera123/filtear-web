@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 interface SearchSuggestionsProps {
   query: string;
@@ -21,7 +21,7 @@ interface Article {
 interface Tag {
   tag: string;
   link: string;
-  postsCount: number;  // 添加一个字段来存储每个标签的帖子数量
+  postsCount: number; // 添加一个字段来存储每个标签的帖子数量
 }
 
 const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({ query, onSuggestionClick }) => {
@@ -72,23 +72,23 @@ const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({ query, onSuggesti
         { id: '3', name: 'ni feng', avatar: 'https://example.com/avatar3.jpg' },
       ];
       const articlesData: Article[] = [
-        { 
-          title: 'nihao 文章', 
+        {
+          title: 'nihao 文章',
           link: '/article/nihao',
-          summary: '这是一篇关于nihao的文章...', 
-          tags: ['#ni', '#ninja']
+          summary: '这是一篇关于nihao的文章...',
+          tags: ['#ni', '#ninja'],
         },
-        { 
-          title: 'ninjago 文章', 
+        {
+          title: 'ninjago 文章',
           link: '/article/ninjago',
-          summary: '这是一篇关于ninjago的文章...', 
-          tags: ['#ninjago', '#MBTI']
+          summary: '这是一篇关于ninjago的文章...',
+          tags: ['#ninjago', '#MBTI'],
         },
-        { 
-          title: 'MBTI测试', 
+        {
+          title: 'MBTI测试',
           link: '/article/mbti',
-          summary: '这是一篇关于MBTI测试的文章...', 
-          tags: ['#MBTI']
+          summary: '这是一篇关于MBTI测试的文章...',
+          tags: ['#MBTI'],
         },
       ];
       const tagsData: Tag[] = [
@@ -100,9 +100,17 @@ const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({ query, onSuggesti
       ];
 
       // 根据查询条件筛选数据
-      const filteredUsers = usersData.filter(user => user.name.toLowerCase().includes(query.toLowerCase()));
-      const filteredArticles = articlesData.filter(article => article.title.toLowerCase().includes(query.toLowerCase()) || article.summary.toLowerCase().includes(query.toLowerCase()));
-      const filteredTags = tagsData.filter(tag => tag.tag.toLowerCase().includes(query.toLowerCase()));
+      const filteredUsers = usersData.filter((user) =>
+        user.name.toLowerCase().includes(query.toLowerCase())
+      );
+      const filteredArticles = articlesData.filter(
+        (article) =>
+          article.title.toLowerCase().includes(query.toLowerCase()) ||
+          article.summary.toLowerCase().includes(query.toLowerCase())
+      );
+      const filteredTags = tagsData.filter((tag) =>
+        tag.tag.toLowerCase().includes(query.toLowerCase())
+      );
 
       setUsers(filteredUsers);
       setArticles(filteredArticles);
@@ -120,34 +128,34 @@ const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({ query, onSuggesti
   };
 
   return (
-    <div className="absolute bg-white w-full mt-2 border border-gray-300 rounded-sm z-10 max-h-96 overflow-y-auto" ref={suggestionsRef}>
-      {loading && (
-        <div className="px-4 py-2 text-sm text-gray-500">加载中...</div>
-      )}
+    <div
+      className="absolute bg-white w-full mt-2 border border-gray-300 rounded-sm z-10 max-h-96 overflow-y-auto"
+      ref={suggestionsRef}
+    >
+      {loading && <div className="px-4 py-2 text-sm text-gray-500">加载中...</div>}
 
       {/* 相关标签 */}
       {query && showSuggestions && tags.length > 0 && (
         <div>
           <div className="px-4 py-2 font-bold text-sm text-gray-700">相关标签</div>
           <div className="flex flex-col space-y-2">
-            
+
               {tags.map((tag) => (
              <a
                 key={tag.tag}
                 href={tag.link}
                 onClick={(e) => {
                   e.preventDefault();
-                  handleSuggestionClick(tag.tag.replace(/^#+/, '')); 
-               }}                
+                  handleSuggestionClick(tag.tag.replace(/^#+/, ''));
+               }}
                className="flex flex-col px-4 py-2 text-black bg-gray-200 rounded-md hover:bg-gray-300 cursor-pointer"
-              >  
+              >
                 <div className="flex items-center space-x-1">
                   {/* 标签显示 */}
-                  <span className="text-sm font-medium">#{tag.tag.replace(/^#+/, '')}</span> {/* 去除重复的 # 符号 */}
+                  <span className="text-sm font-medium">#{tag.tag.replace(/^#+/, '')}</span>{' '}
+                  {/* 去除重复的 # 符号 */}
                   {/* 添加关联标签 */}
-                  {tag.tag === '#ni' && (
-                    <span className="text-xs text-gray-500">小说</span>
-                  )}
+                  {tag.tag === '#ni' && <span className="text-xs text-gray-500">小说</span>}
                 </div>
                 {/* 帖子数量显示在下一行 */}
                 <span className="text-xs text-gray-600 mt-1">{tag.postsCount} 个最新帖子</span>
@@ -196,8 +204,8 @@ const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({ query, onSuggesti
                   <a
                     key={tag}
                     href={`/tag/${tag}`}
-                    onClick={(e) => { 
-                      e.preventDefault(); 
+                    onClick={(e) => {
+                      e.preventDefault();
                       handleSuggestionClick(tag); // 点击后隐藏建议框
                     }}
                     className="text-blue-500 mr-2"

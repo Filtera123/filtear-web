@@ -1,17 +1,19 @@
-import React from 'react';
+import { useEffect, useRef, useState } from 'react';
+import CommentSection from '@components/comment/CommentSection.tsx';
 import { useNavigate } from 'react-router-dom';
+import { useCommentStore } from '@/components/comment/Comment.store';
+import { Image } from '../ui';
 import { ArticleContent, DynamicContent, ImageContent, VideoContent } from './content';
 import { PostType, type PostCardProps } from './post.types';
 import PostFooter from './PostFooter';
 import PostHeader from './PostHeader';
 import PostTags from './PostTags';
-import CommentSection from '@components/comment/CommentSection.tsx';
-import { useCommentStore } from '@/components/comment/Comment.store';
-import { Image } from '../ui';
 
 export default function BasePostCard(props: PostCardProps) {
   const { post } = props;
-  const postCardRef = React.useRef<HTMLDivElement>(null);
+  const postCardRef = useRef<HTMLDivElement>(null);
+  const commentRef = useRef<HTMLDivElement>(null);
+  const [commentBoxHeight, setCommentBoxHeight] = useState(0);
   const { expandedComments } = useCommentStore();
   const navigate = useNavigate();
 
@@ -26,7 +28,7 @@ export default function BasePostCard(props: PostCardProps) {
       case PostType.ARTICLE:
         return <ArticleContent post={post} />;
       case PostType.IMAGE:
-        return <ImageContent post={post}  />;
+        return <ImageContent post={post} />;
       case PostType.VIDEO:
         return <VideoContent post={post} />;
       case PostType.DYNAMIC:
@@ -37,8 +39,24 @@ export default function BasePostCard(props: PostCardProps) {
     }
   };
 
+  useEffect(() => {
+    if (commentRef.current && expandedComments[post.id]) {
+      // 获取评论区的高度
+      const height = commentRef.current.getBoundingClientRect().height;
+      setCommentBoxHeight(height + 12);
+
+      // 设置评论区的最大高度
+      // commentRef.current.style.maxHeight = `${height}px`;
+    }
+  }, [expandedComments, commentRef]);
+
   return (
-    <div className={`relative p-4 bg-white  border border-gray-100 ${expandedComments[post.id] ? 'mb-[500px]' : ''}`}>
+    <div
+      className={`relative p-4 bg-white  border border-gray-100`}
+      style={{
+        marginBottom: expandedComments[post.id] ? `${commentBoxHeight}px` : '0px',
+      }}
+    >
       <div ref={postCardRef} className={` flex gap-2  `}>
         {/* 头部：用户信息和关注按钮 */}
         {/* 用户头像 */}
@@ -69,14 +87,15 @@ export default function BasePostCard(props: PostCardProps) {
         </div>
       </div>
       {/* 评论区 - 简单直接的显示/隐藏 */}
-      <div
-        className="comment-section-container w-full"
-      >
-        {expandedComments[post.id] && (
-          <div className="pt-4 absolute h-[500px] top-[17px] w-full bg-white z-50 overflow-y-auto">
+      <div className="comment-section-container w-full">
+        <div
+          className="pt-4 absolute top-[17px] w-full bg-white z-50 overflow-y-auto"
+          ref={commentRef}
+        >
+          {expandedComments[post.id] && (
             <CommentSection postId={post.id} comments={post.commentList || []} />
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
