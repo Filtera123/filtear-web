@@ -2,19 +2,44 @@ import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SearchSuggestions from './SearchSuggestions';
 
+interface HistoryItem {
+  name: string;
+  time: string;
+}
+
+const STORAGE_KEY = 'globalSearchHistory';
+
 const GlobalSearchBar: React.FC = () => {
   const [query, setQuery] = useState<string>('');
-  const [historyList, setHistoryList] = useState([
-    { name: 'ganggang', time: '2025-07-06T12:00:00' },
-    { name: '你', time: '2025-07-06T13:00:00' },
-    { name: 'younglife', time: '2025-07-06T14:00:00' },
-    { name: '青春摄影', time: '2025-07-06T15:00:00' },
-  ]);
+
+  // 1. 从 localStorage 初始化历史；如果没有，则使用默认示例
+  const [historyList, setHistoryList] = useState<HistoryItem[]>(() => {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      try {
+        return JSON.parse(raw) as HistoryItem[];
+      } catch {
+        // 若解析失败，就回落到示例数据
+      }
+    }
+    return [
+      { name: 'ganggang', time: '2025-07-06T12:00:00' },
+      { name: '你', time: '2025-07-06T13:00:00' },
+      { name: 'younglife', time: '2025-07-06T14:00:00' },
+      { name: '青春摄影', time: '2025-07-06T15:00:00' },
+    ];
+  });
+
   const [isHistoryVisible, setIsHistoryVisible] = useState<boolean>(false);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [debounceTimeout, setDebounceTimeout] = useState<NodeJS.Timeout | null>(null);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const navigate = useNavigate();
+
+  // 2. 每次 historyList 改变都写入 localStorage
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(historyList));
+  }, [historyList]);
 
   const formatTime = (time: string) => {
     const now = new Date();
@@ -29,11 +54,22 @@ const GlobalSearchBar: React.FC = () => {
     if (hours < 1) return `${minutes} 分钟前`;
     if (hours < 24) return `${hours} 小时前`;
     if (days < 3) return `${days} 天前`;
-
     return '';
   };
 
-  const handleHistoryClick = useCallback((item: { name: string }) => {
+  const addToHistory = (searchQuery: string) => {
+    const newEntry: HistoryItem = {
+      name: searchQuery,
+      time: new Date().toISOString(),
+    };
+
+    setHistoryList(prev => {
+      const deduped = prev.filter(item => item.name !== searchQuery);
+      return [newEntry, ...deduped].slice(0, 10);
+    });
+  };
+
+  const handleHistoryClick = useCallback((item: HistoryItem) => {
     setQuery(item.name);
     addToHistory(item.name);
     navigate(`/search-results/${item.name}`);
@@ -44,39 +80,28 @@ const GlobalSearchBar: React.FC = () => {
   };
 
   const handleFocus = () => {
-    setIsHistoryVisible(query === '');
+    if (query === '') {
+      setIsHistoryVisible(true);
+    }
   };
 
   const handleDeleteHistory = useCallback((index: number) => {
-    const updatedHistoryList = [...historyList];
-    updatedHistoryList.splice(index, 1);
-    setHistoryList(updatedHistoryList);
-  }, [historyList]);
+    setHistoryList(prev => {
+      const next = [...prev];
+      next.splice(index, 1);
+      return next;
+    });
+  }, []);
 
   useEffect(() => {
     if (!query) return;
-
-    if (debounceTimeout) {
-      clearTimeout(debounceTimeout);
-    }
+    if (debounceTimeout) clearTimeout(debounceTimeout);
 
     const timeout = setTimeout(() => {
       console.log('Fetching suggestions for:', query);
     }, 500);
-
     setDebounceTimeout(timeout);
   }, [query]);
-
-  const addToHistory = (searchQuery: string) => {
-    const newHistory = {
-      name: searchQuery,
-      time: new Date().toISOString(),
-    };
-
-    if (!historyList.some(item => item.name === searchQuery)) {
-      setHistoryList((prevHistory) => [newHistory, ...prevHistory].slice(0, 10));
-    }
-  };
 
   const handleEnterKey = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && query.trim() !== '') {
@@ -110,10 +135,12 @@ const GlobalSearchBar: React.FC = () => {
           name="global-search"
           type="text"
           placeholder="搜索你感兴趣的内容..."
-          autoComplete="off"      
-          spellCheck={false}      
-          autoCorrect="off"       
+          autoComplete="off"
+          spellCheck={false}
+          autoCorrect="off"
           value={query}
+          // 3. 限制最大输入长度为 30
+          maxLength={30}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={handleFocus}
           onKeyDown={handleEnterKey}
@@ -132,9 +159,9 @@ const GlobalSearchBar: React.FC = () => {
         <SearchSuggestions
           query={query}
           onSuggestionClick={(suggestion) => {
-            setQuery(suggestion);       // 把 suggestion 写进输入框
-            addToHistory(suggestion);   // 加入历史
-            navigate(`/search-results/${suggestion}`); // 跳转
+            setQuery(suggestion);
+            addToHistory(suggestion);
+            navigate(`/search-results/${suggestion}`);
           }}
         />
 
@@ -156,7 +183,7 @@ const GlobalSearchBar: React.FC = () => {
                   className="relative px-4 py-2 hover:bg-gray-100 cursor-pointer"
                 >
                   <span className="text-black font-bold">{item.name}</span>
-                  <span className="text-gray-500 text-xs">{formatTime(item.time)}</span>
+                  <span className="text-gray-500 text-xs ml-2">{formatTime(item.time)}</span>
                   {hoveredIndex === index && (
                     <button
                       onClick={(e) => {
