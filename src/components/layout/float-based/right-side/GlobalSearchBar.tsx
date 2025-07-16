@@ -110,6 +110,9 @@ const GlobalSearchBar: React.FC = () => {
           name="global-search"
           type="text"
           placeholder="搜索你感兴趣的内容..."
+          autoComplete="off"      
+          spellCheck={false}      
+          autoCorrect="off"       
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={handleFocus}
@@ -129,8 +132,9 @@ const GlobalSearchBar: React.FC = () => {
         <SearchSuggestions
           query={query}
           onSuggestionClick={(suggestion) => {
-            addToHistory(suggestion); // Add the clicked suggestion to the history
-            navigate(`/search-results/${suggestion}`); // Navigate to the search results
+            setQuery(suggestion);       // 把 suggestion 写进输入框
+            addToHistory(suggestion);   // 加入历史
+            navigate(`/search-results/${suggestion}`); // 跳转
           }}
         />
 
@@ -175,5 +179,3 @@ const GlobalSearchBar: React.FC = () => {
 };
 
 export default GlobalSearchBar;
-
-
