@@ -54,7 +54,7 @@ export default function ImageContent({ post }: ImageContentProps) {
   useEffect(() => {
     if (count === 1) {
       let isMounted = true;
-      const img = new Image();
+      const img = new window.Image(); // 使用全局的 Image 构造函数
       img.onload = () => {
         if (isMounted) {
           setAspectRatio(`${img.naturalWidth} / ${img.naturalHeight}`);

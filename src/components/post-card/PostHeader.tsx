@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { BasePost } from './post.types';
+import { useReportContext } from '../report';
 
 interface PostHeaderProps {
   post: BasePost;
@@ -31,6 +32,7 @@ export default function PostHeader({ post }: PostHeaderProps) {
   const [isFollowing, setIsFollowing] = useState(post.isFollowing);
   const moreMenuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const { openReportModal } = useReportContext();
 
   // 点击外部关闭菜单
   useEffect(() => {
@@ -66,32 +68,28 @@ export default function PostHeader({ post }: PostHeaderProps) {
     console.log(`取消关注用户: ${post.author}`);
   };
 
-  // 处理举报帖子
-  const handleReportPost = () => {
-    console.log(`举报帖子: ${post.id}`);
+  // 处理举报
+  const handleReport = () => {
+    console.log(`举报: ${post.id}`);
     setShowMoreMenu(false);
-    // 这里可以添加API调用逻辑
+    // 使用举报模态窗口
+    openReportModal(post.id, 'post', post.author);
   };
 
-  // 处理屏蔽帖子
+  // 处理屏蔽帖子 - 永久屏蔽这条特定的帖子（除非在屏蔽设置里解除）
   const handleBlockPost = () => {
     console.log(`屏蔽帖子: ${post.id}`);
     setShowMoreMenu(false);
-    // 这里可以添加API调用逻辑
+    // TODO: 调用API将此帖子ID添加到用户的屏蔽帖子列表中
+    // blockPostAPI(post.id);
   };
 
-  // 处理举报用户
-  const handleReportUser = () => {
-    console.log(`举报用户: ${post.author}`);
-    setShowMoreMenu(false);
-    // 这里可以添加API调用逻辑
-  };
-
-  // 处理屏蔽用户
+  // 处理屏蔽用户 - 屏蔽该用户的所有帖子
   const handleBlockUser = () => {
     console.log(`屏蔽用户: ${post.author}`);
     setShowMoreMenu(false);
-    // 这里可以添加API调用逻辑
+    // TODO: 调用API将此用户添加到用户的屏蔽用户列表中
+    // blockUserAPI(post.author);
   };
 
   return (
@@ -137,18 +135,6 @@ export default function PostHeader({ post }: PostHeaderProps) {
           {/* 下拉菜单 */}
           {showMoreMenu && (
             <div className="absolute top-full right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
-              <button
-                onClick={handleReportPost}
-                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-              >
-                举报帖子
-              </button>
-              <button
-                onClick={handleBlockPost}
-                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-              >
-                屏蔽帖子
-              </button>
               {isFollowing && (
                 <button
                   onClick={handleUnfollowClick}
@@ -158,16 +144,22 @@ export default function PostHeader({ post }: PostHeaderProps) {
                 </button>
               )}
               <button
+                onClick={handleBlockPost}
+                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+              >
+                屏蔽帖子
+              </button>
+              <button
                 onClick={handleBlockUser}
                 className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
               >
                 屏蔽用户
               </button>
               <button
-                onClick={handleReportUser}
+                onClick={handleReport}
                 className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
               >
-                举报用户
+                举报
               </button>
             </div>
           )}

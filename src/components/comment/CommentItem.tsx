@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { type Comment } from './comment.type';
+import { useReportContext } from '../report';
 
 interface Props {
   comment: Comment;
@@ -58,6 +59,7 @@ export default function CommentItem({
   const marginLeft = Math.min(level, maxLevel) * 20; // 每层缩进20px，最多2层
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const moreMenuRef = useRef<HTMLDivElement>(null);
+  const { openReportModal } = useReportContext();
 
   // 点击外部关闭菜单
   useEffect(() => {
@@ -80,18 +82,20 @@ export default function CommentItem({
     setShowMoreMenu(!showMoreMenu);
   };
 
-  const handleMenuAction = (action: 'block-comment' | 'report-comment' | 'block-user') => {
+  const handleMenuAction = (action: 'block' | 'report') => {
     setShowMoreMenu(false);
     
     switch (action) {
-      case 'block-comment':
+      case 'block':
+        // 屏蔽该条特定评论
+        console.log(`屏蔽评论: ${comment.id}`);
         onBlockComment?.(comment.id);
         break;
-      case 'report-comment':
+      case 'report':
+        console.log(`举报评论: ${comment.id}`);
+        // 使用举报模态窗口
+        openReportModal(comment.id, 'comment', comment.userId);
         onReportComment?.(comment.id);
-        break;
-      case 'block-user':
-        onBlockUser?.(comment.userId);
         break;
     }
   };
@@ -181,22 +185,16 @@ export default function CommentItem({
               {showMoreMenu && (
                 <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-10 min-w-[120px]">
                   <button
-                    onClick={() => handleMenuAction('block-comment')}
+                    onClick={() => handleMenuAction('block')}
                     className="w-full px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition-colors"
                   >
-                    屏蔽评论
+                    屏蔽
                   </button>
                   <button
-                    onClick={() => handleMenuAction('report-comment')}
+                    onClick={() => handleMenuAction('report')}
                     className="w-full px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition-colors"
                   >
-                    举报评论
-                  </button>
-                  <button
-                    onClick={() => handleMenuAction('block-user')}
-                    className="w-full px-3 py-2 text-left text-xs text-red-600 hover:bg-red-50 transition-colors"
-                  >
-                    屏蔽该用户
+                    举报
                   </button>
                 </div>
               )}
