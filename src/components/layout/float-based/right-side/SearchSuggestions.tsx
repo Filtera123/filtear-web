@@ -130,16 +130,17 @@ const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({ query, onSuggesti
         <div>
           <div className="px-4 py-2 font-bold text-sm text-gray-700">相关标签</div>
           <div className="flex flex-col space-y-2">
-            {tags.map((tag) => (
-              <a
+            
+              {tags.map((tag) => (
+             <a
                 key={tag.tag}
                 href={tag.link}
-                onClick={(e) => { 
-                  e.preventDefault(); 
-                  handleSuggestionClick(tag.tag); // 点击后隐藏建议框
-                }}
-                className="flex flex-col px-4 py-2 text-black bg-gray-200 rounded-md hover:bg-gray-300 cursor-pointer"
-              >
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleSuggestionClick(tag.tag.replace(/^#+/, '')); 
+               }}                
+               className="flex flex-col px-4 py-2 text-black bg-gray-200 rounded-md hover:bg-gray-300 cursor-pointer"
+              >  
                 <div className="flex items-center space-x-1">
                   {/* 标签显示 */}
                   <span className="text-sm font-medium">#{tag.tag.replace(/^#+/, '')}</span> {/* 去除重复的 # 符号 */}
@@ -163,11 +164,9 @@ const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({ query, onSuggesti
           {users.map((user) => (
             <div
               key={user.id}
-              onClick={() => { 
-                handleSuggestionClick(user.name); // 点击后隐藏建议框
-              }}
+              onClick={() => handleSuggestionClick(user.name)}  // ← 统一调用
               className="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer border-b rounded-lg mb-2"
-            >
+           >
               <img
                 src={user.avatar || defaultAvatar}
                 alt={user.name}
@@ -185,12 +184,10 @@ const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({ query, onSuggesti
         <div>
           <div className="px-4 py-2 font-bold text-sm text-gray-700">相关文章</div>
           {articles.map((article) => (
-            <div
+           <div
               key={article.title}
-              onClick={() => { 
-                handleSuggestionClick(article.link); // 点击后隐藏建议框
-              }}
-              className="px-4 py-2 hover:bg-gray-100 cursor-pointer border-b"
+              onClick={() => handleSuggestionClick(article.title)}  // ← 统一调用，用 title 做关键词
+             className="px-4 py-2 hover:bg-gray-100 cursor-pointer border-b"
             >
               <div className="text-lg font-semibold">{article.title}</div>
               <div className="text-sm text-gray-600">{article.summary}</div>
