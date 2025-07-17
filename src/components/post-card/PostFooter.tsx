@@ -4,6 +4,7 @@ import { useCommentStore } from '@/components/comment/Comment.store';
 import { useHomePostListStore } from '@/pages/home/Home.store.ts';
 import { rootQueryClient } from '@/RootQuery.provider.tsx';
 import type { BasePost } from './post.types';
+import type { Comment } from '@/components/comment/comment.type';
 
 // 模拟点赞 API
 const toggleLike = async (
@@ -62,10 +63,20 @@ const formatNumber = (num: number): string => {
   return num.toString();
 };
 
+// 递归计算评论总数（包括所有回复）
+const getTotalCommentCount = (comments: Comment[]): number => {
+  return comments.reduce((count, comment) => {
+    return count + 1 + (comment.replies ? getTotalCommentCount(comment.replies) : 0);
+  }, 0);
+};
+
 export default function PostFooter({ post }: PostFooterProps) {
 
   const { currentTab } = useHomePostListStore();
   const { expandedComments, toggleComments } = useCommentStore();
+
+  // 计算实际的评论总数（包括所有回复）
+  const actualCommentCount = getTotalCommentCount(post.commentList || []);
 
 
   // 点赞 mutation
@@ -171,7 +182,7 @@ export default function PostFooter({ post }: PostFooterProps) {
                   d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
                 />
               </svg>
-              <span className="text-sm">{formatNumber(post.comments)}</span>
+              <span className="text-sm">{formatNumber(actualCommentCount)}</span>
             </button>
           </div>
 

@@ -227,7 +227,7 @@ export default function TagPage() {
                         key={filter.key}
                         onClick={() => setCurrentContentFilter(filter.key as ContentFilter)}
                         className={cn(
-                          'px-16 py-2.5 rounded-full text-sm font-medium transition-all duration-200',
+                          'px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap',
                           currentContentFilter === filter.key
                             ? 'bg-white text-blue-600 shadow-sm border border-blue-200 font-semibold'
                             : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'

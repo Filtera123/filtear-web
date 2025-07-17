@@ -125,10 +125,7 @@ export default function NotificationItem({ notification }: NotificationItemProps
           </span>
           <span className="mx-1">{getActionText()}</span>
           {notification.post && (
-            <span 
-              className="text-blue-600 cursor-pointer hover:underline"
-              onClick={handlePostClick}
-            >
+            <span className="text-gray-700">
               {notification.post.type === 'article' ? '文章' : 
                notification.post.type === 'image' ? '图片' :
                notification.post.type === 'video' ? '视频' : '动态'}

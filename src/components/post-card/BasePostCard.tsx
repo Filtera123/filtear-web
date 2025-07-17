@@ -9,17 +9,104 @@ import PostFooter from './PostFooter';
 import PostHeader from './PostHeader';
 import PostTags from './PostTags';
 
-export default function BasePostCard(props: PostCardProps) {
-  const { post } = props;
+export default function BasePostCard({ post }: PostCardProps) {
   const postCardRef = useRef<HTMLDivElement>(null);
   const commentRef = useRef<HTMLDivElement>(null);
   const [commentBoxHeight, setCommentBoxHeight] = useState(0);
-  const { expandedComments } = useCommentStore();
+  const { expandedComments, comments, setComments, toggleCommentLike } = useCommentStore();
   const navigate = useNavigate();
+
+  // 初始化评论数据
+  useEffect(() => {
+    if (post.commentList && !comments[post.id]) {
+      setComments(post.id, post.commentList);
+    }
+  }, [post.commentList, post.id, comments, setComments]);
+
+  // 获取当前帖子的评论数据（优先使用store中的数据，因为它包含最新状态）
+  const currentComments = comments[post.id] || post.commentList || [];
 
   // 处理用户头像点击事件
   const handleUserAvatarClick = () => {
     navigate(`/user/${post.author}`);
+  };
+
+  // 根据帖子类型生成详情页URL
+  const getPostDetailUrl = () => {
+    const postId = post.id;
+    switch (post.type) {
+      case PostType.ARTICLE:
+        return `/post/article/${postId}`;
+      case PostType.IMAGE:
+        return `/post/image/${postId}`;
+      case PostType.VIDEO:
+        return `/post/video/${postId}`;
+      case PostType.DYNAMIC:
+        return `/post/dynamic/${postId}`;
+      default:
+        return `/post/article/${postId}`;
+    }
+  };
+
+  // 处理"查看全部评论"按钮点击
+  const handleViewAllComments = (postId: string) => {
+    const url = getPostDetailUrl();
+    
+    // 对于文章和动态类型，需要滚动到评论区
+    if (post.type === PostType.ARTICLE || post.type === PostType.DYNAMIC) {
+      navigate(url, { 
+        state: { 
+          ...post, 
+          scrollToComments: true 
+        } 
+      });
+    } else {
+      // 其他类型直接跳转
+      navigate(url, { state: post });
+    }
+  };
+
+  // 处理评论点赞
+  const handleLikeComment = (commentId: string) => {
+    console.log('点赞评论:', commentId);
+    // 使用store更新评论点赞状态
+    toggleCommentLike(post.id, commentId);
+    // TODO: 这里可以添加API调用来同步到服务器
+  };
+
+  // 处理添加评论
+  const handleAddComment = (postId: string, content: string) => {
+    console.log('添加评论到帖子:', postId, '内容:', content);
+    // TODO: 这里应该调用API添加新评论
+  };
+
+  // 处理回复评论
+  const handleReplyComment = (commentId: string, content: string) => {
+    console.log('回复评论:', commentId, '内容:', content);
+    // TODO: 这里应该调用API添加回复
+  };
+
+  // 处理用户点击
+  const handleUserClick = (userId: string) => {
+    navigate(`/user/${userId}`);
+  };
+
+  // 处理屏蔽评论
+  const handleBlockComment = (commentId: string) => {
+    console.log('屏蔽评论:', commentId);
+    // TODO: 这里应该调用API屏蔽评论
+  };
+
+  // 处理举报评论
+  const handleReportComment = (commentId: string) => {
+    console.log('举报评论:', commentId);
+    // TODO: 这里应该调用API举报评论
+  };
+
+  // 处理屏蔽用户
+  const handleBlockUser = (userId: string) => {
+    console.log('屏蔽用户:', userId);
+    // TODO: 这里应该调用API屏蔽用户
   };
 
   // 根据帖子类型渲染不同的内容组件
@@ -40,7 +127,8 @@ export default function BasePostCard(props: PostCardProps) {
   };
 
   useEffect(() => {
-    if (commentRef.current && expandedComments[post.id]) {
+    const postId = post.id;
+    if (commentRef.current && expandedComments[postId]) {
       // 获取评论区的高度
       const height = commentRef.current.getBoundingClientRect().height;
       setCommentBoxHeight(height + 12);
@@ -48,7 +136,7 @@ export default function BasePostCard(props: PostCardProps) {
       // 设置评论区的最大高度
       // commentRef.current.style.maxHeight = `${height}px`;
     }
-  }, [expandedComments, commentRef]);
+  }, [expandedComments, commentRef, post.id]);
 
   return (
     <div
@@ -90,7 +178,18 @@ export default function BasePostCard(props: PostCardProps) {
       <div className="comment-section-container w-full">
         <div className="absolute top-[17px] w-full bg-white z-50 overflow-y-auto" ref={commentRef}>
           {expandedComments[post.id] && (
-            <CommentSection postId={post.id} comments={post.commentList || []} />
+            <CommentSection 
+              postId={post.id} 
+              comments={currentComments} 
+              onPostClick={handleViewAllComments}
+              onLikeComment={handleLikeComment}
+              onAddComment={handleAddComment}
+              onReplyComment={handleReplyComment}
+              onUserClick={handleUserClick}
+              onBlockComment={handleBlockComment}
+              onReportComment={handleReportComment}
+              onBlockUser={handleBlockUser}
+            />
           )}
         </div>
       </div>

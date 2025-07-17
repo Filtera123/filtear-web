@@ -4,6 +4,7 @@ import CommentSection from '@/components/comment/CommentSection';
 import { UserProfile } from '@/components/layout/float-based/right-side';
 import type { DynamicPost } from '@/components/post-card/post.types';
 import { usePostActions } from '@/hooks/usePostActions';
+import { useBrowsingHistoryStore } from '@/stores/browsingHistoryStore';
 
 export default function DynamicDetail() {
   const getImageGridClass = (count: number) => {
@@ -23,12 +24,42 @@ export default function DynamicDetail() {
   const location = useLocation();
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const { id } = useParams();
-  const post = location.state?.post as DynamicPost | undefined;
+  const post = location.state?.post as (DynamicPost & { scrollToComments?: boolean }) | undefined;
   const navigate = useNavigate();
+  const { addRecord } = useBrowsingHistoryStore();
 
   const [showCommentSection, setShowCommentSection] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const moreMenuRef = useRef<HTMLDivElement>(null);
+
+  // 记录浏览历史
+  useEffect(() => {
+    if (post) {
+      addRecord({
+        id: post.id,
+        title: post.content ? (post.content.slice(0, 30) + (post.content.length > 30 ? '...' : '')) : '动态内容',
+        author: post.author,
+        authorAvatar: post.authorAvatar,
+        type: 'dynamic',
+        url: `/post/dynamic/${post.id}`,
+        thumbnail: post.images?.[0]?.url,
+      });
+    }
+  }, [post, addRecord]);
+
+  // 检查是否需要自动滚动到评论区
+  useEffect(() => {
+    if (post?.scrollToComments) {
+      setShowCommentSection(true);
+      // 使用setTimeout确保CommentSection已渲染
+      setTimeout(() => {
+        const commentSection = document.getElementById('comment-section');
+        if (commentSection) {
+          commentSection.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+    }
+  }, [post?.scrollToComments]);
   if (!post) {
     return <div className="text-center py-20">Not Found</div>;
   }
@@ -252,14 +283,14 @@ export default function DynamicDetail() {
                 }`}
               >
                 {post.images.slice(0, 9).map((image, index) => {
-                  const isLastItem = index === 8 && post.images.length > 9;
-                  const remainingCount = post.images.length - 9;
+                  const isLastItem = index === 8 && post.images && post.images.length > 9;
+                  const remainingCount = post.images ? post.images.length - 9 : 0;
 
                   return (
                     <div
                       key={index}
                       className={`relative rounded-lg overflow-hidden bg-gray-100 hover:opacity-95 transition-opacity ${
-                        post.images.length === 1 ? 'aspect-[4/3]' : 'aspect-square'
+                        post.images && post.images.length === 1 ? 'aspect-[4/3]' : 'aspect-square'
                       }`}
                     >
                       <img

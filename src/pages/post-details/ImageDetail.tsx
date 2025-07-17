@@ -1,17 +1,34 @@
 // ImageDetail.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import CommentSection from '@/components/comment/CommentSection';
 import type { ImagePost } from '@/components/post-card/post.types';
 import { usePostActions } from '@/hooks/usePostActions';
+import { useBrowsingHistoryStore } from '@/stores/browsingHistoryStore';
 
 export default function ImageDetail() {
   const location = useLocation();
   const navigate = useNavigate();
   const post = location.state?.post as ImagePost | undefined;
+  const { addRecord } = useBrowsingHistoryStore();
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showToolbar, setShowToolbar] = useState(false);
+
+  // 记录浏览历史
+  useEffect(() => {
+    if (post) {
+      addRecord({
+        id: post.id,
+        title: post.content ? (post.content.slice(0, 30) + (post.content.length > 30 ? '...' : '')) : '图片内容',
+        author: post.author,
+        authorAvatar: post.authorAvatar,
+        type: 'image',
+        url: `/post/image/${post.id}`,
+        thumbnail: post.images?.[0]?.url,
+      });
+    }
+  }, [post, addRecord]);
 
   if (!post || !post.images || post.images.length === 0) {
     return (

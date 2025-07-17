@@ -7,14 +7,14 @@ import ReplyModal from './ReplyModal';
 interface Props {
   postId: string;
   comments: Comment[];
-  onAddComment?: (postId: number, content: string) => void;
+  onAddComment?: (postId: string, content: string) => void;
   onLikeComment?: (commentId: string) => void;
   onReplyComment?: (commentId: string, content: string) => void;
   onUserClick?: (userId: string) => void;
   onBlockComment?: (commentId: string) => void;
   onReportComment?: (commentId: string) => void;
   onBlockUser?: (userId: string) => void;
-  onPostClick?: (postId: number) => void; // 新增：点击查看帖子详情的回调
+  onPostClick?: (postId: string) => void; // 修改：使用string类型保持一致
   currentUserId?: string;
   currentUserName?: string;
   currentUserAvatar?: string;

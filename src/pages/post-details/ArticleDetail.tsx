@@ -4,15 +4,33 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import CommentSection from '@/components/comment/CommentSection';
 import { UserProfile } from '@/components/layout/float-based/right-side';
 import { usePostActions } from '@/hooks/usePostActions';
+import { useBrowsingHistoryStore } from '@/stores/browsingHistoryStore';
 
 export default function ArticleDetail() {
   const { state } = useLocation();
   const { id } = useParams();
   const navigate = useNavigate();
-  const post = state as ArticlePost | undefined;
+  const post = state as (ArticlePost & { scrollToComments?: boolean }) | undefined;
   const [showCommentSection, setShowCommentSection] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const moreMenuRef = useRef<HTMLDivElement>(null);
+  const { addRecord } = useBrowsingHistoryStore();
+
+  // 记录浏览历史
+  useEffect(() => {
+    if (post) {
+      addRecord({
+        id: post.id,
+        title: post.title || '无标题文章',
+        author: post.author,
+        authorAvatar: post.authorAvatar,
+        type: 'article',
+        url: `/post/article/${post.id}`,
+        thumbnail: post.thumbnail,
+      });
+    }
+  }, [post, addRecord]);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (moreMenuRef.current && !moreMenuRef.current.contains(event.target as Node)) {
@@ -22,6 +40,20 @@ export default function ArticleDetail() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // 检查是否需要自动滚动到评论区
+  useEffect(() => {
+    if (post?.scrollToComments) {
+      setShowCommentSection(true);
+      // 使用setTimeout确保CommentSection已渲染
+      setTimeout(() => {
+        const commentSection = document.getElementById('comment-section');
+        if (commentSection) {
+          commentSection.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+    }
+  }, [post?.scrollToComments]);
   if (!post) {
     return <div className="text-center py-20">Not Found</div>;
   }

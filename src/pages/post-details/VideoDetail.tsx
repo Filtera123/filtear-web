@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import CommentSection from '@/components/comment/CommentSection';
 import type { VideoPost } from '@/components/post-card/post.types';
 import { usePostActions } from '@/hooks/usePostActions';
+import { useBrowsingHistoryStore } from '@/stores/browsingHistoryStore';
 
 const formatDuration = (seconds: number): string => {
   const hours = Math.floor(seconds / 3600);
@@ -20,6 +21,22 @@ export default function VideoDetail() {
   const { id } = useParams();
   const post = location.state?.post as VideoPost | undefined;
   const navigate = useNavigate();
+  const { addRecord } = useBrowsingHistoryStore();
+
+  // 记录浏览历史
+  useEffect(() => {
+    if (post) {
+      addRecord({
+        id: post.id,
+        title: post.title || (post.content ? (post.content.slice(0, 30) + (post.content.length > 30 ? '...' : '')) : '视频内容'),
+        author: post.author,
+        authorAvatar: post.authorAvatar,
+        type: 'video',
+        url: `/post/video/${post.id}`,
+        thumbnail: post.video?.thumbnail,
+      });
+    }
+  }, [post, addRecord]);
 
   if (!post) return <div>Loading...</div>;
 

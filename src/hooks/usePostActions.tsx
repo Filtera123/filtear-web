@@ -4,6 +4,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useHomePostListStore } from '@/pages/home/Home.store.ts';
 import { rootQueryClient } from '@/RootQuery.provider.tsx';
 import type { BasePost } from '@/components/post-card/post.types';
+import type { Comment } from '@/components/comment/comment.type';
 
 export const formatNumber = (num?: number): string => {
   if (typeof num !== 'number') return '0'; // 防御性处理
@@ -11,6 +12,13 @@ export const formatNumber = (num?: number): string => {
     return (num / 1000).toFixed(1) + 'k';
   }
   return num.toString();
+};
+
+// 递归计算评论总数（包括所有回复）
+const getTotalCommentCount = (comments: Comment[]): number => {
+  return comments.reduce((count, comment) => {
+    return count + 1 + (comment.replies ? getTotalCommentCount(comment.replies) : 0);
+  }, 0);
 };
 
 // 模拟点赞 API
@@ -36,6 +44,9 @@ export function usePostActions(post: BasePost) {
 
   // ✅ 本地关注状态
   const [isFollowing, setIsFollowing] = useState(post.isFollowing);
+
+  // ✅ 计算实际的评论总数
+  const actualCommentCount = getTotalCommentCount(post.commentList || []);
 
   const likeMutation = useMutation({
     mutationFn: (liked: boolean) => toggleLike(post.id, liked),
@@ -111,7 +122,7 @@ export function usePostActions(post: BasePost) {
     likes,
     isLike,
     handleLike,
-    comments: post.comments,
+    comments: actualCommentCount,
     views: post.views ?? 0,
     formatNumber,
 
