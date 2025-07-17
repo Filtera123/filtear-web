@@ -1,16 +1,95 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ArticlePost } from '@components/post-card/post.types';
+import type { BasePost } from '@components/post-card/post.types';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import CommentSection from '@/components/comment/CommentSection';
 import { UserProfile } from '@/components/layout/float-based/right-side';
 import { usePostActions } from '@/hooks/usePostActions';
 import { useBrowsingHistoryStore } from '@/stores/browsingHistoryStore';
 
+// 在文件顶部添加 mock 数据
+const mockArticles = [
+  {
+    id: 'nihao',
+    type: 'article' as const,
+    title: 'nihao 文章',
+    content: '这是一篇关于nihao的文章...\n正文内容示例。',
+    author: '测试作者',
+    authorAvatar: 'https://example.com/avatar1.jpg',
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
+    slug: 'nihao',
+    summary: 'nihao 文章摘要',
+    category: '默认分类',
+    categorySlug: 'default',
+    tags: [{ id: 'ni', name: 'ni' }],
+    wordCount: 100,
+    likes: 10,
+    isLike: false,
+    isFollowing: false,
+    comments: 5,
+    commentList: [],
+    views: 100,
+    abstract: 'nihao 文章摘要',
+  },
+  {
+    id: 'ninjago',
+    type: 'article' as const,
+    title: 'ninjago 文章',
+    content: '这是一篇关于ninjago的文章...\n正文内容示例。',
+    author: '忍者作者',
+    authorAvatar: 'https://example.com/avatar2.jpg',
+    createdAt: '2024-01-02T00:00:00Z',
+    updatedAt: '2024-01-02T00:00:00Z',
+    slug: 'ninjago',
+    summary: 'ninjago 文章摘要',
+    category: '默认分类',
+    categorySlug: 'default',
+    tags: [{ id: 'ninja', name: 'ninja' }],
+    wordCount: 120,
+    likes: 20,
+    isLike: false,
+    isFollowing: false,
+    comments: 8,
+    commentList: [],
+    views: 200,
+    abstract: 'ninjago 文章摘要',
+  },
+  {
+    id: 'mbti',
+    type: 'article' as const,
+    title: 'MBTI测试',
+    content: '这是一篇关于MBTI测试的文章...\n正文内容示例。',
+    author: 'MBTI作者',
+    authorAvatar: 'https://example.com/avatar3.jpg',
+    createdAt: '2024-01-03T00:00:00Z',
+    updatedAt: '2024-01-03T00:00:00Z',
+    slug: 'mbti',
+    summary: 'MBTI 文章摘要',
+    category: '默认分类',
+    categorySlug: 'default',
+    tags: [{ id: 'MBTI', name: 'MBTI' }],
+    wordCount: 80,
+    likes: 5,
+    isLike: false,
+    isFollowing: false,
+    comments: 2,
+    commentList: [],
+    views: 50,
+    abstract: 'MBTI 文章摘要',
+  },
+];
+
 export default function ArticleDetail() {
   const { state } = useLocation();
-  const { id } = useParams();
+  const { postId } = useParams();
   const navigate = useNavigate();
-  const post = state as (ArticlePost & { scrollToComments?: boolean }) | undefined;
+  let post = state as (ArticlePost & { scrollToComments?: boolean }) | undefined;
+  if (!post && postId) {
+    post = mockArticles.find(a => a.id === postId);
+  }
+  // 始终调用 hook，哪怕 post 可能为 undefined
+  const postActions = usePostActions(post || ({} as BasePost));
   const [showCommentSection, setShowCommentSection] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const moreMenuRef = useRef<HTMLDivElement>(null);
@@ -26,7 +105,6 @@ export default function ArticleDetail() {
         authorAvatar: post.authorAvatar,
         type: 'article',
         url: `/post/article/${post.id}`,
-        thumbnail: post.thumbnail,
       });
     }
   }, [post, addRecord]);
@@ -57,6 +135,7 @@ export default function ArticleDetail() {
   if (!post) {
     return <div className="text-center py-20">Not Found</div>;
   }
+  // 解构 postActions
   const {
     likes,
     isLike,
@@ -72,7 +151,7 @@ export default function ArticleDetail() {
     comments,
     views,
     formatNumber,
-  } = usePostActions(post);
+  } = postActions;
   return (
     <>
       {/* 导航栏 */}

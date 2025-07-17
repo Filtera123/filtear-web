@@ -159,9 +159,17 @@ const GlobalSearchBar: React.FC = () => {
         <SearchSuggestions
           query={query}
           onSuggestionClick={(suggestion) => {
-            setQuery(suggestion);
-            addToHistory(suggestion);
-            navigate(`/search-results/${suggestion}`);
+            setQuery(suggestion.value);
+            addToHistory(suggestion.value);
+            if (suggestion.type === 'tag') {
+              navigate(suggestion.link);
+            } else if (suggestion.type === 'user') {
+              navigate(suggestion.link);
+            } else if (suggestion.type === 'article') {
+              navigate(suggestion.link);
+            } else {
+              navigate(`/search-results/${suggestion.value}`);
+            }
           }}
         />
 

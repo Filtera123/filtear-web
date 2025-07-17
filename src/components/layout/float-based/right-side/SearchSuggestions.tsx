@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 
 interface SearchSuggestionsProps {
   query: string;
-  onSuggestionClick: (suggestion: string) => void;
+  onSuggestionClick: (suggestion: { type: 'tag' | 'user' | 'article'; value: string; link: string }) => void;
 }
 
 interface User {
@@ -12,6 +12,7 @@ interface User {
 }
 
 interface Article {
+  id: string;
   title: string;
   link: string;
   summary: string;
@@ -73,20 +74,23 @@ const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({ query, onSuggesti
       ];
       const articlesData: Article[] = [
         {
+          id: 'nihao',
           title: 'nihao 文章',
-          link: '/article/nihao',
+          link: '/post/article/nihao',
           summary: '这是一篇关于nihao的文章...',
           tags: ['#ni', '#ninja'],
         },
         {
+          id: 'ninjago',
           title: 'ninjago 文章',
-          link: '/article/ninjago',
+          link: '/post/article/ninjago',
           summary: '这是一篇关于ninjago的文章...',
           tags: ['#ninjago', '#MBTI'],
         },
         {
+          id: 'mbti',
           title: 'MBTI测试',
-          link: '/article/mbti',
+          link: '/post/article/mbti',
           summary: '这是一篇关于MBTI测试的文章...',
           tags: ['#MBTI'],
         },
@@ -122,11 +126,6 @@ const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({ query, onSuggesti
     setDebounceTimeout(timeout);
   }, [query]);
 
-  const handleSuggestionClick = (suggestion: string) => {
-    onSuggestionClick(suggestion); // 执行父组件传递的事件
-    setShowSuggestions(false); // 点击后隐藏建议框
-  };
-
   return (
     <div
       className="absolute bg-white w-full mt-2 border border-gray-300 rounded-sm z-10 max-h-96 overflow-y-auto"
@@ -146,7 +145,8 @@ const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({ query, onSuggesti
                 href={tag.link}
                 onClick={(e) => {
                   e.preventDefault();
-                  handleSuggestionClick(tag.tag.replace(/^#+/, ''));
+                  onSuggestionClick({ type: 'tag', value: tag.tag.replace(/^#+/, ''), link: tag.link });
+                  setShowSuggestions(false);
                }}
                className="flex flex-col px-4 py-2 text-black bg-gray-200 rounded-md hover:bg-gray-300 cursor-pointer"
               >
@@ -172,7 +172,10 @@ const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({ query, onSuggesti
           {users.map((user) => (
             <div
               key={user.id}
-              onClick={() => handleSuggestionClick(user.name)}  // ← 统一调用
+              onClick={() => {
+                onSuggestionClick({ type: 'user', value: user.name, link: `/user/${user.id}` });
+                setShowSuggestions(false);
+              }}
               className="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer border-b rounded-lg mb-2"
            >
               <img
@@ -194,7 +197,10 @@ const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({ query, onSuggesti
           {articles.map((article) => (
            <div
               key={article.title}
-              onClick={() => handleSuggestionClick(article.title)}  // ← 统一调用，用 title 做关键词
+              onClick={() => {
+                onSuggestionClick({ type: 'article', value: article.title, link: article.link });
+                setShowSuggestions(false);
+              }}
              className="px-4 py-2 hover:bg-gray-100 cursor-pointer border-b"
             >
               <div className="text-lg font-semibold">{article.title}</div>
@@ -206,7 +212,8 @@ const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({ query, onSuggesti
                     href={`/tag/${tag}`}
                     onClick={(e) => {
                       e.preventDefault();
-                      handleSuggestionClick(tag); // 点击后隐藏建议框
+                      onSuggestionClick({ type: 'tag', value: tag.replace(/^#+/, ''), link: `/tag/${tag.replace(/^#+/, '')}` });
+                      setShowSuggestions(false);
                     }}
                     className="text-blue-500 mr-2"
                   >
