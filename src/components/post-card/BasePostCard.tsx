@@ -8,6 +8,8 @@ import { PostType, type PostCardProps } from './post.types';
 import PostFooter from './PostFooter';
 import PostHeader from './PostHeader';
 import PostTags from './PostTags';
+import ImageDetailModal from '@/pages/post-details/ImageDetail';
+import VideoDetailModal from '@/pages/post-details/VideoDetail';
 
 export default function BasePostCard({ post }: PostCardProps) {
   const postCardRef = useRef<HTMLDivElement>(null);
@@ -15,6 +17,9 @@ export default function BasePostCard({ post }: PostCardProps) {
   const [commentBoxHeight, setCommentBoxHeight] = useState(0);
   const { expandedComments, comments, setComments, toggleCommentLike } = useCommentStore();
   const navigate = useNavigate();
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [modalIndex, setModalIndex] = useState(0);
+  const [showVideoModal, setShowVideoModal] = useState(false);
 
   // 初始化评论数据
   useEffect(() => {
@@ -115,9 +120,9 @@ export default function BasePostCard({ post }: PostCardProps) {
       case PostType.ARTICLE:
         return <ArticleContent post={post} />;
       case PostType.IMAGE:
-        return <ImageContent post={post} />;
+        return <ImageContent post={post} onImageClick={(p, idx) => { setShowImageModal(true); setModalIndex(idx); }} />;
       case PostType.VIDEO:
-        return <VideoContent post={post} />;
+        return <VideoContent post={post} onVideoClick={() => setShowVideoModal(true)} />;
       case PostType.DYNAMIC:
         return <DynamicContent post={post} />;
       default:
@@ -193,6 +198,12 @@ export default function BasePostCard({ post }: PostCardProps) {
           )}
         </div>
       </div>
+      {showImageModal && post.type === PostType.IMAGE && (
+        <ImageDetailModal post={post} initialIndex={modalIndex} onClose={() => setShowImageModal(false)} />
+      )}
+      {showVideoModal && post.type === PostType.VIDEO && (
+        <VideoDetailModal post={post} onClose={() => setShowVideoModal(false)} />
+      )}
     </div>
   );
 }

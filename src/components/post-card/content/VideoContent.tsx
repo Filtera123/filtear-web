@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 interface VideoContentProps {
   post: VideoPost;
+  onVideoClick?: () => void;
 }
 
 // 格式化视频时长
@@ -18,10 +19,14 @@ const formatDuration = (seconds: number): string => {
   return `${minutes}:${secs.toString().padStart(2, '0')}`;
 };
 
-export default function VideoContent({ post}: VideoContentProps) {
+export default function VideoContent({ post, onVideoClick }: VideoContentProps) {
   const navigate = useNavigate();
   const onPostClick = () => {
-    navigate(`/post/video/${post.id}`,{state:{post}});
+    if (onVideoClick) {
+      onVideoClick();
+    } else {
+      navigate(`/post/video/${post.id}`, { state: { post } });
+    }
   };
   const [videoError, setVideoError] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -32,7 +37,11 @@ export default function VideoContent({ post}: VideoContentProps) {
 
   const handleVideoClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsPlaying(true);
+    if (onVideoClick) {
+      onVideoClick();
+    } else {
+      setIsPlaying(true);
+    }
   };
 
   return (
@@ -89,16 +98,18 @@ export default function VideoContent({ post}: VideoContentProps) {
                 </div>
               ) : (
                 // 视频播放器
-                <video
-                  src={post.video.url}
-                  controls
-                  autoPlay
-                  className="w-full h-full"
-                  onError={handleVideoError}
-                  poster={post.video.thumbnail}
-                >
-                  您的浏览器不支持视频播放。
-                </video>
+                <div className="w-full h-full cursor-pointer" onClick={handleVideoClick}>
+                  <video
+                    src={post.video.url}
+                    controls
+                    autoPlay
+                    className="w-full h-full"
+                    onError={handleVideoError}
+                    poster={post.video.thumbnail}
+                  >
+                    您的浏览器不支持视频播放。
+                  </video>
+                </div>
               )}
             </>
           ) : (

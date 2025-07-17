@@ -5,6 +5,7 @@ import { Image } from '../../ui';
 
 interface ImageContentProps {
   post: ImagePost;
+  onImageClick?: (post: ImagePost, index: number) => void;
 }
 
 // 单个图片项的组件，用于复用样式
@@ -31,7 +32,7 @@ const ImageItem: React.FC<{
   </div>
 );
 
-export default function ImageContent({ post }: ImageContentProps) {
+export default function ImageContent({ post, onImageClick }: ImageContentProps) {
   const navigate = useNavigate();
   const onPostClick = () => {
     navigate(`/post/image/${post.id}`,{state: { post }});
@@ -47,6 +48,13 @@ export default function ImageContent({ post }: ImageContentProps) {
   // 处理帖子内容点击事件
   const handlePostClick = () => {
     navigate(`/post/${post.id}`);
+  };
+
+  // 处理图片点击事件
+  const handleImageClick = (index: number) => {
+    if (onImageClick) {
+      onImageClick(post, index);
+    }
   };
 
   // 这是处理单张图片的关键:
@@ -84,7 +92,7 @@ export default function ImageContent({ post }: ImageContentProps) {
           <ImageItem
             imageUrl={limitedImages[0].url}
             className="w-full h-full"
-            onClick={onPostClick}
+            onClick={() => handleImageClick(0)}
           />
         </div>
       );
@@ -94,7 +102,7 @@ export default function ImageContent({ post }: ImageContentProps) {
       return (
         <div className={`${containerClasses} grid-cols-2`}>
           {imagesToRender.map((img, index) => (
-            <ImageItem key={index} imageUrl={img.url} onClick={onPostClick} />
+            <ImageItem key={index} imageUrl={img.url} onClick={() => handleImageClick(index)} />
           ))}
         </div>
       );
@@ -107,11 +115,11 @@ export default function ImageContent({ post }: ImageContentProps) {
           <ImageItem
             imageUrl={imagesToRender[0].url}
             className="row-span-2"
-            onClick={onPostClick}
+            onClick={() => handleImageClick(0)}
           />
           {/* 右侧两张小图 */}
-          <ImageItem imageUrl={imagesToRender[1].url} onClick={onPostClick} />
-          <ImageItem imageUrl={imagesToRender[2].url} onClick={onPostClick} />
+          <ImageItem imageUrl={imagesToRender[1].url} onClick={() => handleImageClick(1)} />
+          <ImageItem imageUrl={imagesToRender[2].url} onClick={() => handleImageClick(2)} />
         </div>
       );
     }
@@ -120,7 +128,7 @@ export default function ImageContent({ post }: ImageContentProps) {
       return (
         <div className={`${containerClasses} grid-cols-2 grid-rows-2`}>
           {imagesToRender.map((img, index) => (
-            <ImageItem key={index} imageUrl={img.url} alt={img.alt} onClick={onPostClick} />
+            <ImageItem key={index} imageUrl={img.url} alt={img.alt} onClick={() => handleImageClick(index)} />
           ))}
         </div>
       );
@@ -130,7 +138,7 @@ export default function ImageContent({ post }: ImageContentProps) {
       return (
         <div className={`${containerClasses} grid-cols-3 grid-rows-2`}>
           {imagesToRender.map((img, index) => (
-            <ImageItem key={index} imageUrl={img.url} alt={img.alt} onClick={onPostClick} />
+            <ImageItem key={index} imageUrl={img.url} alt={img.alt} onClick={() => handleImageClick(index)} />
           ))}
         </div>
       );
@@ -139,7 +147,7 @@ export default function ImageContent({ post }: ImageContentProps) {
     return (
       <div className={`${containerClasses} grid-cols-3 grid-rows-3`}>
         {imagesToRender.map((img, index) => (
-          <ImageItem key={index} imageUrl={img.url} alt={img.alt} onClick={onPostClick} />
+          <ImageItem key={index} imageUrl={img.url} alt={img.alt} onClick={() => handleImageClick(index)} />
         ))}
       </div>
     );

@@ -34,22 +34,22 @@ const toggleLike = async (
   };
 };
 
-export function usePostActions(post: BasePost) {
+export function usePostActions(post?: BasePost) {
   const { currentTab } = useHomePostListStore();
   const navigate = useNavigate();
 
   // ✅ 本地点赞
-  const [isLike, setIsLike] = useState(post.isLike);
-  const [likes, setLikes] = useState(post.likes);
+  const [isLike, setIsLike] = useState(post?.isLike ?? false);
+  const [likes, setLikes] = useState(post?.likes ?? 0);
 
   // ✅ 本地关注状态
-  const [isFollowing, setIsFollowing] = useState(post.isFollowing);
+  const [isFollowing, setIsFollowing] = useState(post?.isFollowing ?? false);
 
   // ✅ 计算实际的评论总数
-  const actualCommentCount = getTotalCommentCount(post.commentList || []);
+  const actualCommentCount = getTotalCommentCount(post?.commentList || []);
 
   const likeMutation = useMutation({
-    mutationFn: (liked: boolean) => toggleLike(post.id, liked),
+    mutationFn: (liked: boolean) => toggleLike(post?.id ?? '', liked),
     onMutate: async (liked) => {
       setIsLike(liked);
       setLikes((prev) => (liked ? prev + 1 : prev - 1));
@@ -65,7 +65,7 @@ export function usePostActions(post: BasePost) {
           pages: old.pages.map((page: any) => ({
             ...page,
             list: page.list.map((t: BasePost) =>
-              t.id === post.id ? { ...t, isLike: liked, likes: liked ? t.likes + 1 : t.likes - 1 } : t
+              t.id === post?.id ? { ...t, isLike: liked, likes: liked ? t.likes + 1 : t.likes - 1 } : t
             ),
           })),
         };
@@ -74,8 +74,8 @@ export function usePostActions(post: BasePost) {
       return { previousData };
     },
     onError: (_err, _variables, context) => {
-      setIsLike(post.isLike);
-      setLikes(post.likes);
+      setIsLike(post?.isLike ?? false);
+      setLikes(post?.likes ?? 0);
       if (context?.previousData) {
         rootQueryClient.setQueryData(['tweets', currentTab], context.previousData);
       }
@@ -90,32 +90,46 @@ export function usePostActions(post: BasePost) {
   const handleFollow = () => {
     if (!isFollowing) {
       setIsFollowing(true);
-      console.log(`关注用户: ${post.author}`);
+      if (post?.author) {
+        console.log(`关注用户: ${post.author}`);
+      }
     }
   };
 
   const handleUnfollow = () => {
     setIsFollowing(false);
-    console.log(`取消关注用户: ${post.author}`);
+    if (post?.author) {
+      console.log(`取消关注用户: ${post.author}`);
+    }
   };
 
   // ✅ 点击作者头像或名字跳转
   const handleUserClick = () => {
-    navigate(`/user/${post.author}`);
+    if (post?.author) {
+      navigate(`/user/${post.author}`);
+    }
   };
 
   // ✅ 举报/屏蔽
   const handleBlockUser = () => {
-    console.log(`屏蔽用户: ${post.author}`);
+    if (post?.author) {
+      console.log(`屏蔽用户: ${post.author}`);
+    }
   };
   const handleReportUser = () => {
-    console.log(`举报用户: ${post.author}`);
+    if (post?.author) {
+      console.log(`举报用户: ${post.author}`);
+    }
   };
   const handleBlockPost = () => {
-    console.log(`屏蔽帖子: ${post.id}`);
+    if (post?.id) {
+      console.log(`屏蔽帖子: ${post.id}`);
+    }
   };
   const handleReportPost = () => {
-    console.log(`举报帖子: ${post.id}`);
+    if (post?.id) {
+      console.log(`举报帖子: ${post.id}`);
+    }
   };
 
   return {
@@ -123,7 +137,7 @@ export function usePostActions(post: BasePost) {
     isLike,
     handleLike,
     comments: actualCommentCount,
-    views: post.views ?? 0,
+    views: post?.views ?? 0,
     formatNumber,
 
     isFollowing,
