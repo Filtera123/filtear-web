@@ -59,37 +59,7 @@ export default function PostCardsDemo() {
     console.log('屏蔽用户:', userId);
   };
 
-  // 根据类型获取类型标签颜色
-  const getTypeColor = (type: PostType) => {
-    switch (type) {
-      case PostType.ARTICLE:
-        return 'bg-blue-100 text-blue-800';
-      case PostType.IMAGE:
-        return 'bg-green-100 text-green-800';
-      case PostType.VIDEO:
-        return 'bg-purple-100 text-purple-800';
-      case PostType.DYNAMIC:
-        return 'bg-orange-100 text-orange-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
 
-  // 获取类型显示名称
-  const getTypeName = (type: PostType) => {
-    switch (type) {
-      case PostType.ARTICLE:
-        return '文章';
-      case PostType.IMAGE:
-        return '图片';
-      case PostType.VIDEO:
-        return '视频';
-      case PostType.DYNAMIC:
-        return '动态';
-      default:
-        return '未知';
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -104,34 +74,12 @@ export default function PostCardsDemo() {
           </p>
         </div>
 
-        {/* 类型概览 */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          {Object.values(PostType).map(type => (
-            <div key={type} className="bg-white rounded-lg p-4 text-center shadow-sm border">
-              <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium mb-2 ${getTypeColor(type)}`}>
-                {getTypeName(type)}
-              </div>
-              <p className="text-xs text-gray-500">
-                {type === PostType.ARTICLE && '支持全文字数显示'}
-                {type === PostType.IMAGE && '支持多图轮播'}
-                {type === PostType.VIDEO && '支持视频播放'}
-                {type === PostType.DYNAMIC && '支持九宫格图片'}
-              </p>
-            </div>
-          ))}
-        </div>
+
 
         {/* 帖子卡片列表 */}
         <div className="space-y-6">
           {mockPosts.map((post) => (
             <div key={post.id} className="relative">
-              {/* 类型标签 */}
-              <div className="absolute -top-2 -left-2 z-10">
-                <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium shadow-sm ${getTypeColor(post.type)}`}>
-                  {getTypeName(post.type)}
-                </div>
-              </div>
-              
               {/* 帖子卡片 */}
               <BasePostCard
                 post={post}

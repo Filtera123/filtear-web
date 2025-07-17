@@ -4,13 +4,15 @@ import {
   IconArrowLeft,
   IconPencil,
   IconClipboardList,
-  IconMessageCircle
+  IconMessageCircle,
+  IconTag
 } from '@tabler/icons-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import DraftsBox from './creator-center/DraftsBox';
 import ReviewCenter from './creator-center/ReviewCenter';
 import FeedbackForm from './creator-center/FeedbackForm';
+import TagApplicationForm from './creator-center/TagApplicationForm';
 
 interface MenuItem {
   id: string;
@@ -33,6 +35,11 @@ const menuItems: MenuItem[] = [
     id: 'review',
     label: '审核中心',
     icon: <IconClipboardList size={18} />,
+  },
+  {
+    id: 'tag-application',
+    label: '重名tag申请',
+    icon: <IconTag size={18} />,
   },
   {
     id: 'feedback',
@@ -60,6 +67,8 @@ export default function CreatorCenter() {
         return <DraftsBox />;
       case 'review':
         return <ReviewCenter />;
+      case 'tag-application':
+        return <TagApplicationForm />;
       case 'feedback':
         return <FeedbackForm />;
       default:

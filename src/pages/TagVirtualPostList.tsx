@@ -242,37 +242,7 @@ export default function TagVirtualPostList({ tagName }: TagVirtualPostListProps)
     return () => window.removeEventListener('scroll', handleScroll);
   }, [hasNextPage, isFetching, isFetchingNextPage, fetchNextPage, viewMode]);
 
-  // 获取类型标签颜色
-  const getTypeColor = (postType: PostTypeValue) => {
-    switch (postType) {
-      case PostType.ARTICLE:
-        return 'bg-blue-100 text-blue-800';
-      case PostType.IMAGE:
-        return 'bg-green-100 text-green-800';
-      case PostType.VIDEO:
-        return 'bg-purple-100 text-purple-800';
-      case PostType.DYNAMIC:
-        return 'bg-orange-100 text-orange-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
 
-  // 获取类型显示名称
-  const getTypeName = (postType: PostTypeValue) => {
-    switch (postType) {
-      case PostType.ARTICLE:
-        return '文章';
-      case PostType.IMAGE:
-        return '图片';
-      case PostType.VIDEO:
-        return '视频';
-      case PostType.DYNAMIC:
-        return '动态';
-      default:
-        return '未知';
-    }
-  };
 
   // 根据帖子类型生成正确的URL
   const getPostDetailUrl = useCallback((post: any) => {
@@ -484,15 +454,6 @@ export default function TagVirtualPostList({ tagName }: TagVirtualPostListProps)
                 >
                   {post && (
                     <div className="relative">
-                      {/* 类型标签 */}
-                      <div className="absolute -top-2 -left-2 z-10">
-                        <div
-                          className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium shadow-sm ${getTypeColor(post.type)}`}
-                        >
-                          {getTypeName(post.type)}
-                        </div>
-                      </div>
-
                       <BasePostCard post={post} />
                     </div>
                   )}
