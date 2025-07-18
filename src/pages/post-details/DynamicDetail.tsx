@@ -45,7 +45,7 @@ export default function DynamicDetail() {
         thumbnail: post.images?.[0]?.url,
       });
     }
-  }, [post, addRecord]);
+  }, [post?.id]); // 只依赖 post.id，避免重复添加
 
   // 检查是否需要自动滚动到评论区
   useEffect(() => {

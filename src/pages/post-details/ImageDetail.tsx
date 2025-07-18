@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import type { ImagePost } from '@/components/post-card/post.types';
 import { usePostActions } from '@/hooks/usePostActions';
+import { useBrowsingHistoryStore } from '@/stores/browsingHistoryStore';
 import CommentSection from '@/components/comment/CommentSection';
 
 interface ImageDetailModalProps {
@@ -15,7 +16,21 @@ const ImageDetailModal: React.FC<ImageDetailModalProps> = ({ post, initialIndex 
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [showToolbar, setShowToolbar] = useState(false);
   const { likes, isLike, handleLike, comments, views, formatNumber } = usePostActions(post);
+  const { addRecord } = useBrowsingHistoryStore();
   const currentImage = post.images[currentIndex];
+
+  // 记录浏览历史
+  useEffect(() => {
+    addRecord({
+      id: post.id,
+      title: post.title || '图片内容',
+      author: post.author,
+      authorAvatar: post.authorAvatar,
+      type: 'image',
+      url: `/post/image/${post.id}`,
+      thumbnail: post.images?.[0]?.url,
+    });
+  }, [post.id]); // 只依赖 post.id，避免重复添加
 
   const handleNext = () => setCurrentIndex((prev) => (prev + 1) % post.images.length);
   const handlePrev = () => setCurrentIndex((prev) => (prev - 1 + post.images.length) % post.images.length);

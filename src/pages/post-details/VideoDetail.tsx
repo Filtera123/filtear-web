@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import CommentSection from '@/components/comment/CommentSection';
 import type { VideoPost } from '@/components/post-card/post.types';
 import { usePostActions } from '@/hooks/usePostActions';
+import { useBrowsingHistoryStore } from '@/stores/browsingHistoryStore';
 
 const formatDuration = (seconds: number): string => {
   const hours = Math.floor(seconds / 3600);
@@ -21,6 +22,20 @@ interface VideoDetailModalProps {
 
 const VideoDetailModal: React.FC<VideoDetailModalProps> = ({ post, onClose }) => {
   const { likes, isLike, handleLike, comments, views, formatNumber } = usePostActions(post);
+  const { addRecord } = useBrowsingHistoryStore();
+
+  // 记录浏览历史
+  useEffect(() => {
+    addRecord({
+      id: post.id,
+      title: post.title || '视频内容',
+      author: post.author,
+      authorAvatar: post.authorAvatar,
+      type: 'video',
+      url: `/post/video/${post.id}`,
+      thumbnail: post.video.thumbnail,
+    });
+  }, [post.id]); // 只依赖 post.id，避免重复添加
 
   // 支持 ESC 关闭
   useEffect(() => {

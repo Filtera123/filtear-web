@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useBrowsingHistoryStore, type BrowsingRecord } from '@/stores/browsingHistoryStore';
 import { Image } from '@/components/ui';
@@ -56,7 +56,12 @@ const getTypeColor = (type: string) => {
 };
 
 export default function RecentlyViewed() {
-  const { records, removeRecord } = useBrowsingHistoryStore();
+  const { records, removeRecord, cleanupDuplicates } = useBrowsingHistoryStore();
+  
+  // 页面加载时清理重复数据
+  useEffect(() => {
+    cleanupDuplicates();
+  }, [cleanupDuplicates]);
   const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({});
   const navigate = useNavigate();
 

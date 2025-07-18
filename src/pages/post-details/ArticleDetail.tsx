@@ -108,7 +108,7 @@ export default function ArticleDetail() {
         url: `/post/article/${post.id}`,
       });
     }
-  }, [post, addRecord]);
+  }, [post?.id]); // 只依赖 post.id，避免重复添加
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

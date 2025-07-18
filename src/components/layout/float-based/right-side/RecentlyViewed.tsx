@@ -29,8 +29,13 @@ const typeDisplayMap = {
 };
 
 export default function RecentlyViewed() {
-  const { getRecentRecords } = useBrowsingHistoryStore();
+  const { getRecentRecords, cleanupDuplicates } = useBrowsingHistoryStore();
   const [recentRecords, setRecentRecords] = useState<BrowsingRecord[]>([]);
+
+  // 组件挂载时清理重复数据
+  useEffect(() => {
+    cleanupDuplicates();
+  }, [cleanupDuplicates]);
 
   // 获取最近浏览记录
   useEffect(() => {
