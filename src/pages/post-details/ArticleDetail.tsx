@@ -203,10 +203,10 @@ export default function ArticleDetail() {
 
           {/* 评论 */}
           <button
-            onClick={() => {
-              setShowCommentSection(true);
-              document.getElementById('comment-section')?.scrollIntoView({ behavior: 'smooth' });
-            }}
+            // onClick={() => {
+            //   setShowCommentSection(true);
+            //   document.getElementById('comment-section')?.scrollIntoView({ behavior: 'smooth' });
+            // }}
             className="text-gray-600 hover:text-blue-500 text-xl"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -364,7 +364,7 @@ export default function ArticleDetail() {
 
           {/* 字数提示 */}
           <div className="mt-8 text-xs text-gray-400 text-center">全文 {post.wordCount} 字</div>
-          {showCommentSection && (
+          { (
             <div id="comment-section" className="mt-8">
               <CommentSection postId={post.id} comments={post.commentList || []} />
             </div>
