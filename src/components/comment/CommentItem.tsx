@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Popover } from '@chakra-ui/react';
 import { type Comment } from './comment.type';
 import { useReportContext } from '../report';
 
@@ -57,33 +58,9 @@ export default function CommentItem({
 }: Props) {
   const maxLevel = 2; // 最大嵌套层级
   const marginLeft = Math.min(level, maxLevel) * 20; // 每层缩进20px，最多2层
-  const [showMoreMenu, setShowMoreMenu] = useState(false);
-  const moreMenuRef = useRef<HTMLDivElement>(null);
   const { openReportModal } = useReportContext();
 
-  // 点击外部关闭菜单
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (moreMenuRef.current && !moreMenuRef.current.contains(event.target as Node)) {
-        setShowMoreMenu(false);
-      }
-    };
-
-    if (showMoreMenu) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showMoreMenu]);
-
-  const handleMoreMenuClick = () => {
-    setShowMoreMenu(!showMoreMenu);
-  };
-
   const handleMenuAction = (action: 'block' | 'report') => {
-    setShowMoreMenu(false);
     
     switch (action) {
       case 'block':
@@ -170,35 +147,44 @@ export default function CommentItem({
             )}
 
             {/* 更多操作按钮 */}
-            <div className="relative" ref={moreMenuRef}>
-              <button 
-                onClick={handleMoreMenuClick}
-                className="text-xs text-gray-500 hover:text-gray-700 transition-colors p-1 hover:bg-gray-100 rounded"
-                title="更多操作"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                </svg>
-              </button>
-
-              {/* 下拉菜单 */}
-              {showMoreMenu && (
-                <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-[9999] min-w-[120px]">
+            <Popover.Root 
+              positioning={{ 
+                placement: 'bottom-end',
+                strategy: 'absolute'
+              }}
+              modal={false}
+            >
+              <Popover.Trigger asChild>
+                <button 
+                  className="text-xs text-gray-500 hover:text-gray-700 transition-colors p-1 hover:bg-gray-100 rounded"
+                  title="更多操作"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                  </svg>
+                </button>
+              </Popover.Trigger>
+              
+              <Popover.Positioner>
+                <Popover.Content 
+                  className="bg-white border-[0.5px] border-gray-200 rounded-lg shadow-lg py-1"
+                  style={{ zIndex: 9999, width: '60px', minWidth: '60px', maxWidth: '60px' }}
+                >
                   <button
                     onClick={() => handleMenuAction('block')}
-                    className="w-full px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="w-full px-2 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition-colors"
                   >
                     屏蔽
                   </button>
                   <button
                     onClick={() => handleMenuAction('report')}
-                    className="w-full px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="w-full px-2 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition-colors"
                   >
                     举报
                   </button>
-                </div>
-              )}
-            </div>
+                </Popover.Content>
+              </Popover.Positioner>
+            </Popover.Root>
           </div>
         </div>
       </div>

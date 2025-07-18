@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { IconUser, IconUsers, IconHeart, IconEdit, IconSettings, IconUserPlus, IconUserMinus, IconChevronLeft } from '@tabler/icons-react';
+import { Popover } from '@chakra-ui/react';
+import { IconUser, IconUsers, IconHeart, IconEdit, IconSettings, IconUserPlus, IconUserMinus, IconChevronLeft, IconUserX, IconFlag } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom';
 import { useReportContext } from '../../components/report';
 import type { UserProfileInfo } from '../UserProfile.types';
@@ -21,8 +22,6 @@ export default function ProfileHeader({
 }: ProfileHeaderProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editingBio, setEditingBio] = useState(userInfo.bio);
-  const [showMoreMenu, setShowMoreMenu] = useState(false);
-  const moreMenuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { openReportModal } = useReportContext();
 
@@ -50,29 +49,15 @@ export default function ProfileHeader({
     navigate(-1);
   };
 
-  // 点击外部关闭菜单
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (moreMenuRef.current && !moreMenuRef.current.contains(event.target as Node)) {
-        setShowMoreMenu(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
   // 处理举报用户
   const handleReportUser = () => {
     console.log(`举报用户: ${userInfo.id}`);
-    setShowMoreMenu(false);
     openReportModal(userInfo.id, 'user', userInfo.id);
   };
 
   // 处理屏蔽用户
   const handleBlockUser = () => {
     console.log(`屏蔽用户: ${userInfo.id}`);
-    setShowMoreMenu(false);
     // TODO: 调用API屏蔽用户
   };
 
@@ -230,39 +215,46 @@ export default function ProfileHeader({
               </button>
             )}
             
-            {/* 更多选项按钮 */}
-            <div className="relative" ref={moreMenuRef}>
-              <button 
-                onClick={() => setShowMoreMenu(!showMoreMenu)}
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-white/90 text-gray-700 hover:bg-white transition-colors"
+            {/* 更多选项按钮 - 只在查看别人的主页时显示 */}
+            {!userInfo.isCurrentUser && (
+              <Popover.Root 
+                positioning={{ 
+                  placement: 'bottom-end',
+                  strategy: 'absolute'
+                }}
+                modal={false}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-                </svg>
-              </button>
+                <Popover.Trigger asChild>
+                  <button className="w-8 h-8 flex items-center justify-center rounded-full bg-white/90 text-gray-700 hover:bg-white transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                      <path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                    </svg>
+                  </button>
+                </Popover.Trigger>
 
-              {/* 下拉菜单 */}
-              {showMoreMenu && (
-                <div className="absolute top-full right-0 mt-1 w-32 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
-                  {!userInfo.isCurrentUser && (
-                    <>
-                      <button
-                        onClick={handleBlockUser}
-                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                      >
-                        屏蔽
-                      </button>
-                      <button
-                        onClick={handleReportUser}
-                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                      >
-                        举报
-                      </button>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
+                <Popover.Positioner>
+                  <Popover.Content 
+                    className="bg-white rounded-lg shadow-lg border-[0.5px] border-gray-200 py-1"
+                    style={{ zIndex: 9999, width: '70px', minWidth: '70px', maxWidth: '70px' }}
+                  >
+                    <button
+                      onClick={handleBlockUser}
+                      className="w-full flex items-center space-x-1 px-2 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    >
+                      <IconUserX size={14} />
+                      <span>屏蔽</span>
+                    </button>
+                    <button
+                      onClick={handleReportUser}
+                      className="w-full flex items-center space-x-1 px-2 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    >
+                      <IconFlag size={14} />
+                      <span>举报</span>
+                    </button>
+                  </Popover.Content>
+                </Popover.Positioner>
+              </Popover.Root>
+            )}
           </div>
         </div>
 

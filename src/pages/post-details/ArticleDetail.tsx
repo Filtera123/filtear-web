@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Popover } from '@chakra-ui/react';
 import type { ArticlePost } from '@components/post-card/post.types';
 import type { BasePost } from '@components/post-card/post.types';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Popover } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import type { BasePost } from './post.types';
 import { useReportContext } from '../report';
@@ -28,23 +29,9 @@ const formatTime = (dateString: string): string => {
 };
 
 export default function PostHeader({ post }: PostHeaderProps) {
-  const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [isFollowing, setIsFollowing] = useState(post.isFollowing);
-  const moreMenuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { openReportModal } = useReportContext();
-
-  // 点击外部关闭菜单
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (moreMenuRef.current && !moreMenuRef.current.contains(event.target as Node)) {
-        setShowMoreMenu(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   // 处理用户名点击
   const handleUserClick = () => {
@@ -63,7 +50,6 @@ export default function PostHeader({ post }: PostHeaderProps) {
   // 处理取消关注
   const handleUnfollowClick = () => {
     setIsFollowing(false);
-    setShowMoreMenu(false);
     // 这里可以添加API调用逻辑
     console.log(`取消关注用户: ${post.author}`);
   };
@@ -71,7 +57,6 @@ export default function PostHeader({ post }: PostHeaderProps) {
   // 处理举报
   const handleReport = () => {
     console.log(`举报: ${post.id}`);
-    setShowMoreMenu(false);
     // 使用举报模态窗口
     openReportModal(post.id, 'post', post.author);
   };
@@ -79,7 +64,6 @@ export default function PostHeader({ post }: PostHeaderProps) {
   // 处理屏蔽帖子 - 永久屏蔽这条特定的帖子（除非在屏蔽设置里解除）
   const handleBlockPost = () => {
     console.log(`屏蔽帖子: ${post.id}`);
-    setShowMoreMenu(false);
     // TODO: 调用API将此帖子ID添加到用户的屏蔽帖子列表中
     // blockPostAPI(post.id);
   };
@@ -87,7 +71,6 @@ export default function PostHeader({ post }: PostHeaderProps) {
   // 处理屏蔽用户 - 屏蔽该用户的所有帖子
   const handleBlockUser = () => {
     console.log(`屏蔽用户: ${post.author}`);
-    setShowMoreMenu(false);
     // TODO: 调用API将此用户添加到用户的屏蔽用户列表中
     // blockUserAPI(post.author);
   };
@@ -122,48 +105,55 @@ export default function PostHeader({ post }: PostHeaderProps) {
         </button>
 
         {/* 更多选项按钮 */}
-        <div className="relative" ref={moreMenuRef}>
-          <button
-            onClick={() => setShowMoreMenu(!showMoreMenu)}
-            className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
-          >
-            <svg className="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
-            </svg>
-          </button>
+        <Popover.Root 
+          positioning={{ 
+            placement: 'bottom-end',
+            strategy: 'absolute'
+          }}
+          modal={false}
+        >
+          <Popover.Trigger asChild>
+            <button className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors">
+              <svg className="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+              </svg>
+            </button>
+          </Popover.Trigger>
 
-          {/* 下拉菜单 */}
-          {showMoreMenu && (
-            <div className="absolute top-full right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
+          <Popover.Positioner>
+            <Popover.Content 
+              className="bg-white rounded-lg shadow-lg border-[0.5px] border-gray-200 py-1"
+              style={{ zIndex: 9999, width: '80px', minWidth: '80px', maxWidth: '80px' }}
+            >
               {isFollowing && (
                 <button
                   onClick={handleUnfollowClick}
-                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                  className="w-full text-left px-2 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                 >
                   取消关注
                 </button>
               )}
               <button
                 onClick={handleBlockPost}
-                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                className="w-full text-left px-2 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
               >
                 屏蔽帖子
               </button>
               <button
                 onClick={handleBlockUser}
-                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                className="w-full text-left px-2 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
               >
                 屏蔽用户
               </button>
               <button
                 onClick={handleReport}
-                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                className="w-full text-left px-2 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
               >
                 举报
               </button>
-            </div>
-          )}
-        </div>
+            </Popover.Content>
+          </Popover.Positioner>
+        </Popover.Root>
       </div>
     </div>
   );
