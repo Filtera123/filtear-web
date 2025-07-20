@@ -1,7 +1,9 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
+import { defineStyle, Field, Group, Separator, Stack, Textarea } from '@chakra-ui/react';
 import { useArticleEditorStore, useDraftStore } from '@components/editor';
-import { Stack, styled, TextField } from '@mui/material';
+import { styled, TextField } from '@mui/material';
 import { useSearchParams } from 'react-router-dom';
+import { ArticleEditor, UndoRedo } from '@/components/editor';
 import { mockArticleList } from '@/mocks';
 
 const StyledTextField = styled(TextField)(({ theme }) => ({
@@ -32,12 +34,12 @@ const Editor = () => {
   }, [searchParams]);
 
   return (
-    <Stack spacing={2}>
+    <Stack gap={4}>
       <StyledTextField
         required
         className="w-full bg-white rounded-md"
         label="文章标题"
-        variant="outlined"
+        variant="standard"
         placeholder="请输入文章标题"
         value={article.title}
         onChange={(e) => {
@@ -51,9 +53,11 @@ const Editor = () => {
       <StyledTextField
         className="w-full bg-white  rounded-md"
         label="引言"
-        variant="outlined"
+        variant="standard"
         placeholder="请输入引言"
         value={article.summary}
+        multiline
+        inputProps={{ maxLength: 500 }}
         onChange={(e) => {
           const value = {
             summary: e.target.value,
@@ -66,7 +70,20 @@ const Editor = () => {
           });
         }}
       />
-      <div className="bg-white h-[calc(100vh-13.5rem)] rounded-md">正文区域</div>
+      <div className="bg-white rounded-md flex flex-col min-h-[calc(100vh-13.5rem)] p-4 gap-2 pb-12">
+        <ArticleEditor
+          toolBar={
+            <div>
+              <Group>
+                <UndoRedo action="undo" text="undo" />
+                <UndoRedo action="redo" text="redo" />
+                <Separator orientation="vertical" height={6} />
+              </Group>
+              <Separator />
+            </div>
+          }
+        />
+      </div>
     </Stack>
   );
 };

@@ -1,4 +1,3 @@
-import React from 'react';
 import { Grid } from '@mui/material';
 import Aside from './Aside';
 import Editor from './Editor';
@@ -9,8 +8,12 @@ export default function ArticleEditor() {
   // const params = useParams();
 
   return (
-    <Grid className="h-screen px-32 py-12" container spacing={2}>
-      <Grid size="grow">
+    <Grid
+      className=" px-32 py-12 h-screen overflow-hidden overflow-y-auto relative"
+      container
+      spacing={2}
+    >
+      <Grid className="sticky top-0 border-r h-full border-gray-300" size="grow">
         <Sidebar />
       </Grid>
 
@@ -26,7 +29,7 @@ export default function ArticleEditor() {
         <Editor />
       </Grid>
 
-      <Grid size="grow">
+      <Grid className="sticky top-0 h-full border-l border-gray-300" size="grow">
         <Aside />
       </Grid>
     </Grid>

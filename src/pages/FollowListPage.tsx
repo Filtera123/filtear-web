@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 
 interface User {
   id: string;
@@ -13,17 +13,23 @@ interface User {
 }
 
 // 模拟API调用
-const fetchFollowList = async (userId: string, type: 'followers' | 'following'): Promise<User[]> => {
+const fetchFollowList = async (
+  userId: string,
+  type: 'followers' | 'following'
+): Promise<User[]> => {
   // 模拟网络延迟
-  await new Promise(resolve => setTimeout(resolve, 500));
-  
+  await new Promise((resolve) => setTimeout(resolve, 500));
+
   // 模拟数据
   return Array.from({ length: 15 }, (_, i) => ({
     id: `user_${type}_${i}`,
     nickname: type === 'followers' ? `鸡娜加客凉皮` : `欧梦到西洲-Adventure`,
     username: `@user${i + 1}`,
     avatar: `https://picsum.photos/60/60?random=${i + 1}`,
-    bio: type === 'followers' ? '暂无简介' : 'I am a writer 平时喜欢写写小说 超爱汉服系 身在江南，北京也算我的第二故乡',
+    bio:
+      type === 'followers'
+        ? '暂无简介'
+        : 'I am a writer 平时喜欢写写小说 超爱汉服系 身在江南，北京也算我的第二故乡',
     isFollowing: Math.random() > 0.5,
     isVerified: Math.random() > 0.7,
     followerCount: Math.floor(Math.random() * 1000),
@@ -52,11 +58,9 @@ export default function FollowListPage() {
   };
 
   const handleFollowToggle = (userId: string) => {
-    setUsers(prev => prev.map(user => 
-      user.id === userId 
-        ? { ...user, isFollowing: !user.isFollowing }
-        : user
-    ));
+    setUsers((prev) =>
+      prev.map((user) => (user.id === userId ? { ...user, isFollowing: !user.isFollowing } : user))
+    );
   };
 
   const formatNumber = (num: number): string => {
@@ -87,7 +91,12 @@ export default function FollowListPage() {
             className="flex items-center space-x-2 text-gray-600 hover:text-gray-900"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
             </svg>
             <span>返回</span>
           </button>
@@ -131,7 +140,7 @@ export default function FollowListPage() {
           <div className="space-y-3">
             {users.map((user) => (
               <div key={user.id} className="flex items-center justify-between py-3">
-                <div 
+                <div
                   className="flex items-center space-x-3 flex-1 cursor-pointer"
                   onClick={() => handleUserClick(user)}
                 >
@@ -144,8 +153,12 @@ export default function FollowListPage() {
                     />
                     {user.isVerified && (
                       <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
-                        <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        <svg
+                          className="w-2.5 h-2.5 text-white"
+                          fill="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                       </div>
                     )}
@@ -157,7 +170,9 @@ export default function FollowListPage() {
                       <span className="font-medium text-gray-900 truncate">{user.nickname}</span>
                     </div>
                     <div className="text-sm text-gray-600 truncate mt-1">{user.bio}</div>
-                    <div className="text-sm text-gray-500 mt-1">粉丝 {formatNumber(user.followerCount)}</div>
+                    <div className="text-sm text-gray-500 mt-1">
+                      粉丝 {formatNumber(user.followerCount)}
+                    </div>
                   </div>
                 </div>
 
@@ -177,8 +192,18 @@ export default function FollowListPage() {
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-20 text-gray-500">
-            <svg className="w-16 h-16 mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+            <svg
+              className="w-16 h-16 mb-4 text-gray-300"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1}
+                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
+              />
             </svg>
             <p className="text-lg">暂无{selectedTab === 'followers' ? '关注者' : '粉丝'}</p>
           </div>
@@ -186,4 +211,4 @@ export default function FollowListPage() {
       </div>
     </div>
   );
-} 
+}

@@ -1,8 +1,8 @@
 import loadable from '@loadable/component';
-import Home from './pages/home/index';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import FloatBasedLayout from './components/layout/float-based/Layout';
 import TagPageLayout from './components/layout/TagPageLayout';
+import Home from './pages/home/index';
 
 const Loading = () => <div className="flex items-center justify-center">Loading...</div>;
 
@@ -58,9 +58,12 @@ const TagPage = loadable(() => import('./pages/TagPage'), {
   fallback: <Loading />,
 });
 
-const Login = loadable(() => import('./modules/login').then(module => ({ default: module.Login })), {
-  fallback: <Loading />,
-});
+const Login = loadable(
+  () => import('./modules/login').then((module) => ({ default: module.Login })),
+  {
+    fallback: <Loading />,
+  }
+);
 
 const NotFound = loadable(() => import('./pages/NotFound'), {
   fallback: <Loading />,
@@ -107,7 +110,7 @@ const router = createBrowserRouter([
         element: <TagManagement />,
       },
       {
-        path: 'search-results/:query',  // 新增路由，处理搜索结果页面
+        path: 'search-results/:query', // 新增路由，处理搜索结果页面
         element: <SearchResults />, // 路由跳转到 SearchResults
       },
       {
@@ -129,7 +132,7 @@ const router = createBrowserRouter([
     ],
   },
   {
-    path: '/editor/:user/normal',
+    path: '/editor/:user/normal/:id',
     element: <ArticleEditor />,
   },
   {

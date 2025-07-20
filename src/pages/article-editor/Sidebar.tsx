@@ -11,7 +11,7 @@ export default function Sidebar() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   return (
-    <Stack spacing={2} className="px-4">
+    <Stack spacing={2}>
       <Link to="/" className="text-blue-500 hover:underline bg-white px-4 py-2 rounded-md">
         返回首页
       </Link>

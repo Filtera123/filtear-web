@@ -1,17 +1,16 @@
 import React, { useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useUserProfileStore } from './UserProfile.store';
+import { useNavigate, useParams } from 'react-router-dom';
 import ProfileHeader from './user-profile/ProfileHeader';
-import ProfileTabs from './user-profile/ProfileTabs';
 import ProfilePostList from './user-profile/ProfilePostList';
-import { mockGetUserInfo, mockGetUserPosts } from './UserProfile.store';
-import type { ProfileTab, WorksFilterType, ViewMode } from './UserProfile.types';
+import ProfileTabs from './user-profile/ProfileTabs';
+import { mockGetUserInfo, mockGetUserPosts, useUserProfileStore } from './UserProfile.store';
+import type { ProfileTab, ViewMode, WorksFilterType } from './UserProfile.types';
 
 // 主组件
 export default function UserProfile() {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
-  
+
   const {
     userInfo,
     currentTab,
@@ -41,13 +40,13 @@ export default function UserProfile() {
       try {
         setIsLoading(true);
         setError(null);
-        
+
         const userData = await mockGetUserInfo(userId);
-        
+
         // 如果API返回了用户信息，则设置状态
         if (userData) {
           setUserInfo(userData);
-          
+
           if (userData.isFollowing !== undefined) {
             setIsFollowing(userData.isFollowing);
           }
@@ -103,7 +102,7 @@ export default function UserProfile() {
   const handleWorksFilterChange = (filter: WorksFilterType) => {
     setCurrentWorksFilter(filter);
   };
-  
+
   // 处理视图模式切换
   const handleViewModeChange = (mode: ViewMode) => {
     setViewMode(mode);
@@ -122,8 +121,6 @@ export default function UserProfile() {
     navigate('/settings'); // 默认就会打开编辑资料页面
   };
 
-
-
   // 如果没有用户ID，显示错误
   if (!userId) {
     return (
@@ -139,7 +136,7 @@ export default function UserProfile() {
   // 错误状态
   if (error) {
     return (
-      <div className="flex items-center justify-center py-20">
+      <div className="flex items-center justify-center py-20 bg">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">出错了</h1>
           <p className="text-gray-600 mb-4">{error}</p>
@@ -165,7 +162,7 @@ export default function UserProfile() {
       </div>
     );
   }
-  
+
   // 如果不是加载中，但没有用户信息，且没有错误信息，则继续等待数据
   if (!userInfo && !error) {
     return (
@@ -197,7 +194,7 @@ export default function UserProfile() {
       </div>
     );
   }
-  
+
   return (
     <div className="w-full">
       {/* 用户信息头部 */}
@@ -232,4 +229,4 @@ export default function UserProfile() {
       </div>
     </div>
   );
-} 
+}
