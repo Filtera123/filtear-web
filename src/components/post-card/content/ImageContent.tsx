@@ -34,8 +34,16 @@ const ImageItem: React.FC<{
 
 export default function ImageContent({ post, onImageClick }: ImageContentProps) {
   const navigate = useNavigate();
+  
+  // 处理文字内容点击事件 - 改为触发图片模态框
   const onPostClick = () => {
-    navigate(`/post/image/${post.id}`,{state: { post }});
+    if (onImageClick) {
+      // 如果有onImageClick回调，触发第一张图片的模态框
+      onImageClick(post, 0);
+    } else {
+      // 如果没有回调，则跳转到页面（保持兼容性）
+      navigate(`/post/image/${post.id}`, { state: { post } });
+    }
   };
 
   const [aspectRatio, setAspectRatio] = useState<string | undefined>();
@@ -44,11 +52,6 @@ export default function ImageContent({ post, onImageClick }: ImageContentProps) 
   // 限制最多20张图片
   const limitedImages = post.images.slice(0, 20);
   const imageCount = limitedImages.length;
-
-  // 处理帖子内容点击事件
-  const handlePostClick = () => {
-    navigate(`/post/${post.id}`);
-  };
 
   // 处理图片点击事件
   const handleImageClick = (index: number) => {

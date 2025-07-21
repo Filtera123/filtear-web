@@ -18,6 +18,7 @@ interface Props {
   currentUserId?: string;
   currentUserName?: string;
   currentUserAvatar?: string;
+  showAllComments?: boolean; // 新增：是否显示所有评论（详情页使用）
 }
 
 // 递归计算评论总数（包括所有回复）
@@ -73,6 +74,7 @@ export default function CommentSection({
   currentUserId,
   currentUserName = '当前用户',
   currentUserAvatar = '/default-avatar.png',
+  showAllComments = false, // 默认不显示所有评论
 }: Props) {
   const [newComment, setNewComment] = useState('');
   const [replyModalOpen, setReplyModalOpen] = useState(false);
@@ -126,9 +128,11 @@ export default function CommentSection({
   // 计算总评论数（包括所有回复）
   const totalCommentCount = getTotalCommentCount(comments);
 
-  // 限制显示的评论数量
-  const displayedComments = limitComments(comments, 5).limitedComments;
-  const hasMoreComments = totalCommentCount > 5;
+  // 根据showAllComments决定显示的评论数量
+  const displayedComments = showAllComments 
+    ? comments  // 详情页显示所有评论
+    : limitComments(comments, 5).limitedComments;  // 主页显示限制数量
+  const hasMoreComments = !showAllComments && totalCommentCount > 5;
 
   return (
     <div className="mt-4">

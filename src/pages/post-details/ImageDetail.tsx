@@ -17,6 +17,13 @@ const ImageDetailModal: React.FC<ImageDetailModalProps> = ({ post, initialIndex 
   const [showToolbar, setShowToolbar] = useState(false);
   const { likes, isLike, handleLike, comments, views, formatNumber } = usePostActions(post);
   const { addRecord } = useBrowsingHistoryStore();
+
+  // 添加安全检查，确保post和images存在
+  if (!post || !post.images || post.images.length === 0) {
+    console.error('ImageDetailModal: 无效的帖子数据', post);
+    return null;
+  }
+
   const currentImage = post.images[currentIndex];
 
   // 记录浏览历史

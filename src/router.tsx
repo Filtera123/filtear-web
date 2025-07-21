@@ -136,6 +136,10 @@ const router = createBrowserRouter([
     element: <ArticleEditor />,
   },
   {
+    path: '/editor/:user/normal',
+    element: <ArticleEditor />,
+  },
+  {
     path: '/post/article/:postId',
     element: <ArticleDetail />,
   },

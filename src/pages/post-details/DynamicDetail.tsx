@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import CommentSection from '@/components/comment/CommentSection';
-import { UserProfile } from '@/components/layout/float-based/right-side';
 import type { DynamicPost } from '@/components/post-card/post.types';
 import { usePostActions } from '@/hooks/usePostActions';
 import { useBrowsingHistoryStore } from '@/stores/browsingHistoryStore';
+import DetailPageHeader from '@/components/layout/DetailPageHeader';
+import Tag from '@/components/tag/Tag';
 
 export default function DynamicDetail() {
   const getImageGridClass = (count: number) => {
@@ -28,7 +29,7 @@ export default function DynamicDetail() {
   const navigate = useNavigate();
   const { addRecord } = useBrowsingHistoryStore();
 
-  const [showCommentSection, setShowCommentSection] = useState(false);
+  const [showCommentSection, setShowCommentSection] = useState(true); // 修改：详情页默认展开评论区
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const moreMenuRef = useRef<HTMLDivElement>(null);
 
@@ -84,23 +85,7 @@ export default function DynamicDetail() {
   return (
     <>
       {/* 导航栏 */}
-      <div className="flex justify-between">
-        <div className="flex space-x-4">
-          <button
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-            onClick={() => navigate(-1)}
-          >
-            返回
-          </button>
-          <button
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-            onClick={() => navigate('/')}
-          >
-            主页
-          </button>
-        </div>
-        <UserProfile />
-      </div>
+      <DetailPageHeader />
 
       <div className="flex justify-center px-4 py-10 bg-gray-50">
         {/* 左侧 */}
@@ -262,6 +247,15 @@ export default function DynamicDetail() {
             )}
           </div>
 
+          {/* 标签 */}
+          {post.tags && post.tags.length > 0 && (
+            <div className="flex flex-wrap gap-2 justify-center mb-6">
+              {post.tags.map((tag) => (
+                <Tag key={tag.id} tag={tag} />
+              ))}
+            </div>
+          )}
+
           <div className="text-base leading-relaxed space-y-4 text-gray-800">
             {post.content.split('\n').map((para, index) => (
               <p key={index}>{para}</p>
@@ -340,7 +334,11 @@ export default function DynamicDetail() {
 
           {showCommentSection && (
             <div id="comment-section" className="mt-8">
-              <CommentSection postId={post.id} comments={post.commentList || []} />
+              <CommentSection 
+                postId={post.id} 
+                comments={post.commentList || []} 
+                showAllComments={true}
+              />
             </div>
           )}
         </main>

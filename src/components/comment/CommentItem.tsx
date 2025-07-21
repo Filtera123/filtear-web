@@ -59,6 +59,7 @@ export default function CommentItem({
   const maxLevel = 2; // 最大嵌套层级
   const marginLeft = Math.min(level, maxLevel) * 20; // 每层缩进20px，最多2层
   const { openReportModal } = useReportContext();
+  const [showReplies, setShowReplies] = useState(false); // 新增：控制回复显示状态
 
   const handleMenuAction = (action: 'block' | 'report') => {
     
@@ -192,20 +193,62 @@ export default function CommentItem({
       {/* 递归渲染回复 */}
       {comment.replies && comment.replies.length > 0 && (
         <div className="mt-1.5">
-          {comment.replies.map((reply) => (
-            <CommentItem
-              key={reply.id}
-              comment={reply}
-              onLike={onLike}
-              onReply={onReply}
-              onReplyClick={onReplyClick}
-              onUserClick={onUserClick}
-              onBlockComment={onBlockComment}
-              onReportComment={onReportComment}
-              onBlockUser={onBlockUser}
-              level={level + 1}
-            />
-          ))}
+          {/* 始终显示第一条回复 */}
+          <CommentItem
+            key={comment.replies[0].id}
+            comment={comment.replies[0]}
+            onLike={onLike}
+            onReply={onReply}
+            onReplyClick={onReplyClick}
+            onUserClick={onUserClick}
+            onBlockComment={onBlockComment}
+            onReportComment={onReportComment}
+            onBlockUser={onBlockUser}
+            level={level + 1}
+          />
+
+          {/* 如果有多条回复，显示展开/折叠按钮和剩余回复 */}
+          {comment.replies.length > 1 && (
+            <>
+              {/* 展开/折叠剩余回复按钮 */}
+              <button 
+                onClick={() => setShowReplies(!showReplies)}
+                className="flex items-center space-x-1 text-xs text-blue-600 hover:text-blue-800 transition-colors mb-2 ml-8"
+              >
+                <svg 
+                  className={`w-3 h-3 transform transition-transform ${showReplies ? 'rotate-90' : 'rotate-0'}`} 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+                <span>
+                  {showReplies ? '收起' : '展开'}剩余 {comment.replies.length - 1} 条回复
+                </span>
+              </button>
+
+              {/* 剩余回复列表 */}
+              {showReplies && (
+                <div>
+                  {comment.replies.slice(1).map((reply) => (
+                    <CommentItem
+                      key={reply.id}
+                      comment={reply}
+                      onLike={onLike}
+                      onReply={onReply}
+                      onReplyClick={onReplyClick}
+                      onUserClick={onUserClick}
+                      onBlockComment={onBlockComment}
+                      onReportComment={onReportComment}
+                      onBlockUser={onBlockUser}
+                      level={level + 1}
+                    />
+                  ))}
+                </div>
+              )}
+            </>
+          )}
         </div>
       )}
     </div>

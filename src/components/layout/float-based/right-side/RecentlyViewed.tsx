@@ -28,6 +28,15 @@ const typeDisplayMap = {
   video: '视频',
 };
 
+// 模拟播放时长（实际项目中应该从数据源获取）
+const getMockDuration = (type: string): string => {
+  if (type === 'video') {
+    const durations = ['13:00', '05:30', '08:45', '12:15', '03:20'];
+    return durations[Math.floor(Math.random() * durations.length)];
+  }
+  return '';
+};
+
 export default function RecentlyViewed() {
   const { getRecentRecords, cleanupDuplicates } = useBrowsingHistoryStore();
   const [recentRecords, setRecentRecords] = useState<BrowsingRecord[]>([]);
@@ -39,14 +48,14 @@ export default function RecentlyViewed() {
 
   // 获取最近浏览记录
   useEffect(() => {
-    const records = getRecentRecords(10); // 最多显示10条
+    const records = getRecentRecords(6); // 改为显示6条，适合卡片布局
     setRecentRecords(records);
   }, [getRecentRecords]);
 
   // 定期刷新数据（当用户在其他页面浏览后回到当前页面）
   useEffect(() => {
     const interval = setInterval(() => {
-      const records = getRecentRecords(10);
+      const records = getRecentRecords(6);
       setRecentRecords(records);
     }, 5000); // 每5秒检查一次
 
@@ -65,46 +74,75 @@ export default function RecentlyViewed() {
       </div>
       
       {recentRecords.length > 0 ? (
-        <div className="max-h-[300px] overflow-y-auto pr-1 scrollbar-hide">
-          <div className="space-y-3 pb-2">
-            {recentRecords.map((record) => (
-              <Link
-                key={`${record.id}-${record.viewTime}`}
-                to={record.url}
-                className="block p-3 border border-gray-100 rounded hover:bg-gray-50 transition-colors"
-              >
-                <div className="flex items-start space-x-3">
-                  {/* 缩略图 */}
-                  {record.thumbnail && (
-                    <div className="w-12 h-12 rounded overflow-hidden flex-shrink-0">
-                      <Image
-                        src={record.thumbnail}
-                        alt={record.title}
-                        className="w-full h-full object-cover"
-                        fallbackText={typeDisplayMap[record.type]}
-                      />
-                    </div>
-                  )}
-                  
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-start mb-1">
-                      <h3 className="text-sm font-medium line-clamp-2 mb-1">{record.title}</h3>
+        <div className="max-h-[400px] overflow-y-auto pr-1 scrollbar-hide">
+          <div className="space-y-4">
+            {recentRecords.map((record) => {
+              const duration = getMockDuration(record.type);
+              return (
+                <Link
+                  key={`${record.id}-${record.viewTime}`}
+                  to={record.url}
+                  className="block hover:bg-gray-50 rounded-lg transition-colors"
+                >
+                  <div className="relative">
+                    {/* 预览图容器 */}
+                    <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-gray-100">
+                      {record.thumbnail ? (
+                        <Image
+                          src={record.thumbnail}
+                          alt={record.title}
+                          className="w-full h-full object-cover"
+                          fallbackText={typeDisplayMap[record.type]}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-500 text-sm">
+                          {typeDisplayMap[record.type]}
+                        </div>
+                      )}
+                      
+                      {/* 播放时长标签（只有视频类型显示） */}
+                      {duration && (
+                        <div className="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white text-xs px-1.5 py-0.5 rounded">
+                          {duration}
+                        </div>
+                      )}
+                      
+                      {/* 视频播放图标 */}
+                      {record.type === 'video' && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="w-8 h-8 rounded-full bg-black bg-opacity-50 flex items-center justify-center">
+                            <svg className="w-4 h-4 text-white ml-0.5" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M8 5v14l11-7z" />
+                            </svg>
+                          </div>
+                        </div>
+                      )}
                     </div>
                     
-                    <div className="flex justify-between items-center text-xs text-gray-500 mb-1">
-                      <span className="truncate">{record.author}</span>
-                      <span className="px-1.5 py-0.5 bg-gray-100 rounded-full flex-shrink-0">
-                        {typeDisplayMap[record.type]}
-                      </span>
-                    </div>
-                    
-                    <div className="text-xs text-gray-400">
-                      {formatViewTime(record.viewTime)}
+                    {/* 内容信息 */}
+                    <div className="pt-2">
+                      {/* 标题 */}
+                      <h3 className="text-sm font-medium line-clamp-2 mb-1 text-gray-900">
+                        {record.title}
+                      </h3>
+                      
+                      {/* 作者信息 */}
+                      <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+                        <span className="truncate">{record.author}</span>
+                        <span className="px-2 py-0.5 bg-gray-100 rounded-full flex-shrink-0 ml-2">
+                          {typeDisplayMap[record.type]}
+                        </span>
+                      </div>
+                      
+                      {/* 浏览时间 */}
+                      <div className="text-xs text-gray-400">
+                        {formatViewTime(record.viewTime)}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              );
+            })}
           </div>
         </div>
       ) : (

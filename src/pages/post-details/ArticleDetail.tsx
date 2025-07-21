@@ -4,9 +4,10 @@ import type { ArticlePost } from '@components/post-card/post.types';
 import type { BasePost } from '@components/post-card/post.types';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import CommentSection from '@/components/comment/CommentSection';
-import { UserProfile } from '@/components/layout/float-based/right-side';
 import { usePostActions } from '@/hooks/usePostActions';
 import { useBrowsingHistoryStore } from '@/stores/browsingHistoryStore';
+import DetailPageHeader from '@/components/layout/DetailPageHeader';
+import Tag from '@/components/tag/Tag';
 
 // 在文件顶部添加 mock 数据
 const mockArticles = [
@@ -91,7 +92,7 @@ export default function ArticleDetail() {
   }
   // 始终调用 hook，哪怕 post 可能为 undefined
   const postActions = usePostActions(post || ({} as BasePost));
-  const [showCommentSection, setShowCommentSection] = useState(false);
+  const [showCommentSection, setShowCommentSection] = useState(true); // 修改：详情页默认展开评论区
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const moreMenuRef = useRef<HTMLDivElement>(null);
   const { addRecord } = useBrowsingHistoryStore();
@@ -156,23 +157,7 @@ export default function ArticleDetail() {
   return (
     <>
       {/* 导航栏 */}
-      <div className="flex justify-between">
-        <div className="flex space-x-4">
-          <button
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-            onClick={() => navigate(-1)}
-          >
-            返回
-          </button>
-          <button
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-            onClick={() => navigate('/')}
-          >
-            主页
-          </button>
-        </div>
-        <UserProfile />
-      </div>
+      <DetailPageHeader />
 
       <div className="flex justify-center px-4 py-10 bg-gray-50">
         {/* 左侧 */}
@@ -203,10 +188,10 @@ export default function ArticleDetail() {
 
           {/* 评论 */}
           <button
-            // onClick={() => {
-            //   setShowCommentSection(true);
-            //   document.getElementById('comment-section')?.scrollIntoView({ behavior: 'smooth' });
-            // }}
+            onClick={() => {
+              setShowCommentSection(true);
+              document.getElementById('comment-section')?.scrollIntoView({ behavior: 'smooth' });
+            }}
             className="text-gray-600 hover:text-blue-500 text-xl"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -308,15 +293,6 @@ export default function ArticleDetail() {
         <main className="w-full max-w-3xl bg-white px-6 py-8 shadow-sm rounded">
           {/* 返回与主页 */}
 
-          {/* 标签 */}
-          <div className="flex flex-wrap gap-2 mb-4">
-            {post.tags.map((tag) => (
-              <span key={tag.id} className="text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
-                #{tag.name}
-              </span>
-            ))}
-          </div>
-
           {/* 标题 */}
           <h1 className="text-3xl font-bold mb-4 text-center">{post.title}</h1>
 
@@ -348,6 +324,13 @@ export default function ArticleDetail() {
             )}
           </div>
 
+          {/* 标签 */}
+          <div className="flex flex-wrap gap-2 justify-center mb-6">
+            {post.tags.map((tag) => (
+              <Tag key={tag.id} tag={tag} />
+            ))}
+          </div>
+
           {/* 引言/摘要（如果有） */}
           {post.abstract && (
             <blockquote className="border-l-4 border-blue-400 pl-4 text-gray-700 italic mb-6">
@@ -364,9 +347,14 @@ export default function ArticleDetail() {
 
           {/* 字数提示 */}
           <div className="mt-8 text-xs text-gray-400 text-center">全文 {post.wordCount} 字</div>
-          { (
+          
+          {showCommentSection && (
             <div id="comment-section" className="mt-8">
-              <CommentSection postId={post.id} comments={post.commentList || []} />
+              <CommentSection 
+                postId={post.id} 
+                comments={post.commentList || []} 
+                showAllComments={true}
+              />
             </div>
           )}
         </main>
