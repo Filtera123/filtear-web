@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SearchSuggestions from './SearchSuggestions';
+import { IconSearch } from '@tabler/icons-react';
 
 interface HistoryItem {
   name: string;
@@ -75,10 +76,6 @@ const GlobalSearchBar: React.FC = () => {
     navigate(`/search-results/${item.name}`);
   }, [navigate]);
 
-  const handleClear = () => {
-    setQuery('');
-  };
-
   const handleFocus = () => {
     if (query === '') {
       setIsHistoryVisible(true);
@@ -130,31 +127,35 @@ const GlobalSearchBar: React.FC = () => {
   return (
     <div className="flex justify-center">
       <div className="relative w-full max-w-md">
-        <input
-          ref={searchInputRef}
-          name="global-search"
-          type="text"
-          placeholder="搜索你感兴趣的内容..."
-          autoComplete="off"
-          spellCheck={false}
-          autoCorrect="off"
-          value={query}
-          // 3. 限制最大输入长度为 30
-          maxLength={30}
-          onChange={(e) => setQuery(e.target.value)}
-          onFocus={handleFocus}
-          onKeyDown={handleEnterKey}
-          className="w-full pl-4 bg-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors border border-purple-300 hover:border-gray-400 focus:border-purple-500"
-        />
-
-        {query && (
+        <div className="flex items-center w-full bg-white rounded-full shadow-md transition-all">
+          <input
+            ref={searchInputRef}
+            name="global-search"
+            type="text"
+            placeholder="搜索Filtera"
+            autoComplete="off"
+            spellCheck={false}
+            autoCorrect="off"
+            value={query}
+            maxLength={30}
+            onChange={(e) => setQuery(e.target.value)}
+            onFocus={handleFocus}
+            onKeyDown={handleEnterKey}
+            className="w-full pl-4 pr-2 py-2 bg-transparent rounded-full focus:outline-none text-gray-700 placeholder-gray-400"
+          />
           <button
-            onClick={handleClear}
-            className="absolute top-1/2 right-4 transform -translate-y-1/2 text-gray-600"
+            onClick={() => {
+              if (query.trim() !== '') {
+                addToHistory(query);
+                navigate(`/search-results/${query}`);
+              }
+            }}
+            className="flex-shrink-0 bg-transparent hover:bg-transparent text-purple-600 rounded-full h-8 w-8 flex items-center justify-center mr-1"
+            aria-label="Search"
           >
-            清除
+            <IconSearch size={20} className="text-purple-600" />
           </button>
-        )}
+        </div>
 
         <SearchSuggestions
           query={query}
@@ -171,11 +172,12 @@ const GlobalSearchBar: React.FC = () => {
               navigate(`/search-results/${suggestion.value}`);
             }
           }}
+          layout="vertical"
         />
 
         {isHistoryVisible && !query && (
           <div className="absolute bg-white w-full mt-2 border border-gray-300 rounded-sm z-10 max-h-96 overflow-y-auto">
-            <div className="flex justify-between px-4 py-2 font-bold text-sm">
+            <div className="flex justify-between items-center px-4 py-2 font-bold text-sm">
               <span>最近搜索</span>
               <button onClick={handleClearAllHistory} className="text-gray-500 text-sm">
                 清除所有
@@ -188,8 +190,9 @@ const GlobalSearchBar: React.FC = () => {
                   onClick={() => handleHistoryClick(item)}
                   onMouseEnter={() => setHoveredIndex(index)}
                   onMouseLeave={() => setHoveredIndex(null)}
-                  className="relative px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                  className="relative px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center gap-2"
                 >
+                  <IconSearch size={18} className="text-gray-400 flex-shrink-0" />
                   <span className="text-black font-bold">{item.name}</span>
                   <span className="text-gray-500 text-xs ml-2">{formatTime(item.time)}</span>
                   {hoveredIndex === index && (
