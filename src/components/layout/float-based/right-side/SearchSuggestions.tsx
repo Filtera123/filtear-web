@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { IconTag, IconUser, IconArticle } from '@tabler/icons-react';
 
 interface SearchSuggestionsProps {
   query: string;
   onSuggestionClick: (suggestion: { type: 'tag' | 'user' | 'article'; value: string; link: string }) => void;
+  layout?: 'vertical' | 'horizontal';
 }
 
 interface User {
@@ -25,7 +27,7 @@ interface Tag {
   postsCount: number; // 添加一个字段来存储每个标签的帖子数量
 }
 
-const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({ query, onSuggestionClick }) => {
+const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({ query, onSuggestionClick, layout = 'vertical' }) => {
   const [users, setUsers] = useState<User[]>([]);
   const [articles, setArticles] = useState<Article[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
@@ -128,102 +130,198 @@ const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({ query, onSuggesti
 
   return (
     <div
-      className="absolute bg-white w-full mt-2 border border-gray-300 rounded-sm z-10 max-h-96 overflow-y-auto"
+      className={`absolute bg-white w-full mt-2 border border-gray-300 rounded-sm z-10 max-h-96 overflow-y-auto ${layout === 'horizontal' ? 'p-4' : ''}`}
       ref={suggestionsRef}
     >
       {loading && <div className="px-4 py-2 text-sm text-gray-500">加载中...</div>}
 
-      {/* 相关标签 */}
-      {query && showSuggestions && tags.length > 0 && (
-        <div>
-          <div className="px-4 py-2 font-bold text-sm text-gray-700">相关标签</div>
-          <div className="flex flex-col space-y-2">
-
-              {tags.map((tag) => (
-             <a
-                key={tag.tag}
-                href={tag.link}
-                onClick={(e) => {
-                  e.preventDefault();
-                  onSuggestionClick({ type: 'tag', value: tag.tag.replace(/^#+/, ''), link: tag.link });
-                  setShowSuggestions(false);
-               }}
-               className="flex flex-col px-4 py-2 text-black bg-gray-200 rounded-md hover:bg-gray-300 cursor-pointer"
-              >
-                <div className="flex items-center space-x-1">
-                  {/* 标签显示 */}
-                  <span className="text-sm font-medium">#{tag.tag.replace(/^#+/, '')}</span>{' '}
-                  {/* 去除重复的 # 符号 */}
-                  {/* 添加关联标签 */}
-                  {tag.tag === '#ni' && <span className="text-xs text-gray-500">小说</span>}
+      {layout === 'horizontal' ? (
+        <div className="flex flex-row gap-4 w-full">
+          {/* 标签栏 */}
+          <div className="flex-1 min-w-0">
+            <div className="font-bold text-sm text-gray-700 mb-2 flex items-center gap-1">
+              <IconTag size={16} className="text-purple-500" />
+              相关标签
+            </div>
+            <div className="flex flex-col space-y-2">
+              {tags.length > 0 ? tags.map((tag) => (
+                <a
+                  key={tag.tag}
+                  href={tag.link}
+                  onClick={e => {
+                    e.preventDefault();
+                    onSuggestionClick({ type: 'tag', value: tag.tag.replace(/^#+/, ''), link: tag.link });
+                    setShowSuggestions(false);
+                  }}
+                  className="flex flex-col px-2 py-1 text-black bg-gray-200 rounded-md hover:bg-gray-300 cursor-pointer"
+                >
+                  <span className="text-sm font-medium">#{tag.tag.replace(/^#+/, '')}</span>
+                  <span className="text-xs text-gray-600 mt-1">{tag.postsCount} 个最新帖子</span>
+                </a>
+              )) : <div className="text-xs text-gray-400">无</div>}
+            </div>
+          </div>
+          {/* 用户栏 */}
+          <div className="flex-1 min-w-0">
+            <div className="font-bold text-sm text-gray-700 mb-2 flex items-center gap-1">
+              <IconUser size={16} className="text-blue-500" />
+              相关用户
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {users.length > 0 ? users.map((user) => (
+                <div
+                  key={user.id}
+                  onClick={() => {
+                    onSuggestionClick({ type: 'user', value: user.name, link: `/user/${user.id}` });
+                    setShowSuggestions(false);
+                  }}
+                  className="flex items-center w-40 px-2 py-2 bg-white hover:bg-gray-100 cursor-pointer rounded-lg transition-colors shadow-sm"
+                  style={{ minHeight: 40 }}
+                >
+                  <img
+                    src={user.avatar || defaultAvatar}
+                    alt={user.name}
+                    onError={e => (e.currentTarget.src = defaultAvatar)}
+                    className="w-7 h-7 rounded-full mr-2 border border-gray-200 object-cover"
+                  />
+                  <div className="flex flex-col min-w-0">
+                    <span className="font-semibold text-base leading-tight truncate">{user.name}</span>
+                    <span className="text-xs text-gray-400 truncate">ID: {user.id}</span>
+                  </div>
                 </div>
-                {/* 帖子数量显示在下一行 */}
-                <span className="text-xs text-gray-600 mt-1">{tag.postsCount} 个最新帖子</span>
-              </a>
-            ))}
+              )) : <div className="text-xs text-gray-400">无</div>}
+            </div>
+          </div>
+          {/* 文章栏 */}
+          <div className="flex-1 min-w-0">
+            <div className="font-bold text-sm text-gray-700 mb-2 flex items-center gap-1">
+              <IconArticle size={16} className="text-green-500" />
+              相关文章
+            </div>
+            <div className="flex flex-col space-y-2">
+              {articles.length > 0 ? articles.map((article) => (
+                <div
+                  key={article.title}
+                  onClick={() => {
+                    onSuggestionClick({ type: 'article', value: article.title, link: article.link });
+                    setShowSuggestions(false);
+                  }}
+                  className="px-2 py-1 hover:bg-gray-100 cursor-pointer rounded"
+                >
+                  <div className="text-sm font-semibold truncate">{article.title}</div>
+                  <div className="text-xs text-gray-600 truncate">{article.summary}</div>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {article.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="inline-block px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full text-xs font-medium"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )) : <div className="text-xs text-gray-400">无</div>}
+            </div>
           </div>
         </div>
-      )}
-
-      {/* 相关用户卡片 */}
-      {query && showSuggestions && users.length > 0 && (
-        <div>
-          <div className="px-4 py-2 font-bold text-sm text-gray-700">相关用户</div>
-          {users.map((user) => (
-            <div
-              key={user.id}
-              onClick={() => {
-                onSuggestionClick({ type: 'user', value: user.name, link: `/user/${user.id}` });
-                setShowSuggestions(false);
-              }}
-              className="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer border-b rounded-lg mb-2"
-           >
-              <img
-                src={user.avatar || defaultAvatar}
-                alt={user.name}
-                onError={(e) => e.currentTarget.src = defaultAvatar}
-                className="w-8 h-8 rounded-full mr-2"
-              />
-              <span className="text-sm font-medium">{user.name}</span>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* 相关文章卡片 */}
-      {query && showSuggestions && articles.length > 0 && (
-        <div>
-          <div className="px-4 py-2 font-bold text-sm text-gray-700">相关文章</div>
-          {articles.map((article) => (
-           <div
-              key={article.title}
-              onClick={() => {
-                onSuggestionClick({ type: 'article', value: article.title, link: article.link });
-                setShowSuggestions(false);
-              }}
-             className="px-4 py-2 hover:bg-gray-100 cursor-pointer border-b"
-            >
-              <div className="text-lg font-semibold">{article.title}</div>
-              <div className="text-sm text-gray-600">{article.summary}</div>
-              <div className="mt-1">
-                {article.tags.map((tag) => (
+      ) : (
+        <>
+          {/* 相关标签 */}
+          {query && showSuggestions && tags.length > 0 && (
+            <div>
+              <div className="px-4 py-2 font-bold text-sm text-gray-700 flex items-center gap-1">
+                <IconTag size={16} className="text-purple-500" />
+                相关标签
+              </div>
+              <div className="flex flex-col space-y-2">
+                {tags.map((tag) => (
                   <a
-                    key={tag}
-                    href={`/tag/${tag}`}
+                    key={tag.tag}
+                    href={tag.link}
                     onClick={(e) => {
                       e.preventDefault();
-                      onSuggestionClick({ type: 'tag', value: tag.replace(/^#+/, ''), link: `/tag/${tag.replace(/^#+/, '')}` });
+                      onSuggestionClick({ type: 'tag', value: tag.tag.replace(/^#+/, ''), link: tag.link });
                       setShowSuggestions(false);
                     }}
-                    className="text-blue-500 mr-2"
+                    className="flex flex-col px-4 py-2 text-black bg-gray-200 rounded-md hover:bg-gray-300 cursor-pointer"
                   >
-                    {tag}
+                    <div className="flex items-center space-x-1">
+                      <span className="text-sm font-medium">#{tag.tag.replace(/^#+/, '')}</span>{' '}
+                      {tag.tag === '#ni' && <span className="text-xs text-gray-500">小说</span>}
+                    </div>
+                    <span className="text-xs text-gray-600 mt-1">{tag.postsCount} 个最新帖子</span>
                   </a>
                 ))}
               </div>
             </div>
-          ))}
-        </div>
+          )}
+
+          {/* 相关用户卡片 */}
+          {query && showSuggestions && users.length > 0 && (
+            <div>
+              <div className="px-4 py-2 font-bold text-sm text-gray-700 flex items-center gap-1">
+                <IconUser size={16} className="text-blue-500" />
+                相关用户
+              </div>
+              {users.map((user) => (
+                <div
+                  key={user.id}
+                  onClick={() => {
+                    onSuggestionClick({ type: 'user', value: user.name, link: `/user/${user.id}` });
+                    setShowSuggestions(false);
+                  }}
+                  className="flex items-center px-4 py-3 mb-2 bg-white hover:bg-gray-100 cursor-pointer rounded-xl transition-colors shadow-sm"
+                  style={{ minHeight: 56 }}
+                >
+                  <img
+                    src={user.avatar || defaultAvatar}
+                    alt={user.name}
+                    onError={(e) => e.currentTarget.src = defaultAvatar}
+                    className="w-10 h-10 rounded-full mr-4 border border-gray-200 object-cover"
+                  />
+                  <div className="flex flex-col min-w-0">
+                    <span className="font-semibold text-lg leading-tight truncate">{user.name}</span>
+                    <span className="text-sm text-gray-400 truncate">ID: {user.id}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* 相关文章卡片 */}
+          {query && showSuggestions && articles.length > 0 && (
+            <div>
+              <div className="px-4 py-2 font-bold text-sm text-gray-700 flex items-center gap-1">
+                <IconArticle size={16} className="text-green-500" />
+                相关文章
+              </div>
+              {articles.map((article) => (
+                <div
+                  key={article.title}
+                  onClick={() => {
+                    onSuggestionClick({ type: 'article', value: article.title, link: article.link });
+                    setShowSuggestions(false);
+                  }}
+                  className="px-4 py-2 hover:bg-gray-100 cursor-pointer border-b"
+                >
+                  <div className="text-lg font-semibold">{article.title}</div>
+                  <div className="text-sm text-gray-600">{article.summary}</div>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {article.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="inline-block px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full text-xs font-medium"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       {query && !loading && tags.length === 0 && users.length === 0 && articles.length === 0 && (

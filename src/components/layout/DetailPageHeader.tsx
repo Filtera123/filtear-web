@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { IconSearch } from '@tabler/icons-react';
+import SearchSuggestions from './float-based/right-side/SearchSuggestions';
 
 interface DetailPageHeaderProps {
   className?: string;
@@ -8,6 +10,7 @@ interface DetailPageHeaderProps {
 export default function DetailPageHeader({ className = '' }: DetailPageHeaderProps) {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,21 +49,43 @@ export default function DetailPageHeader({ className = '' }: DetailPageHeaderPro
           </div>
 
           {/* 中间搜索框 */}
-          <div className="flex-1 max-w-md mx-4">
-            <form onSubmit={handleSearch} className="relative">
+          <div className="flex-1 max-w-xl mx-4 relative">
+            <form
+              onSubmit={handleSearch}
+              className="flex items-center w-full bg-white rounded-full shadow-md transition-all"
+            >
               <input
                 type="text"
-                placeholder="搜索内容..."
+                placeholder="搜索Filtera"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-9 pl-10 pr-4 text-sm bg-gray-100 border-0 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+                onFocus={() => setShowSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                className="w-full h-9 pl-4 pr-2 bg-transparent rounded-full focus:outline-none text-gray-700 placeholder-gray-400"
               />
-              <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </div>
+              <button
+                type="submit"
+                className="flex-shrink-0 bg-transparent hover:bg-transparent text-purple-600 rounded-full h-8 w-8 flex items-center justify-center mr-1"
+                aria-label="Search"
+              >
+                <IconSearch size={20} className="text-purple-600" />
+              </button>
             </form>
+            {showSuggestions && searchQuery && (
+              <SearchSuggestions
+                query={searchQuery}
+                onSuggestionClick={(suggestion) => {
+                  setSearchQuery(suggestion.value);
+                  setShowSuggestions(false);
+                  if (suggestion.type === 'tag' || suggestion.type === 'user' || suggestion.type === 'article') {
+                    navigate(suggestion.link);
+                  } else {
+                    navigate(`/search-results/${suggestion.value}`);
+                  }
+                }}
+                layout="horizontal"
+              />
+            )}
           </div>
 
           {/* 右侧功能区 */}
