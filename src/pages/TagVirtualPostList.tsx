@@ -3,8 +3,10 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import { useNavigate } from 'react-router-dom';
 import { BasePostCard } from '../components/post-card';
-import { PostType, type PostTypeValue } from '../components/post-card/post.types';
+import { PostType, type PostTypeValue, type PostItem } from '../components/post-card/post.types';
 import { Image } from '../components/ui';
+import MasonryLayout from '../components/ui/MasonryLayout';
+import TumblrCard from '../components/ui/TumblrCard';
 import { useTagPageStore } from './TagPage.store';
 import type { ContentFilter, HotSubTab, LatestSubTab, TagPageTab, ViewMode } from './TagPage.types';
 
@@ -305,6 +307,33 @@ export default function TagVirtualPostList({ tagName }: TagVirtualPostListProps)
     [likedPosts]
   );
 
+  // Tumblr卡片的点赞处理
+  const handleTumblrLikeClick = useCallback((post: PostItem, liked: boolean) => {
+    setLikedPosts((prev) => ({
+      ...prev,
+      [post.id]: liked,
+    }));
+    console.log(`${liked ? '点赞' : '取消点赞'}帖子:`, post.id);
+  }, []);
+
+  // Tumblr卡片的用户点击处理
+  const handleTumblrUserClick = useCallback((username: string) => {
+    navigate(`/user/${username}`);
+  }, [navigate]);
+
+  // Tumblr卡片的评论点击处理
+  const handleTumblrCommentClick = useCallback((post: PostItem) => {
+    // 跳转到详情页并滚动到评论区
+    navigate(getPostDetailUrl(post), { 
+      state: { 
+        ...post, 
+        scrollToComments: true 
+      } 
+    });
+  }, [navigate]);
+
+
+
   // 获取内容预览
   const getContentPreview = (content: string) => {
     return content?.substring(0, 150) || '无内容';
@@ -481,31 +510,38 @@ export default function TagVirtualPostList({ tagName }: TagVirtualPostListProps)
     );
   }
 
-  // 网格视图渲染
+  // 网格视图渲染 - 使用瀑布流布局
   return (
-    <div className="py-4">
-      {/* 网格视图 */}
-      <div className="grid grid-cols-3 gap-4 max-w-7xl mx-auto">
-        {/* 把每条帖子渲染成卡片 */}
+    <div className="py-4 px-4">
+      <MasonryLayout 
+        columns={{ default: 2, md: 3, lg: 4, xl: 5 }}
+        gap="1rem"
+        className="max-w-7xl mx-auto"
+      >
         {filteredPosts.map((post) => (
-          <div key={post.id} className="h-auto" style={{ minHeight: '280px' }}>
-            {renderGridCard(post)}
-          </div>
+                     <TumblrCard
+             key={post.id}
+             post={post}
+             onLikeClick={handleTumblrLikeClick}
+             onUserClick={handleTumblrUserClick}
+             onCommentClick={handleTumblrCommentClick}
+             maxImageHeight={400}
+           />
         ))}
+      </MasonryLayout>
 
-        {/* 加载更多指示器 */}
-        {isFetchingNextPage && (
-          <div className="col-span-full py-4 flex justify-center">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
-            <span className="ml-2">加载更多...</span>
-          </div>
-        )}
-      </div>
+      {/* 加载更多指示器 */}
+      {isFetchingNextPage && (
+        <div className="py-6 flex justify-center">
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+          <span className="ml-2">加载更多...</span>
+        </div>
+      )}
 
       {/* 没有更多内容提示 */}
       {!hasNextPage && filteredPosts.length > 0 && (
         <div className="text-center py-6 text-gray-500">
-          <div className="bg-gray-100 rounded-lg p-4">🎉 已加载全部内容</div>
+          <div className="bg-gray-100 rounded-lg p-4 mx-4">🎉 已加载全部内容</div>
         </div>
       )}
     </div>

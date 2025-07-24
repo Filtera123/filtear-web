@@ -2,6 +2,8 @@ import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useBrowsingHistoryStore, type BrowsingRecord } from '@/stores/browsingHistoryStore';
 import { Image } from '@/components/ui';
+import MasonryLayout from '@/components/ui/MasonryLayout';
+import TumblrCard from '@/components/ui/TumblrCard';
 import { PostType, type PostItem } from '@/components/post-card/post.types';
 import { BasePostCard } from '@/components/post-card';
 import { cn } from '@/utils/cn';
@@ -208,6 +210,33 @@ export default function RecentlyViewed() {
     removeRecord(recordId);
   }, [removeRecord]);
 
+  // Tumblr卡片的点赞处理
+  const handleTumblrLikeClick = useCallback((post: PostItem, liked: boolean) => {
+    setLikedPosts(prev => ({
+      ...prev,
+      [post.id]: liked,
+    }));
+    console.log(`${liked ? '点赞' : '取消点赞'}帖子:`, post.id);
+  }, []);
+
+  // Tumblr卡片的用户点击处理
+  const handleTumblrUserClick = useCallback((username: string) => {
+    navigate(`/user/${username}`);
+  }, [navigate]);
+
+  // Tumblr卡片的评论点击处理
+  const handleTumblrCommentClick = useCallback((post: PostItem) => {
+    // 跳转到详情页并滚动到评论区
+    navigate(`/post/${post.id}`, { 
+      state: { 
+        ...post, 
+        scrollToComments: true 
+      } 
+    });
+  }, [navigate]);
+
+
+
   // 网格视图渲染卡片
   const renderGridCard = (record: BrowsingRecord) => {
     const isLiked = getPostLikeStatus(record);
@@ -378,13 +407,24 @@ export default function RecentlyViewed() {
               ))}
             </div>
           ) : (
-            // 网格视图
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 px-4">
-              {sortedRecords.map((record) => (
-                <div key={`${record.id}-${record.viewTime}`} className="h-auto" style={{ minHeight: '280px' }}>
-                  {renderGridCard(record)}
-                </div>
-              ))}
+            // 瀑布流网格视图
+            <div className="px-4">
+              <MasonryLayout 
+                columns={{ default: 2, md: 3, lg: 4, xl: 5 }}
+                gap="1rem"
+                className="max-w-7xl mx-auto"
+              >
+                {postItems.map((postItem) => (
+                                     <TumblrCard
+                     key={postItem.id}
+                     post={postItem}
+                     onLikeClick={handleTumblrLikeClick}
+                     onUserClick={handleTumblrUserClick}
+                     onCommentClick={handleTumblrCommentClick}
+                     maxImageHeight={400}
+                   />
+                ))}
+              </MasonryLayout>
             </div>
           )
         ) : (
