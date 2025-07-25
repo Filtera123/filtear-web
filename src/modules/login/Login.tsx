@@ -297,7 +297,6 @@ const Login: React.FC = () => {
             {/* 手机号输入 */}
             <TextField
               fullWidth
-              label="手机号"
               placeholder="请输入手机号"
               value={formData.phone}
               onChange={handlePhoneChange}
@@ -331,7 +330,6 @@ const Login: React.FC = () => {
                                  {/* 短信验证码 */}
                  <Box className="flex space-x-2">
                    <TextField
-                     label="验证码"
                      placeholder="请输入6位验证码"
                      value={formData.smsCode}
                      onChange={(e) => updateFormData('smsCode', e.target.value)}
@@ -381,7 +379,6 @@ const Login: React.FC = () => {
               <TextField
                 fullWidth
                 type="password"
-                label="密码"
                 placeholder="请输入密码"
                 value={formData.password}
                 onChange={(e) => updateFormData('password', e.target.value)}

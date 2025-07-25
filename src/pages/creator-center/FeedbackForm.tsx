@@ -88,11 +88,11 @@ export default function FeedbackForm() {
                 您在哪个页面遇到了问题？
               </Typography>
               <FormControl fullWidth size="small">
-                <InputLabel>请选择产品模块</InputLabel>
                 <Select
                   value={selectedModule}
-                  label="请选择产品模块"
                   onChange={handleModuleChange}
+                  displayEmpty
+                  renderValue={(value) => value || "请选择产品模块"}
                 >
                   {productModules.map((module) => (
                     <MenuItem key={module.value} value={module.value}>

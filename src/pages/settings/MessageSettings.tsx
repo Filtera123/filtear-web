@@ -81,11 +81,10 @@ export default function MessageSettings() {
                 </Typography>
               </div>
               <FormControl size="small" style={{ minWidth: 120 }}>
-                <InputLabel>接收对象</InputLabel>
                 <Select
                   value={settings.mentionNotify}
                   onChange={handleSelectChange('mentionNotify')}
-                  label="接收对象"
+                  displayEmpty
                 >
                   <MenuItem value="all">所有人</MenuItem>
                   <MenuItem value="following">我关注的人</MenuItem>
@@ -104,11 +103,10 @@ export default function MessageSettings() {
                 </Typography>
               </div>
               <FormControl size="small" style={{ minWidth: 120 }}>
-                <InputLabel>接收对象</InputLabel>
                 <Select
                   value={settings.commentNotify}
                   onChange={handleSelectChange('commentNotify')}
-                  label="接收对象"
+                  displayEmpty
                 >
                   <MenuItem value="all">所有人</MenuItem>
                   <MenuItem value="following">我关注的人</MenuItem>
