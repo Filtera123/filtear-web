@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { IconSearch } from '@tabler/icons-react';
 import SearchSuggestions from './float-based/right-side/SearchSuggestions';
 
@@ -9,6 +9,7 @@ interface DetailPageHeaderProps {
 
 export default function DetailPageHeader({ className = '' }: DetailPageHeaderProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
 
@@ -27,7 +28,19 @@ export default function DetailPageHeader({ className = '' }: DetailPageHeaderPro
           <div className="flex items-center space-x-3">
             {/* 返回按钮 */}
             <button
-              onClick={() => navigate(-1)}
+              onClick={() => {
+                // 检查是否有指定的来源页面
+                if (location.state?.fromPage) {
+                  navigate(location.state.fromPage);
+                } else {
+                  // 尝试返回上一页，如果没有历史记录则回到首页
+                  if (window.history.length > 1) {
+                    navigate(-1);
+                  } else {
+                    navigate('/');
+                  }
+                }
+              }}
               className="flex items-center justify-center w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors group"
               title="返回"
             >

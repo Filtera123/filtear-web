@@ -54,46 +54,95 @@ const fetchTagPosts = async (
     // 根据帖子类型添加特定属性
     switch (postType) {
       case PostType.ARTICLE:
+        // 生成不同长度的文章摘要
+        const abstractTemplates = [
+          `关于 ${tagName} 的简短介绍。`,
+          `这是一篇详细探讨 ${tagName} 的文章，包含了丰富的内容和深入的分析。`,
+          `${tagName} 是一个非常有趣的话题，本文将从多个角度进行分析。我们会探讨它的历史背景、现状以及未来发展趋势。通过深入研究，我们可以更好地理解这个领域的复杂性。`,
+          `关于 ${tagName} 的全面研究报告。本文详细分析了相关的理论基础、实践应用以及可能面临的挑战。我们通过大量的案例研究和数据分析，试图为读者提供一个全面而客观的视角。文章还包含了专家访谈和行业调研的结果，力求为读者呈现最新、最准确的信息。通过阅读本文，您将对 ${tagName} 有一个更加深入和全面的了解。`
+        ];
         return {
           ...basePost,
-          abstract: `这是关于 ${tagName} 的文章摘要...`,
-          wordCount: Math.floor(Math.random() * 5000) + 500, // 500-5500字
+          abstract: abstractTemplates[i % abstractTemplates.length],
+          wordCount: Math.floor(Math.random() * 5000) + 500,
         };
       case PostType.IMAGE:
+        // 生成不同尺寸比例的图片和不同长度的描述
+        const imageDescriptions = [
+          ``,
+          `美丽的风景照片`,
+          `这是一张非常棒的照片，展现了 ${tagName} 的精彩瞬间。`,
+          `精美的 ${tagName} 主题图片，捕捉到了完美的光影效果。这张照片展示了摄影师的专业技巧和艺术眼光，值得细细品味。`
+        ];
+        const aspectRatios = [
+          { width: 400, height: 300 }, // 4:3
+          { width: 400, height: 500 }, // 4:5
+          { width: 400, height: 600 }, // 2:3
+          { width: 400, height: 400 }, // 1:1
+          { width: 400, height: 250 }, // 16:10
+        ];
+        const ratio = aspectRatios[i % aspectRatios.length];
         return {
           ...basePost,
+          content: basePost.title + (imageDescriptions[i % imageDescriptions.length] ? ` - ${imageDescriptions[i % imageDescriptions.length]}` : ''),
           images: [
             {
-              url: `https://picsum.photos/400/300?random=${i}`,
+              url: `https://picsum.photos/${ratio.width}/${ratio.height}?random=${i}`,
               alt: `图片${i}`,
-              width: 400,
-              height: 300,
+              width: ratio.width,
+              height: ratio.height,
             },
           ],
         };
       case PostType.VIDEO:
+        // 生成不同长度的视频描述
+        const videoDescriptions = [
+          ``,
+          `精彩的视频内容`,
+          `这是一个关于 ${tagName} 的有趣视频，内容丰富多彩。`,
+          `深度解析 ${tagName} 的专业视频内容。本视频通过生动的演示和详细的讲解，帮助观众深入理解相关概念。制作精良，内容充实，是学习和了解这个领域的优质资源。`
+        ];
         return {
           ...basePost,
+          content: basePost.title + (videoDescriptions[i % videoDescriptions.length] ? ` - ${videoDescriptions[i % videoDescriptions.length]}` : ''),
           video: {
             url: `https://example.com/video${i}.mp4`,
-            thumbnail: `https://picsum.photos/400/300?random=${i}`,
-            duration: Math.floor(Math.random() * 300) + 30, // 30-330秒
+            thumbnail: `https://picsum.photos/400/225?random=${i}`, // 16:9比例
+            duration: Math.floor(Math.random() * 300) + 30,
             width: 720,
             height: 480,
           },
         };
       case PostType.DYNAMIC:
+        // 生成不同长度的动态内容
+        const dynamicContents = [
+          `今天天气不错！`,
+          `刚刚看到一个很有趣的关于 ${tagName} 的分享，觉得很有意思。`,
+          `最近一直在研究 ${tagName} 相关的内容，发现了很多有价值的信息。分享一些个人心得：首先要理解基本概念，然后多实践，最后总结经验。`,
+          `关于 ${tagName} 的深度思考和分析。经过一段时间的学习和实践，我对这个领域有了更深入的理解。想和大家分享一些我的收获和体会。\n\n首先，理论基础非常重要，需要花时间去理解核心概念。其次，实践是检验真理的唯一标准，只有通过实际操作才能真正掌握技能。最后，要保持持续学习的心态，因为这个领域在不断发展变化。\n\n希望我的分享对大家有所帮助，也欢迎交流讨论！`,
+          `今天参加了一个关于 ${tagName} 的研讨会，收获满满！会上有很多行业专家分享了他们的经验和见解，让我对这个领域有了更全面的认识。\n\n特别印象深刻的是某位专家提到的几个要点：\n1. 基础理论的重要性不可忽视\n2. 实践经验是理论的有力补充\n3. 持续学习是保持竞争力的关键\n4. 团队协作能够事半功倍\n5. 创新思维是突破瓶颈的利器\n\n这些观点让我深受启发，也让我对未来的学习和工作有了更清晰的规划。感谢主办方提供这样的学习机会，也期待更多类似的活动！`
+        ];
+        
+        // 为部分动态添加图片
+        const hasImage = i % 3 === 0; // 每三个动态中有一个带图片
+        const imageRatios = [
+          { width: 400, height: 300 },
+          { width: 400, height: 400 },
+          { width: 400, height: 500 },
+        ];
+        const imageRatio = imageRatios[i % imageRatios.length];
+        
         return {
           ...basePost,
-          images:
-            Math.random() > 0.5
-              ? [
-                  {
-                    url: `https://picsum.photos/400/300?random=${i}`,
-                    alt: `动态图片${i}`,
-                  },
-                ]
-              : undefined,
+          content: dynamicContents[i % dynamicContents.length],
+          images: hasImage ? [
+            {
+              url: `https://picsum.photos/${imageRatio.width}/${imageRatio.height}?random=${i}`,
+              alt: `动态图片${i}`,
+              width: imageRatio.width,
+              height: imageRatio.height,
+            },
+          ] : undefined,
         };
       default:
         return basePost;
@@ -134,6 +183,7 @@ export default function TagVirtualPostList({ tagName }: TagVirtualPostListProps)
 
   // 本地状态管理点赞状态
   const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({});
+  const [isGridReady, setIsGridReady] = useState(false);
 
   // 确定当前的子tab
   const currentSubTab = useMemo(() => {
@@ -197,6 +247,18 @@ export default function TagVirtualPostList({ tagName }: TagVirtualPostListProps)
   });
 
   const items = virtualizer.getVirtualItems();
+
+  // 当切换到网格视图时，添加短暂延迟确保DOM稳定
+  useEffect(() => {
+    if (viewMode === 'grid' && filteredPosts.length > 0) {
+      const timer = setTimeout(() => {
+        setIsGridReady(true);
+      }, 100);
+      return () => clearTimeout(timer);
+    } else {
+      setIsGridReady(false);
+    }
+  }, [viewMode, filteredPosts.length]);
 
   // 无限滚动逻辑 - 列表视图
   useEffect(() => {
@@ -265,7 +327,12 @@ export default function TagVirtualPostList({ tagName }: TagVirtualPostListProps)
   // 处理帖子点击
   const handlePostClick = useCallback(
     (post: any) => {
-      navigate(getPostDetailUrl(post), { state: post });
+      navigate(getPostDetailUrl(post), { 
+        state: {
+          ...post,
+          fromPage: window.location.pathname // 记录当前标签页的路径
+        }
+      });
     },
     [navigate, getPostDetailUrl]
   );
@@ -327,7 +394,8 @@ export default function TagVirtualPostList({ tagName }: TagVirtualPostListProps)
     navigate(getPostDetailUrl(post), { 
       state: { 
         ...post, 
-        scrollToComments: true 
+        scrollToComments: true,
+        fromPage: window.location.pathname // 记录当前标签页的路径
       } 
     });
   }, [navigate]);
@@ -513,22 +581,40 @@ export default function TagVirtualPostList({ tagName }: TagVirtualPostListProps)
   // 网格视图渲染 - 使用瀑布流布局
   return (
     <div className="py-4 px-4">
-      <MasonryLayout 
-        columns={{ default: 2, md: 3, lg: 4, xl: 5 }}
-        gap="1rem"
-        className="max-w-7xl mx-auto"
-      >
-        {filteredPosts.map((post) => (
-                     <TumblrCard
-             key={post.id}
-             post={post}
-             onLikeClick={handleTumblrLikeClick}
-             onUserClick={handleTumblrUserClick}
-             onCommentClick={handleTumblrCommentClick}
-             maxImageHeight={400}
-           />
-        ))}
-      </MasonryLayout>
+      {/* 确保有内容且DOM稳定时才渲染瀑布流，避免初始布局跳动 */}
+      {filteredPosts.length > 0 && isGridReady ? (
+        <MasonryLayout 
+          columns={{ default: 2, md: 3, lg: 4, xl: 5 }}
+          gap="1rem"
+          className="max-w-7xl mx-auto"
+        >
+          {filteredPosts.map((post) => (
+                       <TumblrCard
+               key={post.id}
+               post={{
+                 ...post,
+                 fromPage: window.location.pathname // 记录当前标签页的路径
+               }}
+               onLikeClick={handleTumblrLikeClick}
+               onUserClick={handleTumblrUserClick}
+               onCommentClick={handleTumblrCommentClick}
+               maxImageHeight={400}
+             />
+          ))}
+        </MasonryLayout>
+      ) : (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 max-w-7xl mx-auto">
+          {Array.from({ length: 10 }).map((_, index) => (
+            <div key={index} className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-100 animate-pulse">
+              <div className="aspect-[3/4] bg-gray-200"></div>
+              <div className="p-4">
+                <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* 加载更多指示器 */}
       {isFetchingNextPage && (

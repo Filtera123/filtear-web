@@ -6,7 +6,6 @@ import {
   IconUser,
   IconShieldCheck,
   IconBell,
-  IconCopyright,
   IconEyeOff,
   IconArrowLeft
 } from '@tabler/icons-react';
@@ -15,7 +14,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import AccountInfo from './settings/AccountInfo';
 import AccountSecurity from './settings/AccountSecurity';
 import MessageSettings from './settings/MessageSettings';
-import CopyrightProtection from './settings/CopyrightProtection';
 import PrivacySettings from './settings/PrivacySettings';
 
 interface MenuItem {
@@ -61,11 +59,6 @@ const menuItems: MenuItem[] = [
     id: 'messages',
     label: '消息设置',
     icon: <IconBell size={18} />,
-  },
-  {
-    id: 'copyright',
-    label: '版权保护',
-    icon: <IconCopyright size={18} />,
   },
 ];
 
@@ -132,8 +125,6 @@ export default function Settings() {
         return <AccountSecurity />;
       case 'messages':
         return <MessageSettings />;
-      case 'copyright':
-        return <CopyrightProtection />;
       case 'privacy-block':
         return <PrivacySettings type={activeItem} />;
       default:

@@ -48,10 +48,14 @@ export interface UserProfileState {
   currentTab: ProfileTab;
   currentWorksFilter: WorksFilterType;
   viewMode: ViewMode;
-  isLoading: boolean;
+  isLoading: boolean; // 保留用于向后兼容
   error: string | null;
   posts: any[]; // 使用现有的帖子类型
   isFollowing: boolean;
+  postsCache: Record<string, any[]>; // 帖子缓存
+  isInitialLoad: boolean; // 是否是首次加载
+  isUserInfoLoading: boolean; // 用户信息加载状态
+  isPostsLoading: boolean; // 帖子数据加载状态
 }
 
 // 定义API响应类型

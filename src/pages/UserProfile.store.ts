@@ -25,16 +25,28 @@ export const useUserProfileStore = create<UserProfileState & {
   setIsFollowing: (following: boolean) => void;
   toggleFollow: () => void;
   resetState: () => void;
+  setIsInitialLoad: (isInitial: boolean) => void;
+  setIsUserInfoLoading: (loading: boolean) => void;
+  setIsPostsLoading: (loading: boolean) => void;
+  // 新增缓存相关方法
+  getCachedPosts: (userId: string, tab: ProfileTab, filter: WorksFilterType) => any[] | null;
+  setCachedPosts: (userId: string, tab: ProfileTab, filter: WorksFilterType, posts: any[]) => void;
+  clearCache: () => void;
 }>((set, get) => ({
   // Initial state
   userInfo: null,
   currentTab: ProfileTabs.WORKS,
   currentWorksFilter: WorksFilter.ALL,
   viewMode: getSavedViewMode(),
-  isLoading: false,
+  isLoading: false, // 保留用于向后兼容
   error: null,
   posts: [],
   isFollowing: false,
+  isInitialLoad: true,
+  isUserInfoLoading: false,
+  isPostsLoading: false,
+  // 新增缓存状态
+  postsCache: {} as Record<string, any[]>,
 
   // Actions
   setUserInfo: (userInfo) => set({ userInfo }),
@@ -65,6 +77,12 @@ export const useUserProfileStore = create<UserProfileState & {
   
   setIsFollowing: (following) => set({ isFollowing: following }),
   
+  setIsInitialLoad: (isInitial) => set({ isInitialLoad: isInitial }),
+  
+  setIsUserInfoLoading: (loading) => set({ isUserInfoLoading: loading }),
+  
+  setIsPostsLoading: (loading) => set({ isPostsLoading: loading }),
+  
   toggleFollow: () => {
     const { isFollowing, userInfo } = get();
     if (userInfo) {
@@ -87,8 +105,43 @@ export const useUserProfileStore = create<UserProfileState & {
     error: null,
     posts: [],
     isFollowing: false,
+    isInitialLoad: true,
+    isUserInfoLoading: false,
+    isPostsLoading: false,
+    postsCache: {},
   }),
+
+  // 新增缓存相关方法
+  getCachedPosts: (userId: string, tab: ProfileTab, filter: WorksFilterType) => {
+    const cacheKey = `${userId}-${tab}-${filter}`;
+    const cache = get().postsCache;
+    return cache[cacheKey] || null;
+  },
+
+  setCachedPosts: (userId: string, tab: ProfileTab, filter: WorksFilterType, posts: any[]) => {
+    const cacheKey = `${userId}-${tab}-${filter}`;
+    const state = get();
+    set({
+      postsCache: {
+        ...state.postsCache,
+        [cacheKey]: posts
+      }
+    });
+  },
+
+  clearCache: () => set({ postsCache: {} }),
 }));
+
+// 生成基于字符串的固定hash值
+const generateHashFromString = (str: string): number => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  return Math.abs(hash);
+};
 
 // 模拟获取用户信息的API
 export const mockGetUserInfo = (userId: string): Promise<UserProfileInfo | null> => {
@@ -111,11 +164,14 @@ export const mockGetUserInfo = (userId: string): Promise<UserProfileInfo | null>
         return;
       }
       
+      // 基于用户ID生成固定的头像ID
+      const avatarId = generateHashFromString(userId) % 100;
+      
       resolve({
         id: userId,
         nickname: isCurrentUser ? '我的昵称' : `用户${userId}`,
         username: `@${userId}`,
-        avatar: `https://picsum.photos/id/${Math.floor(Math.random() * 100)}/100/100`,
+        avatar: `https://picsum.photos/id/${avatarId}/100/100`,
         bio: isCurrentUser ? '这是我的个性签名，可以编辑' : `这是${userId}的个性签名`,
         ipLocation: '上海',
         followerCount: Math.floor(Math.random() * 1000) + 100,

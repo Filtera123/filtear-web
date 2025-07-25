@@ -16,7 +16,7 @@ export default function UserProfile() {
     currentTab,
     currentWorksFilter,
     viewMode,
-    isLoading,
+    isLoading, // 保留用于向后兼容
     error,
     posts,
     isFollowing,
@@ -30,6 +30,14 @@ export default function UserProfile() {
     setIsFollowing,
     toggleFollow,
     resetState,
+    getCachedPosts,
+    setCachedPosts,
+    isInitialLoad,
+    setIsInitialLoad,
+    isUserInfoLoading,
+    isPostsLoading,
+    setIsUserInfoLoading,
+    setIsPostsLoading,
   } = useUserProfileStore();
 
   // 获取用户信息
@@ -38,7 +46,7 @@ export default function UserProfile() {
 
     const fetchUserInfo = async () => {
       try {
-        setIsLoading(true);
+        setIsUserInfoLoading(true);
         setError(null);
 
         const userData = await mockGetUserInfo(userId);
@@ -59,12 +67,12 @@ export default function UserProfile() {
         setError('获取用户信息失败，请稍后再试');
         console.error('获取用户信息失败:', error);
       } finally {
-        setIsLoading(false);
+        setIsUserInfoLoading(false);
       }
     };
 
     fetchUserInfo();
-  }, [userId, setUserInfo, setIsFollowing, setIsLoading, setError]);
+  }, [userId, setUserInfo, setIsFollowing, setIsUserInfoLoading, setError]);
 
   // 获取帖子列表
   useEffect(() => {
@@ -72,19 +80,31 @@ export default function UserProfile() {
 
     const fetchPosts = async () => {
       try {
-        setIsLoading(true);
-        const posts = await mockGetUserPosts(userId, currentTab, currentWorksFilter);
-        setPosts(posts);
+        // 首先检查缓存
+        const cachedPosts = getCachedPosts(userId, currentTab, currentWorksFilter);
+        if (cachedPosts) {
+          setPosts(cachedPosts);
+          setIsInitialLoad(false);
+          return; // 如果有缓存，直接返回，不显示加载状态
+        }
+
+        // 使用帖子专用的加载状态
+        setIsPostsLoading(true);
+        const newPosts = await mockGetUserPosts(userId, currentTab, currentWorksFilter);
+        setPosts(newPosts);
+        // 缓存数据
+        setCachedPosts(userId, currentTab, currentWorksFilter, newPosts);
+        setIsInitialLoad(false);
       } catch (error) {
         setError('获取帖子列表失败');
         console.error('获取帖子列表失败:', error);
       } finally {
-        setIsLoading(false);
+        setIsPostsLoading(false);
       }
     };
 
     fetchPosts();
-  }, [userId, currentTab, currentWorksFilter, setPosts, setIsLoading, setError]);
+  }, [userId, currentTab, currentWorksFilter, setPosts, setIsPostsLoading, setError, getCachedPosts, setCachedPosts, setIsInitialLoad]);
 
   // 清理状态
   useEffect(() => {
@@ -151,13 +171,13 @@ export default function UserProfile() {
     );
   }
 
-  // 加载状态
-  if (isLoading) {
+  // 用户信息加载状态 - 只有在加载用户信息时才显示整页加载
+  if (isUserInfoLoading) {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="flex flex-col items-center space-y-4">
           <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-          <span className="text-gray-500">加载中...</span>
+          <span className="text-gray-500">加载用户信息...</span>
         </div>
       </div>
     );
@@ -196,35 +216,48 @@ export default function UserProfile() {
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full bg-gray-50 min-h-screen">
       {/* 用户信息头部 */}
-      <ProfileHeader
-        userInfo={userInfo}
-        isFollowing={isFollowing}
-        onToggleFollow={handleToggleFollow}
-        onEditProfile={handleEditProfile}
-      />
+      <div className="bg-white">
+        <ProfileHeader
+          userInfo={userInfo}
+          isFollowing={isFollowing}
+          onToggleFollow={handleToggleFollow}
+          onEditProfile={handleEditProfile}
+        />
 
-      {/* Tab切换区域 */}
-      <ProfileTabs
-        currentTab={currentTab}
-        currentWorksFilter={currentWorksFilter}
-        viewMode={viewMode}
-        onTabChange={handleTabChange}
-        onWorksFilterChange={handleWorksFilterChange}
-        onViewModeChange={handleViewModeChange}
-        isCurrentUser={userInfo.isCurrentUser}
-      />
+        {/* Tab切换区域 */}
+        <ProfileTabs
+          currentTab={currentTab}
+          currentWorksFilter={currentWorksFilter}
+          viewMode={viewMode}
+          onTabChange={handleTabChange}
+          onWorksFilterChange={handleWorksFilterChange}
+          onViewModeChange={handleViewModeChange}
+          isCurrentUser={userInfo.isCurrentUser}
+        />
+      </div>
 
       {/* 帖子列表 */}
-      <div className="bg-gray-50 min-h-screen">
+      <div className="relative">
+        {/* tab切换加载状态覆盖层 - 移到外层处理 */}
+        {isPostsLoading && !isInitialLoad && (
+          <div className="absolute inset-0 bg-gray-50/80 flex items-center justify-center z-10">
+            <div className="flex items-center space-x-2">
+              <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+              <span className="text-gray-600 text-sm">切换中...</span>
+            </div>
+          </div>
+        )}
+        
         <ProfilePostList
           posts={posts}
           currentTab={currentTab}
           currentWorksFilter={currentWorksFilter}
           viewMode={viewMode}
-          isLoading={isLoading}
+          isLoading={isPostsLoading}
           isCurrentUser={userInfo.isCurrentUser}
+          isInitialLoad={isInitialLoad}
         />
       </div>
     </div>

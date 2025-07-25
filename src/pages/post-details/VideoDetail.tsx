@@ -1,9 +1,11 @@
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { Popover } from '@chakra-ui/react';
 import CommentSection from '@/components/comment/CommentSection';
 import type { VideoPost } from '@/components/post-card/post.types';
 import { usePostActions } from '@/hooks/usePostActions';
 import { useBrowsingHistoryStore } from '@/stores/browsingHistoryStore';
+import { useReportContext } from '@/components/report';
 
 const formatDuration = (seconds: number): string => {
   const hours = Math.floor(seconds / 3600);
@@ -15,14 +17,98 @@ const formatDuration = (seconds: number): string => {
   return `${minutes}:${secs.toString().padStart(2, '0')}`;
 };
 
+// 格式化时间显示
+const formatTime = (dateString: string): string => {
+  const now = new Date();
+  const postTime = new Date(dateString);
+  const diffMs = now.getTime() - postTime.getTime();
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffHours < 1) {
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+    return diffMinutes < 1 ? '刚刚' : `${diffMinutes}分钟前`;
+  } else if (diffHours < 24) {
+    return `${diffHours}小时前`;
+  } else if (diffDays < 30) {
+    return `${diffDays}天前`;
+  } else {
+    return postTime.toLocaleDateString('zh-CN');
+  }
+};
+
 interface VideoDetailModalProps {
   post: VideoPost;
   onClose: () => void;
 }
 
 const VideoDetailModal: React.FC<VideoDetailModalProps> = ({ post, onClose }) => {
-  const { likes, isLike, handleLike, comments, views, formatNumber } = usePostActions(post);
+  const { 
+    likes, 
+    isLike, 
+    handleLike, 
+    comments, 
+    views, 
+    formatNumber,
+    isFollowing,
+    handleFollow,
+    handleUnfollow,
+    handleBlockUser,
+    handleReportPost,
+    handleBlockPost
+  } = usePostActions(post);
   const { addRecord } = useBrowsingHistoryStore();
+  const { openReportModal } = useReportContext();
+
+  // 添加安全检查，确保post和video存在
+  if (!post || !post.video) {
+    console.error('VideoDetailModal: 无效的帖子数据', post);
+    console.error('Post type:', post?.type);
+    console.error('Post video:', post?.video);
+    
+    // 返回错误提示而不是直接渲染
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div className="bg-white p-6 rounded-lg max-w-md w-full mx-4">
+          <h2 className="text-lg font-bold mb-4">加载失败</h2>
+          <p className="text-gray-600 mb-4">视频数据无效或缺失</p>
+          <button 
+            onClick={onClose}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            关闭
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // 禁用背景滚动
+  useEffect(() => {
+    // 保存当前滚动位置
+    const scrollY = window.scrollY;
+    const body = document.body;
+    
+    // 获取滚动条宽度
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    
+    // 禁用滚动并防止内容跳动
+    body.style.position = 'fixed';
+    body.style.top = `-${scrollY}px`;
+    body.style.width = '100%';
+    body.style.overflow = 'hidden';
+    body.style.paddingRight = `${scrollbarWidth}px`;
+    
+    return () => {
+      // 恢复滚动
+      body.style.position = '';
+      body.style.top = '';
+      body.style.width = '';
+      body.style.overflow = '';
+      body.style.paddingRight = '';
+      window.scrollTo(0, scrollY);
+    };
+  }, []);
 
   // 记录浏览历史
   useEffect(() => {
@@ -73,10 +159,17 @@ const VideoDetailModal: React.FC<VideoDetailModalProps> = ({ post, onClose }) =>
               <img src={post.authorAvatar} alt="头像" className="w-8 h-8 rounded-full mr-2" />
               <div className="text-sm font-medium">{post.author}</div>
             </div>
-            <button className="text-sm text-blue-500">关注</button>
+            <button
+              onClick={isFollowing ? handleUnfollow : handleFollow}
+              className={`text-sm transition-colors ${
+                isFollowing ? 'text-gray-500' : 'text-blue-500 hover:text-blue-600'
+              }`}
+            >
+              {isFollowing ? '已关注' : '关注'}
+            </button>
           </div>
           {/* 发布时间和正文 */}
-          <div className="text-xs text-gray-500 mb-2">{post.createdAt}</div>
+          <div className="text-xs text-gray-500 mb-2">{formatTime(post.createdAt)}</div>
           <div className="text-sm text-gray-700 mb-4">{post.content}</div>
           {/* 浏览 评论 点赞 */}
           <div className="flex space-x-4 text-xs text-gray-500 mb-4">
@@ -109,9 +202,59 @@ const VideoDetailModal: React.FC<VideoDetailModalProps> = ({ post, onClose }) =>
               )}
             </button>
             <span className="text-sm text-gray-600">{formatNumber(likes)}</span>
+            {/* 更多操作按钮 */}
+            <Popover.Root 
+              positioning={{ 
+                placement: 'bottom-end',
+                strategy: 'absolute'
+              }}
+              modal={false}
+            >
+              <Popover.Trigger asChild>
+                <button className="text-gray-600 hover:text-gray-800 transition-colors">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                  </svg>
+                </button>
+              </Popover.Trigger>
+
+              <Popover.Positioner>
+                <Popover.Content 
+                  className="bg-white rounded-lg shadow-lg border-[0.5px] border-gray-200 py-1"
+                  style={{ zIndex: 9999, width: '80px', minWidth: '80px', maxWidth: '80px' }}
+                >
+                  {isFollowing && (
+                    <button
+                      onClick={handleUnfollow}
+                      className="w-full text-left px-2 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    >
+                      取消关注
+                    </button>
+                  )}
+                  <button
+                    onClick={handleBlockPost}
+                    className="w-full text-left px-2 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                  >
+                    屏蔽帖子
+                  </button>
+                  <button
+                    onClick={handleBlockUser}
+                    className="w-full text-left px-2 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                  >
+                    屏蔽用户
+                  </button>
+                  <button
+                    onClick={() => openReportModal(post.id, 'post', post.author)}
+                    className="w-full text-left px-2 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                  >
+                    举报
+                  </button>
+                </Popover.Content>
+              </Popover.Positioner>
+            </Popover.Root>
           </div>
           {/* 评论区 */}
-          <CommentSection postId={post.id} comments={post.commentList || []} />
+          <CommentSection postId={post.id} comments={post.commentList || []} showAllComments={true} />
         </aside>
       </div>
       {/* 关闭按钮 */}

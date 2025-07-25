@@ -57,7 +57,22 @@ const typeDisplayMap = {
 };
 
 // 将浏览记录转换为PostItem格式
+// 基于字符串生成固定的hash值
+const generateHashFromString = (str: string): number => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  return Math.abs(hash);
+};
+
 const convertBrowsingRecordToPostItem = (record: BrowsingRecord): PostItem => {
+  // 基于帖子ID生成固定的数据，确保数据一致性
+  const idHash = generateHashFromString(record.id);
+  const authorHash = generateHashFromString(record.author);
+  
   const basePost = {
     id: record.id,
     author: record.author,
@@ -75,11 +90,12 @@ const convertBrowsingRecordToPostItem = (record: BrowsingRecord): PostItem => {
       color: '#3b82f6'
     }],
     isLike: false,
-    likes: Math.floor(Math.random() * 50),
-    comments: Math.floor(Math.random() * 20),
+    // 基于ID生成固定的数据，而不是随机数据
+    likes: (idHash % 50) + 10, // 10-59的固定点赞数
+    comments: (idHash % 20) + 5, // 5-24的固定评论数 
     commentList: [],
-    views: Math.floor(Math.random() * 200) + 50,
-    isFollowing: false,
+    views: (idHash % 200) + 50, // 50-249的固定浏览数
+    isFollowing: (authorHash % 10) < 3, // 基于作者ID生成固定的关注状态（30%概率）
   };
 
   // 根据类型返回不同的PostItem
@@ -90,7 +106,7 @@ const convertBrowsingRecordToPostItem = (record: BrowsingRecord): PostItem => {
         type: PostType.ARTICLE,
         content: record.title,
         abstract: `这是一篇关于${record.title}的文章...`,
-        wordCount: Math.floor(Math.random() * 3000) + 1000,
+        wordCount: (idHash % 3000) + 1000, // 基于ID生成固定字数
       };
     
     case 'image':
@@ -114,9 +130,11 @@ const convertBrowsingRecordToPostItem = (record: BrowsingRecord): PostItem => {
         type: PostType.VIDEO,
         content: record.title,
         video: {
-          url: record.thumbnail || '',
-          thumbnail: record.thumbnail || '',
+          url: 'https://example.com/sample-video.mp4', // 使用示例视频URL
+          thumbnail: record.thumbnail || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format',
           duration: 780, // 13分钟转换为秒
+          width: 1920,
+          height: 1080,
         },
       };
     
@@ -136,7 +154,8 @@ const convertBrowsingRecordToPostItem = (record: BrowsingRecord): PostItem => {
         ...basePost,
         type: PostType.ARTICLE,
         content: record.title,
-        wordCount: 1000,
+        abstract: `这是一篇关于${record.title}的内容...`,
+        wordCount: (idHash % 2000) + 500, // 基于ID生成固定字数
       };
   }
 };
@@ -160,7 +179,15 @@ export default function RecentlyViewed() {
 
   // 将浏览记录转换为PostItem列表
   const postItems = useMemo(() => {
-    return sortedRecords.map(record => convertBrowsingRecordToPostItem(record));
+    const items = sortedRecords.map(record => {
+      const converted = convertBrowsingRecordToPostItem(record);
+      // 为每个帖子添加来源页面信息
+      return {
+        ...converted,
+        fromPage: '/recently-viewed'
+      };
+    });
+    return items;
   }, [sortedRecords]);
 
   // 切换视图模式
@@ -230,14 +257,15 @@ export default function RecentlyViewed() {
     navigate(`/post/${post.id}`, { 
       state: { 
         ...post, 
-        scrollToComments: true 
+        scrollToComments: true,
+        fromPage: '/recently-viewed' // 记录来源页面
       } 
     });
   }, [navigate]);
 
 
 
-  // 网格视图渲染卡片
+  // 网格视图渲染卡片  
   const renderGridCard = (record: BrowsingRecord) => {
     const isLiked = getPostLikeStatus(record);
 
@@ -245,7 +273,15 @@ export default function RecentlyViewed() {
       <div
         key={record.id}
         className="bg-white rounded-md shadow-sm border border-gray-200 h-full flex flex-col cursor-pointer hover:shadow-md transition-shadow relative group"
-        onClick={() => navigate(record.url)}
+        onClick={() => {
+          const postData = convertBrowsingRecordToPostItem(record);
+          navigate(record.url, { 
+            state: {
+              ...postData,
+              fromPage: '/recently-viewed' // 记录来源页面
+            }
+          });
+        }}
       >
         {/* 删除按钮 */}
         <button

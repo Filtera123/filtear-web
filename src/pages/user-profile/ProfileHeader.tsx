@@ -22,6 +22,18 @@ export default function ProfileHeader({
 }: ProfileHeaderProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editingBio, setEditingBio] = useState(userInfo.bio);
+  // 固定背景图 - 基于用户ID生成，确保每个用户的背景图固定不变
+  const [backgroundImageId] = useState(() => {
+    // 使用用户ID的hash来生成固定的图片ID，与头像使用相同的算法保持一致
+    let hash = 0;
+    for (let i = 0; i < userInfo.id.length; i++) {
+      const char = userInfo.id.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    // 为背景图使用不同的偏移量，避免与头像相同
+    return (Math.abs(hash) + 25) % 100;
+  });
   const navigate = useNavigate();
   const { openReportModal } = useReportContext();
 
@@ -67,7 +79,7 @@ export default function ProfileHeader({
       <div 
         className="w-full h-96 bg-cover bg-center" 
         style={{ 
-          backgroundImage: `url(https://picsum.photos/id/${Math.floor(Math.random() * 100)}/1200/400)`,
+          backgroundImage: `url(https://picsum.photos/id/${backgroundImageId}/1200/400)`,
           boxShadow: 'inset 0 0 0 2000px rgba(0, 0, 0, 0.3)'
         }}
       >

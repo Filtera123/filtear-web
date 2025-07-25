@@ -25,7 +25,12 @@ export default function VideoContent({ post, onVideoClick }: VideoContentProps) 
     if (onVideoClick) {
       onVideoClick();
     } else {
-      navigate(`/post/video/${post.id}`, { state: { post } });
+      navigate(`/post/video/${post.id}`, { 
+        state: { 
+          ...post,
+          fromPage: window.location.pathname // 记录当前页面路径
+        } 
+      });
     }
   };
   const [videoError, setVideoError] = useState(false);

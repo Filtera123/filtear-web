@@ -9,7 +9,12 @@ export interface DynamicContentProps {
 export default function DynamicContent({ post }: DynamicContentProps) {
   const navigate = useNavigate();
   const onPostClick = () => {
-    navigate(`/post/dynamic/${post.id}`,{state:{post}});
+    navigate(`/post/dynamic/${post.id}`, {
+      state: {
+        ...post,
+        fromPage: window.location.pathname // 记录当前页面路径
+      }
+    });
   };
   const [imageLoadErrors, setImageLoadErrors] = useState<Set<number>>(new Set());
 

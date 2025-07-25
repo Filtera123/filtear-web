@@ -30,11 +30,11 @@ const ArticleDetail = loadable(() => import('./pages/post-details/ArticleDetail'
   fallback: <Loading />,
 });
 
-const VideoDetail = loadable(() => import('./pages/post-details/VideoDetail'), {
+const VideoDetailPage = loadable(() => import('./pages/post-details/VideoDetailPage'), {
   fallback: <Loading />,
 });
 
-const ImageDetail = loadable(() => import('./pages/post-details/ImageDetail'), {
+const ImageDetailPage = loadable(() => import('./pages/post-details/ImageDetailPage'), {
   fallback: <Loading />,
 });
 
@@ -145,11 +145,11 @@ const router = createBrowserRouter([
   },
   {
     path: '/post/video/:postId',
-    element: <VideoDetail />,
+    element: <VideoDetailPage />,
   },
   {
     path: '/post/image/:postId',
-    element: <ImageDetail />,
+    element: <ImageDetailPage />,
   },
   {
     path: '/post/dynamic/:postId',

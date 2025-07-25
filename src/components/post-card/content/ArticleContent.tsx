@@ -11,7 +11,12 @@ export default function ArticleContent({ post }: ArticleContentProps) {
   const navigate = useNavigate();
 
   const onPostClick = () => {
-    navigate(`/post/article/${post.id}`, { state: post });
+    navigate(`/post/article/${post.id}`, { 
+      state: {
+        ...post,
+        fromPage: window.location.pathname // 记录当前页面路径
+      }
+    });
   };
 
   return (

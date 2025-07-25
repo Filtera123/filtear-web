@@ -12,6 +12,7 @@ interface ProfilePostListProps {
   viewMode: ViewMode;
   isLoading: boolean;
   isCurrentUser: boolean;
+  isInitialLoad: boolean;
 }
 
 // 按月份和年份对帖子进行分组
@@ -29,22 +30,36 @@ export default function ProfilePostList({
   currentWorksFilter, 
   viewMode,
   isLoading, 
-  isCurrentUser 
+  isCurrentUser,
+  isInitialLoad
 }: ProfilePostListProps) {
-  // 加载状态
-  if (isLoading) {
+
+  // 首次加载且无数据时显示骨架屏
+  if (isLoading && posts.length === 0 && isInitialLoad) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <div className="flex flex-col items-center space-y-4">
-          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-          <span className="text-gray-500">加载中...</span>
-        </div>
+      <div className="space-y-4">
+        {Array.from({ length: 3 }).map((_, index) => (
+          <div key={index} className="bg-white p-4 rounded-lg animate-pulse">
+            <div className="flex items-center space-x-3 mb-3">
+              <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+              <div className="flex-1">
+                <div className="h-4 bg-gray-200 rounded w-1/4 mb-1"></div>
+                <div className="h-3 bg-gray-200 rounded w-1/6"></div>
+              </div>
+            </div>
+            <div className="space-y-2 mb-4">
+              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+            </div>
+            <div className="h-48 bg-gray-200 rounded"></div>
+          </div>
+        ))}
       </div>
     );
   }
 
   // 空状态
-  if (posts.length === 0) {
+  if (!isLoading && posts.length === 0) {
     const getEmptyMessage = () => {
       switch (currentTab) {
         case 'works':
@@ -162,7 +177,10 @@ export default function ProfilePostList({
                 {monthPosts.map((post: any) => (
                   <Link 
                     to={getPostUrl(post)} 
-                    state={post}
+                    state={{
+                      ...post,
+                      fromPage: window.location.pathname // 记录当前用户个人主页的路径
+                    }}
                     key={post.id} 
                     className="block aspect-square bg-white border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow"
                   >
@@ -190,9 +208,7 @@ export default function ProfilePostList({
   return (
     <div className="space-y-4">
       {posts.map((post, index) => (
-        <div key={post.id || index} className="bg-white">
-          <BasePostCard post={post} />
-        </div>
+        <BasePostCard key={post.id || index} post={post} />
       ))}
       
       {/* 加载更多提示 */}

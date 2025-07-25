@@ -42,7 +42,12 @@ export default function ImageContent({ post, onImageClick }: ImageContentProps) 
       onImageClick(post, 0);
     } else {
       // 如果没有回调，则跳转到页面（保持兼容性）
-      navigate(`/post/image/${post.id}`, { state: { post } });
+      navigate(`/post/image/${post.id}`, { 
+        state: { 
+          ...post,
+          fromPage: window.location.pathname // 记录当前页面路径
+        } 
+      });
     }
   };
 
@@ -149,9 +154,25 @@ export default function ImageContent({ post, onImageClick }: ImageContentProps) 
 
     return (
       <div className={`${containerClasses} grid-cols-3 grid-rows-3`}>
-        {imagesToRender.map((img, index) => (
-          <ImageItem key={index} imageUrl={img.url} alt={img.alt} onClick={() => handleImageClick(index)} />
-        ))}
+        {imagesToRender.map((img, index) => {
+          // 如果是第9张图片（index为8）且还有更多图片，添加剩余数量蒙版
+          const isLastDisplayed = index === 8 && count > 9;
+          const remainingCount = count - 9;
+          
+          return (
+            <div key={index} className="relative w-full h-full">
+              <ImageItem imageUrl={img.url} alt={img.alt} onClick={() => handleImageClick(index)} />
+              {isLastDisplayed && (
+                <div className="absolute inset-0 bg-black/60 flex items-center justify-center cursor-pointer"
+                     onClick={() => handleImageClick(index)}>
+                  <span className="text-white text-lg font-semibold">
+                    +{remainingCount}
+                  </span>
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     );
   };

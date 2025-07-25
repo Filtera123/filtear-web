@@ -124,7 +124,9 @@ export default function TumblrCard({
     if (post.type === PostType.IMAGE && post.images?.[0]) {
       const { width, height } = post.images[0];
       if (width && height) {
-        return height / width;
+        const ratio = height / width;
+        // 限制宽高比在合理范围内，避免过于极端的尺寸
+        return Math.max(0.5, Math.min(2, ratio));
       }
     }
     return 0.75; // 默认3:4比例
@@ -136,30 +138,27 @@ export default function TumblrCard({
         if (post.images && post.images.length > 0) {
           return (
             <div className="relative overflow-hidden">
-              <Image
-                src={post.images[0].url}
-                alt={post.images[0].alt || post.title}
-                className={cn(
-                  'w-full object-cover transition-opacity duration-300',
-                  imageLoaded ? 'opacity-100' : 'opacity-0'
-                )}
+              <div
+                className="w-full relative"
                 style={{ 
-                  maxHeight: `${maxImageHeight}px`,
-                  height: 'auto'
+                  aspectRatio: getImageAspectRatio()
                 }}
-                onLoad={() => setImageLoaded(true)}
-              />
-              {post.images.length > 1 && (
-                <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded-full">
-                  +{post.images.length - 1}
-                </div>
-              )}
-              {!imageLoaded && (
-                <div 
-                  className="w-full bg-gray-200 animate-pulse"
-                  style={{ height: `${300 * getImageAspectRatio()}px` }}
+              >
+                <Image
+                  src={post.images[0].url}
+                  alt={post.images[0].alt || post.title}
+                  className="w-full h-full object-cover"
+                  onLoad={() => setImageLoaded(true)}
                 />
-              )}
+                {post.images.length > 1 && (
+                  <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded-full">
+                    +{post.images.length - 1}
+                  </div>
+                )}
+                {!imageLoaded && (
+                  <div className="absolute inset-0 bg-gray-200 animate-pulse" />
+                )}
+              </div>
             </div>
           );
         }
@@ -169,24 +168,30 @@ export default function TumblrCard({
         if (post.video) {
           return (
             <div className="relative overflow-hidden bg-black">
-              <Image
-                src={post.video.thumbnail}
-                alt="视频缩略图"
-                className="w-full object-cover"
-                style={{ maxHeight: `${maxImageHeight}px` }}
-              />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/30 transition-colors">
-                  <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M8 5v14l11-7z" />
-                  </svg>
+              <div
+                className="w-full relative"
+                style={{ 
+                  aspectRatio: '16/9'
+                }}
+              >
+                <Image
+                  src={post.video.thumbnail}
+                  alt="视频缩略图"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/30 transition-colors">
+                    <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  </div>
                 </div>
+                {post.video.duration && (
+                  <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                    {Math.floor(post.video.duration / 60)}:{String(post.video.duration % 60).padStart(2, '0')}
+                  </div>
+                )}
               </div>
-              {post.video.duration && (
-                <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                  {Math.floor(post.video.duration / 60)}:{String(post.video.duration % 60).padStart(2, '0')}
-                </div>
-              )}
             </div>
           );
         }
@@ -196,12 +201,18 @@ export default function TumblrCard({
         if (post.images && post.images.length > 0) {
           return (
             <div className="relative overflow-hidden">
-              <Image
-                src={post.images[0].url}
-                alt={post.images[0].alt || post.title}
-                className="w-full object-cover"
-                style={{ maxHeight: `${maxImageHeight}px` }}
-              />
+              <div
+                className="w-full relative"
+                style={{ 
+                  aspectRatio: getImageAspectRatio()
+                }}
+              >
+                <Image
+                  src={post.images[0].url}
+                  alt={post.images[0].alt || post.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
             </div>
           );
         }
@@ -214,13 +225,23 @@ export default function TumblrCard({
     switch (post.type) {
       case PostType.ARTICLE: {
         const articlePost = post as ArticlePost;
+        // 根据摘要长度动态设置截断行数
+        const getAbstractLineClamp = () => {
+          if (!articlePost.abstract) return '';
+          const length = articlePost.abstract.length;
+          if (length <= 80) return ''; // 短摘要不截断
+          if (length <= 150) return 'line-clamp-4';
+          if (length <= 250) return 'line-clamp-6';
+          return 'line-clamp-8';
+        };
+        
         return (
           <div className="p-4">
             <h3 className="font-bold text-lg mb-2 line-clamp-2 text-gray-900">
               {articlePost.title}
             </h3>
             {articlePost.abstract && (
-              <p className="text-gray-600 text-sm line-clamp-3 mb-3">
+              <p className={`text-gray-600 text-sm mb-3 ${getAbstractLineClamp()}`}>
                 {articlePost.abstract}
               </p>
             )}
@@ -235,13 +256,22 @@ export default function TumblrCard({
 
       case PostType.IMAGE: {
         const imagePost = post as ImagePost;
+        // 根据图片帖子内容长度动态设置截断
+        const getImageContentLineClamp = () => {
+          if (!imagePost.content || imagePost.content === imagePost.title) return '';
+          const length = imagePost.content.length;
+          if (length <= 50) return ''; // 短内容不截断
+          if (length <= 100) return 'line-clamp-3';
+          return 'line-clamp-4';
+        };
+        
         return imagePost.title !== imagePost.content ? (
           <div className="p-4">
             <h3 className="font-medium text-base mb-2 line-clamp-2 text-gray-900">
               {imagePost.title}
             </h3>
             {imagePost.content && imagePost.content !== imagePost.title && (
-              <p className="text-gray-600 text-sm line-clamp-2">
+              <p className={`text-gray-600 text-sm ${getImageContentLineClamp()}`}>
                 {imagePost.content}
               </p>
             )}
@@ -251,13 +281,22 @@ export default function TumblrCard({
 
       case PostType.VIDEO: {
         const videoPost = post as VideoPost;
+        // 根据视频帖子内容长度动态设置截断
+        const getVideoContentLineClamp = () => {
+          if (!videoPost.content || videoPost.content === videoPost.title) return '';
+          const length = videoPost.content.length;
+          if (length <= 50) return ''; // 短内容不截断
+          if (length <= 100) return 'line-clamp-3';
+          return 'line-clamp-4';
+        };
+        
         return videoPost.title !== videoPost.content ? (
           <div className="p-4">
             <h3 className="font-medium text-base mb-2 line-clamp-2 text-gray-900">
               {videoPost.title}
             </h3>
             {videoPost.content && videoPost.content !== videoPost.title && (
-              <p className="text-gray-600 text-sm line-clamp-2">
+              <p className={`text-gray-600 text-sm ${getVideoContentLineClamp()}`}>
                 {videoPost.content}
               </p>
             )}
@@ -267,9 +306,19 @@ export default function TumblrCard({
 
              case PostType.DYNAMIC: {
          const dynamicPost = post as DynamicPost;
+         // 根据动态内容长度动态设置显示策略
+         const getDynamicLineClamp = () => {
+           const length = dynamicPost.content.length;
+           if (length <= 60) return ''; // 很短的内容完全显示
+           if (length <= 120) return 'line-clamp-3';
+           if (length <= 200) return 'line-clamp-5';
+           if (length <= 300) return 'line-clamp-7';
+           return 'line-clamp-10';
+         };
+         
          return (
            <div className="p-4">
-             <p className="text-gray-800 text-sm line-clamp-4 whitespace-pre-wrap">
+             <p className={`text-gray-800 text-sm whitespace-pre-wrap ${getDynamicLineClamp()}`}>
                {dynamicPost.content}
              </p>
            </div>
@@ -408,16 +457,7 @@ export default function TumblrCard({
                 <span className="text-xs">{post.views || 0}</span>
               </div>
 
-              {/* 评论按钮 */}
-              <button
-                onClick={handleCommentClick}
-                className="flex items-center space-x-1 text-gray-500 hover:text-blue-500 transition-colors"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                </svg>
-                <span className="text-xs">{post.comments || 0}</span>
-              </button>
+
 
               {/* 点赞按钮 */}
               <button
