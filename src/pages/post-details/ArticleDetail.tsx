@@ -294,7 +294,10 @@ export default function ArticleDetail() {
           {/* 返回与主页 */}
 
           {/* 标题 */}
-          <h1 className="text-3xl font-bold mb-4 text-center">{post.title}</h1>
+          <h1 className="text-3xl font-bold mb-4 text-center" style={{ fontFamily: "'Source Han Sans CN', 'Noto Sans CJK SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif" }}>{post.title}</h1>
+
+          {/* 分隔线 */}
+          <hr className="border-gray-200 mb-6" />
 
           {/* 作者信息 */}
           <div className="flex items-center justify-center mb-2">
@@ -333,13 +336,13 @@ export default function ArticleDetail() {
 
           {/* 引言/摘要（如果有） */}
           {post.abstract && (
-            <blockquote className="border-l-4 border-blue-400 pl-4 text-gray-700 italic mb-6">
+            <blockquote className="border-l-4 border-blue-400 pl-4 text-gray-700 italic mb-8 font-italic" style={{ fontFamily: "'Source Han Sans CN', 'Noto Sans CJK SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif" }}>
               {post.abstract}
             </blockquote>
           )}
 
           {/* 正文 */}
-          <div className="text-base leading-relaxed space-y-4 text-gray-800">
+          <div className="text-base leading-relaxed space-y-4 text-gray-800" style={{ fontFamily: "'Source Han Sans CN', 'Noto Sans CJK SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif" }}>
             {post.content.split('\n').map((para, index) => (
               <p key={index}>{para}</p>
             ))}

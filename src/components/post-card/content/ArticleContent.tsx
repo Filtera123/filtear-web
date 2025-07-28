@@ -23,16 +23,20 @@ export default function ArticleContent({ post }: ArticleContentProps) {
     <div>
       {/* 帖子标题 */}
       <h2
-        className="text-lg font-semibold text-gray-900 mb-3 leading-tight cursor-pointer hover:text-blue-600 transition-colors"
+        className="text-lg font-semibold text-gray-900 mb-4 leading-tight cursor-pointer hover:text-blue-600 transition-colors"
+        style={{ fontFamily: "'Source Han Sans CN', 'Noto Sans CJK SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif" }}
         onClick={onPostClick}
       >
         {post.title}
       </h2>
 
+      {/* 分隔线 */}
+      <hr className="border-gray-200 mb-4" />
+
       {post.abstract && (
         <Blockquote.Root
           variant="plain"
-          className="text-gray-700 ml-4 cursor-pointer hover:text-gray-900 mb-2"
+          className="text-gray-700 ml-4 cursor-pointer hover:text-gray-900 mb-4 italic"
           onClick={onPostClick}
         >
           <Float placement="top-start" offsetY="2">
@@ -52,6 +56,7 @@ export default function ArticleContent({ post }: ArticleContentProps) {
         className={`text-gray-700 text-sm leading-relaxed mb-3 cursor-pointer hover:text-gray-900 transition-colors ${
           post.abstract ? 'line-clamp-7' : 'line-clamp-9'
         }`}
+        style={{ fontFamily: "'Source Han Sans CN', 'Noto Sans CJK SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif" }}
         onClick={onPostClick}
       >
         {post.content}
