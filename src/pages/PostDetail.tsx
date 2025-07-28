@@ -75,7 +75,7 @@ export default function PostDetail() {
         <div className="flex flex-wrap gap-2 mb-6">
           {post.tags.map((tag, index) => (
             <Link key={`${tag}-${index}`} to={`/tag/${encodeURIComponent(tag)}`}>
-              <Tag tag={tag} />
+              <Tag tag={{ name: tag }} />
             </Link>
           ))}
         </div>

@@ -1,5 +1,5 @@
 // ImageDetail.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Popover } from '@chakra-ui/react';
 import type { ImagePost } from '@/components/post-card/post.types';
@@ -34,9 +34,29 @@ interface ImageDetailModalProps {
   onClose: () => void;
 }
 
+// 图片变换状态接口
+interface ImageTransform {
+  scale: number;
+  rotate: number;
+  translateX: number;
+  translateY: number;
+}
+
 const ImageDetailModal: React.FC<ImageDetailModalProps> = ({ post, initialIndex = 0, onClose }) => {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [showToolbar, setShowToolbar] = useState(false);
+  const [imageTransform, setImageTransform] = useState<ImageTransform>({
+    scale: 1,
+    rotate: 0,
+    translateX: 0,
+    translateY: 0,
+  });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [isOriginalSize, setIsOriginalSize] = useState(false);
+  const imageRef = useRef<HTMLImageElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
   const { 
     likes, 
     isLike, 
@@ -48,7 +68,6 @@ const ImageDetailModal: React.FC<ImageDetailModalProps> = ({ post, initialIndex 
     handleFollow,
     handleUnfollow,
     handleBlockUser,
-    handleReportPost,
     handleBlockPost
   } = usePostActions(post);
   const { addRecord } = useBrowsingHistoryStore();
@@ -78,6 +97,131 @@ const ImageDetailModal: React.FC<ImageDetailModalProps> = ({ post, initialIndex 
   }
 
   const currentImage = post.images[currentIndex];
+
+  // 重置图片变换状态
+  const resetImageTransform = useCallback(() => {
+    setImageTransform({
+      scale: 1,
+      rotate: 0,
+      translateX: 0,
+      translateY: 0,
+    });
+    setIsOriginalSize(false);
+  }, []);
+
+  // 切换原图显示
+  const toggleOriginalSize = useCallback(() => {
+    if (isOriginalSize) {
+      resetImageTransform();
+    } else {
+      setImageTransform(prev => ({
+        ...prev,
+        scale: 2, // 原图模式显示200%
+      }));
+      setIsOriginalSize(true);
+    }
+  }, [isOriginalSize, resetImageTransform]);
+
+  // 缩放功能 - 微博风格的缩放比例（支持更小比例）
+  const handleZoom = useCallback((direction: 'in' | 'out') => {
+    setImageTransform(prev => {
+      let newScale: number;
+      
+      if (direction === 'in') {
+        // 放大：25% -> 50% -> 75% -> 100% -> 125% -> 150% -> 200% -> 300% -> 400% -> 500%
+        if (prev.scale < 0.5) newScale = 0.5;
+        else if (prev.scale < 0.75) newScale = 0.75;
+        else if (prev.scale < 1) newScale = 1;
+        else if (prev.scale < 1.25) newScale = 1.25;
+        else if (prev.scale < 1.5) newScale = 1.5;
+        else if (prev.scale < 2) newScale = 2;
+        else if (prev.scale < 3) newScale = 3;
+        else if (prev.scale < 4) newScale = 4;
+        else if (prev.scale < 5) newScale = 5;
+        else newScale = 5; // 最大500%
+      } else {
+        // 缩小：500% -> 400% -> 300% -> 200% -> 150% -> 125% -> 100% -> 75% -> 50% -> 25%
+        if (prev.scale > 4) newScale = 4;
+        else if (prev.scale > 3) newScale = 3;
+        else if (prev.scale > 2) newScale = 2;
+        else if (prev.scale > 1.5) newScale = 1.5;
+        else if (prev.scale > 1.25) newScale = 1.25;
+        else if (prev.scale > 1) newScale = 1;
+        else if (prev.scale > 0.75) newScale = 0.75;
+        else if (prev.scale > 0.5) newScale = 0.5;
+        else if (prev.scale > 0.25) newScale = 0.25;
+        else newScale = 0.25; // 最小25%
+      }
+      
+      return {
+        ...prev,
+        scale: newScale,
+      };
+    });
+    setIsOriginalSize(false);
+  }, []);
+
+  // 旋转功能 - 微博风格的连续旋转（不重置）
+  const handleRotate = useCallback(() => {
+    setImageTransform(prev => ({
+      ...prev,
+      rotate: prev.rotate + 90,
+    }));
+  }, []);
+
+  // 鼠标滚轮缩放
+  const handleWheel = useCallback((e: React.WheelEvent) => {
+    e.preventDefault();
+    const direction = e.deltaY > 0 ? 'out' : 'in';
+    handleZoom(direction);
+  }, [handleZoom]);
+
+  // 鼠标拖拽开始
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    if (imageTransform.scale > 1) {
+      setIsDragging(true);
+      setDragStart({
+        x: e.clientX - imageTransform.translateX,
+        y: e.clientY - imageTransform.translateY,
+      });
+    }
+  }, [imageTransform.scale, imageTransform.translateX, imageTransform.translateY]);
+
+  // 鼠标拖拽移动
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (isDragging && imageTransform.scale > 1) {
+      setImageTransform(prev => ({
+        ...prev,
+        translateX: e.clientX - dragStart.x,
+        translateY: e.clientY - dragStart.y,
+      }));
+    }
+  }, [isDragging, dragStart]);
+
+  // 鼠标拖拽结束
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  // 双击重置
+  const handleDoubleClick = useCallback(() => {
+    resetImageTransform();
+  }, [resetImageTransform]);
+
+  // 下载图片
+  const handleDownload = useCallback(() => {
+    const link = document.createElement('a');
+    link.href = currentImage.url;
+    link.download = `image-${currentIndex + 1}.jpg`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }, [currentImage.url, currentIndex]);
+
+  // 切换图片时重置变换状态
+  useEffect(() => {
+    resetImageTransform();
+  }, [currentIndex, resetImageTransform]);
 
   // 禁用背景滚动
   useEffect(() => {
@@ -123,14 +267,43 @@ const ImageDetailModal: React.FC<ImageDetailModalProps> = ({ post, initialIndex 
   const handlePrev = () => setCurrentIndex((prev) => (prev - 1 + post.images.length) % post.images.length);
   const handleThumbnailClick = (index: number) => setCurrentIndex(index);
 
-  // ESC 关闭
+  // 键盘快捷键
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      switch (e.key) {
+        case 'Escape':
+          onClose();
+          break;
+        case 'ArrowLeft':
+          handlePrev();
+          break;
+        case 'ArrowRight':
+          handleNext();
+          break;
+        case 'r':
+        case 'R':
+          e.preventDefault();
+          handleRotate();
+          break;
+
+        case '0':
+          e.preventDefault();
+          resetImageTransform();
+          break;
+        case '=':
+        case '+':
+          e.preventDefault();
+          handleZoom('in');
+          break;
+        case '-':
+          e.preventDefault();
+          handleZoom('out');
+          break;
+      }
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [onClose]);
+  }, [onClose, handlePrev, handleNext, handleRotate, resetImageTransform, handleZoom]);
 
   if (!post || !post.images || post.images.length === 0) return null;
 
@@ -138,38 +311,119 @@ const ImageDetailModal: React.FC<ImageDetailModalProps> = ({ post, initialIndex 
     <div className="fixed inset-0 z-50 flex w-full min-h-screen text-white" style={{ background: 'rgba(0,0,0,0.85)' }} onClick={onClose}>
       {/* 主图区域 */}
       <div
-        className="flex-1 flex flex-col items-center justify-center relative"
+        ref={containerRef}
+        className="flex-1 flex flex-col items-center justify-center relative overflow-hidden"
         onMouseEnter={() => setShowToolbar(true)}
-        onMouseLeave={() => setShowToolbar(false)}
+        onMouseLeave={() => {
+          setShowToolbar(false);
+          handleMouseUp();
+        }}
         onClick={e => e.stopPropagation()}
+        onWheel={handleWheel}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        style={{ cursor: isDragging ? 'grabbing' : imageTransform.scale > 1 ? 'grab' : 'default' }}
       >
         {/* 顶部工具栏 */}
         {showToolbar && (
-          <div className="absolute top-4 right-4 flex gap-4 bg-black bg-opacity-70 px-4 py-2 rounded-xl z-20">
-            <button>旋转</button>
-            <button>放大</button>
-            <button>缩小</button>
-            <button>原图</button>
-            <button>下载</button>
+          <div className="absolute top-4 right-4 flex gap-2 bg-black bg-opacity-70 px-4 py-2 rounded-xl z-20">
+            <button
+              onClick={handleRotate}
+              className="p-2 hover:bg-white hover:bg-opacity-20 rounded transition-colors"
+              title="旋转90°"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </button>
+            <div className="flex items-center gap-2 bg-black bg-opacity-70 px-3 py-1 rounded-lg">
+              <button
+                onClick={() => handleZoom('out')}
+                className="p-1 hover:bg-white hover:bg-opacity-20 rounded transition-colors"
+                title="缩小"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7" />
+                </svg>
+              </button>
+              <div className="text-sm font-medium min-w-[3rem] text-center">
+                {Math.round(imageTransform.scale * 100)}%
+              </div>
+              <button
+                onClick={() => handleZoom('in')}
+                className="p-1 hover:bg-white hover:bg-opacity-20 rounded transition-colors"
+                title="放大"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                </svg>
+              </button>
+            </div>
+            <button
+              onClick={toggleOriginalSize}
+              className={`p-2 rounded transition-colors ${isOriginalSize ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-20'}`}
+              title="原图 (200%)"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+              </svg>
+            </button>
+            <button
+              onClick={handleDownload}
+              className="p-2 hover:bg-white hover:bg-opacity-20 rounded transition-colors"
+              title="下载"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </button>
           </div>
         )}
+
+        {/* 图片计数器 */}
+        {showToolbar && (
+          <div className="absolute top-4 left-4 bg-black bg-opacity-70 px-3 py-1 rounded-lg text-sm">
+            {currentIndex + 1} / {post.images.length}
+          </div>
+        )}
+
         {/* 左右箭头 */}
         <button
           onClick={handlePrev}
-          className="absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-black bg-opacity-60 p-2 rounded-full hover:bg-opacity-90"
-        >←</button>
+          className="absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-black bg-opacity-60 p-2 rounded-full hover:bg-opacity-90 transition-opacity"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
         <button
           onClick={handleNext}
-          className="absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-black bg-opacity-60 p-2 rounded-full hover:bg-opacity-90"
-        >→</button>
+          className="absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-black bg-opacity-60 p-2 rounded-full hover:bg-opacity-90 transition-opacity"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+
         {/* 当前大图 */}
-        <div className="max-h-[calc(100vh-160px)] max-w-4xl p-4">
+        <div className="max-h-[calc(100vh-160px)] max-w-4xl p-4 flex items-center justify-center">
           <img
+            ref={imageRef}
             src={currentImage.url}
             alt={currentImage.alt || post.title}
-            className="max-h-full max-w-full object-contain mx-auto"
+            className="max-h-full max-w-full object-contain mx-auto select-none"
+            style={{
+              transform: `scale(${imageTransform.scale}) rotate(${imageTransform.rotate}deg) translate(${imageTransform.translateX}px, ${imageTransform.translateY}px)`,
+              transition: isDragging ? 'none' : 'transform 0.2s ease-out',
+            }}
+            onDoubleClick={handleDoubleClick}
+            draggable={false}
           />
         </div>
+
+
+
         {/* 缩略图 */}
         <div className="absolute bottom-4 left-0 right-0 flex justify-center">
           <div className="flex space-x-2 overflow-x-auto bg-black bg-opacity-70 px-4 py-2 rounded-xl max-w-[80%]">
@@ -179,12 +433,13 @@ const ImageDetailModal: React.FC<ImageDetailModalProps> = ({ post, initialIndex 
                 src={img.url}
                 alt={img.alt || `img-${index}`}
                 onClick={() => handleThumbnailClick(index)}
-                className={`w-14 h-14 object-cover rounded-md cursor-pointer transition-opacity duration-200 ${index === currentIndex ? 'opacity-100 border-2 border-white' : 'opacity-60'}`}
+                className={`w-14 h-14 object-cover rounded-md cursor-pointer transition-opacity duration-200 ${index === currentIndex ? 'opacity-100 border-2 border-white' : 'opacity-60 hover:opacity-80'}`}
               />
             ))}
           </div>
         </div>
       </div>
+
       {/* 右侧信息 + 评论 */}
       <aside className="w-[360px] p-4 bg-white text-black overflow-y-auto border-l border-gray-200" onClick={e => e.stopPropagation()}>
         {/* 作者信息 */}
@@ -291,7 +546,7 @@ const ImageDetailModal: React.FC<ImageDetailModalProps> = ({ post, initialIndex 
         <CommentSection postId={post.id} comments={post.commentList || []} showAllComments={true} />
       </aside>
       {/* 关闭按钮 */}
-      <button onClick={onClose} className="absolute top-6 left-6 z-50 bg-black bg-opacity-70 text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-opacity-100">
+      <button onClick={onClose} className="absolute top-6 left-6 z-50 bg-black bg-opacity-70 text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-opacity-100 transition-opacity">
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
         </svg>
