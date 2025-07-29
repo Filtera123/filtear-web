@@ -121,12 +121,24 @@ export default function ProfilePostList({
       return monthNames[parseInt(month) - 1];
     };
 
-    // 格式化日期为 "月日" 格式
+    // 格式化日期为 "月日" 格式（用于hover效果）
     const formatDate = (dateString: string) => {
       const date = new Date(dateString);
       const month = date.getMonth() + 1;
       const day = date.getDate();
       return `${month}月${day}日`;
+    };
+
+    // 格式化归档标题（显示年份，但当前年份不显示）
+    const formatArchiveTitle = (month: string, year: string) => {
+      const currentYear = new Date().getFullYear().toString();
+      const monthName = getMonthName(month);
+      
+      if (year === currentYear) {
+        return `${monthName} / `;
+      } else {
+        return `${year}年${monthName} / `;
+      }
     };
     
     // 获取帖子预览内容
@@ -180,7 +192,7 @@ export default function ProfilePostList({
           const { year, month, posts: monthPosts } = groupedPosts[yearMonth];
           return (
             <div key={yearMonth} className="mb-10">
-              <h2 className="text-xl font-bold mb-4">{getMonthName(month)} / {monthPosts.length}篇文章</h2>
+              <h2 className="text-xl font-bold mb-4">{formatArchiveTitle(month, year)}{monthPosts.length}篇文章</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {monthPosts.map((post: any) => (
                   <Link 
