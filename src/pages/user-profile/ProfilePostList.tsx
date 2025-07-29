@@ -120,6 +120,14 @@ export default function ProfilePostList({
       const monthNames = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'];
       return monthNames[parseInt(month) - 1];
     };
+
+    // 格式化日期为 "月日" 格式
+    const formatDate = (dateString: string) => {
+      const date = new Date(dateString);
+      const month = date.getMonth() + 1;
+      const day = date.getDate();
+      return `${month}月${day}日`;
+    };
     
     // 获取帖子预览内容
     const getPostPreview = (post: any) => {
@@ -172,7 +180,7 @@ export default function ProfilePostList({
           const { year, month, posts: monthPosts } = groupedPosts[yearMonth];
           return (
             <div key={yearMonth} className="mb-10">
-              <h2 className="text-xl font-bold mb-4">{year}年 / {getMonthName(month)}</h2>
+              <h2 className="text-xl font-bold mb-4">{getMonthName(month)} / {monthPosts.length}篇文章</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {monthPosts.map((post: any) => (
                   <Link 
@@ -182,10 +190,25 @@ export default function ProfilePostList({
                       fromPage: window.location.pathname // 记录当前用户个人主页的路径
                     }}
                     key={post.id} 
-                    className="block aspect-square bg-white border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+                    className="block aspect-square bg-white border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow group"
                   >
                     <div className="w-full h-full relative">
                       {getPostPreview(post)}
+                      
+                      {/* Hover 覆盖层 - 显示日期和点赞数 */}
+                      <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-black/80 opacity-0 group-hover:opacity-100 transition-all duration-300 ease-out flex flex-col items-center justify-center backdrop-blur-sm">
+                        <div className="text-white text-center px-6 py-4 rounded-xl bg-white/15 backdrop-blur-md border border-white/25 shadow-2xl transform scale-95 group-hover:scale-100 transition-transform duration-300">
+                          <div className="text-lg font-bold mb-3 tracking-wider text-shadow-sm">
+                            {formatDate(post.createdAt)}
+                          </div>
+                          <div className="text-sm font-semibold opacity-95 flex items-center justify-center gap-2 bg-white/10 px-3 py-1.5 rounded-full">
+                            <svg className="w-4 h-4 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
+                            </svg>
+                            <span className="font-mono">{post.likes || 0}</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </Link>
                 ))}
