@@ -42,7 +42,8 @@ export default function DynamicContent({ post }: DynamicContentProps) {
     <div>
       {/* 帖子标题 */}
       <h2
-        className="text-lg font-semibold text-gray-900 mb-2 leading-tight cursor-pointer hover:text-blue-600 transition-colors"
+        className="text-lg font-semibold text-gray-900 mb-4 leading-tight cursor-pointer hover:text-blue-600 transition-colors"
+        style={{ fontFamily: "'Source Han Sans CN', 'Noto Sans CJK SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif" }}
         onClick={onPostClick}
       >
         {post.title}
@@ -56,6 +57,7 @@ export default function DynamicContent({ post }: DynamicContentProps) {
           WebkitLineClamp: 7,
           WebkitBoxOrient: 'vertical',
           overflow: 'hidden',
+          fontFamily: "'Source Han Sans CN', 'Noto Sans CJK SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif"
         }}
         onClick={onPostClick}
       >
