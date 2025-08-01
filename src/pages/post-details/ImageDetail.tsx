@@ -54,6 +54,7 @@ const ImageDetailModal: React.FC<ImageDetailModalProps> = ({ post, initialIndex 
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [isOriginalSize, setIsOriginalSize] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   const imageRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -208,15 +209,79 @@ const ImageDetailModal: React.FC<ImageDetailModalProps> = ({ post, initialIndex 
     resetImageTransform();
   }, [resetImageTransform]);
 
-  // 下载图片
-  const handleDownload = useCallback(() => {
-    const link = document.createElement('a');
-    link.href = currentImage.url;
-    link.download = `image-${currentIndex + 1}.jpg`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }, [currentImage.url, currentIndex]);
+  // 下载图片 - 类似微博的下载方式
+  const handleDownload = useCallback(async () => {
+    if (isDownloading) return; // 防止重复点击
+    
+    setIsDownloading(true);
+    try {
+      // 创建一个 canvas 来处理图片下载
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      if (!ctx) {
+        throw new Error('无法创建 canvas 上下文');
+      }
+
+      // 创建图片对象
+      const img = new Image();
+      img.crossOrigin = 'anonymous'; // 处理跨域问题
+      
+      // 等待图片加载
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = () => reject(new Error('图片加载失败'));
+        img.src = currentImage.url;
+      });
+
+      // 设置 canvas 尺寸
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      
+      // 绘制图片到 canvas
+      ctx.drawImage(img, 0, 0);
+      
+      // 转换为 blob
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          throw new Error('无法生成图片文件');
+        }
+        
+        // 创建下载链接
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        
+        // 生成文件名：作者名_图片序号_时间戳
+        const timestamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+        const fileName = `${post.author}_${currentIndex + 1}_${timestamp}.jpg`;
+        
+        link.href = url;
+        link.download = fileName;
+        link.style.display = 'none';
+        
+        // 触发下载
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // 清理 URL 对象
+        setTimeout(() => URL.revokeObjectURL(url), 100);
+        setIsDownloading(false);
+      }, 'image/jpeg', 0.9);
+      
+    } catch (error) {
+      console.error('下载失败:', error);
+      // 如果 canvas 方式失败，回退到原始方式
+      const link = document.createElement('a');
+      link.href = currentImage.url;
+      link.download = `${post.author}_${currentIndex + 1}.jpg`;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setIsDownloading(false);
+    }
+  }, [currentImage.url, currentIndex, post.author, isDownloading]);
 
   // 切换图片时重置变换状态
   useEffect(() => {
@@ -371,12 +436,23 @@ const ImageDetailModal: React.FC<ImageDetailModalProps> = ({ post, initialIndex 
             </button>
             <button
               onClick={handleDownload}
-              className="p-2 hover:bg-white hover:bg-opacity-20 rounded transition-colors"
-              title="下载"
+              disabled={isDownloading}
+              className={`p-2 rounded transition-colors ${
+                isDownloading 
+                  ? 'bg-white bg-opacity-20 cursor-not-allowed' 
+                  : 'hover:bg-white hover:bg-opacity-20'
+              }`}
+              title={isDownloading ? "下载中..." : "下载"}
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
+              {isDownloading ? (
+                <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              )}
             </button>
           </div>
         )}
