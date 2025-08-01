@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Button, Textarea } from '@chakra-ui/react';
 import { type Comment } from './comment.type';
 import CommentItem from './CommentItem';
 import ReplyModal from './ReplyModal';
@@ -19,6 +18,7 @@ interface Props {
   currentUserName?: string;
   currentUserAvatar?: string;
   showAllComments?: boolean; // 新增：是否显示所有评论（详情页使用）
+  hideCommentInput?: boolean; // 新增：是否隐藏评论输入框（用于固定评论输入框的场景）
 }
 
 // 递归计算评论总数（包括所有回复）
@@ -75,6 +75,7 @@ export default function CommentSection({
   currentUserName = '当前用户',
   currentUserAvatar = '/default-avatar.png',
   showAllComments = false, // 默认不显示所有评论
+  hideCommentInput = false, // 默认显示评论输入框
 }: Props) {
   const [newComment, setNewComment] = useState('');
   const [replyModalOpen, setReplyModalOpen] = useState(false);
@@ -137,45 +138,53 @@ export default function CommentSection({
   return (
     <div className="mt-4">
       {/* 新评论输入框 */}
-      <div className=" mb-4">
-        {/* 当前用户头像 */}
+      {!hideCommentInput && (
+        <>
+          <div className="mb-4">
+            {/* 输入框和发送按钮 */}
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+                <img
+                  src={currentUserAvatar}
+                  alt={currentUserName}
+                  className="w-8 h-8 rounded-full object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    target.parentElement!.innerHTML = `<span class="text-white font-medium text-xs">${currentUserName[0]}</span>`;
+                  }}
+                />
+              </div>
 
-        {/* 输入框和发送按钮 */}
-        <div className="flex-1 flex space-x-2 items-center">
-          <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
-            <img
-              src={currentUserAvatar}
-              alt={currentUserName}
-              className="w-8 h-8 rounded-full object-cover"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
-                target.parentElement!.innerHTML = `<span class="text-white font-medium text-xs">${currentUserName[0]}</span>`;
-              }}
-            />
+              <input
+                type="text"
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="写下你的评论..."
+                className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-full outline-none focus:border-blue-500"
+                maxLength={500}
+              />
+
+              <button 
+                onClick={handleSubmitComment}
+                disabled={!newComment.trim()}
+                className={`px-3 py-2 text-sm rounded-full transition-colors ${
+                  newComment.trim() 
+                    ? 'bg-blue-500 text-white hover:bg-blue-600' 
+                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                发送
+              </button>
+            </div>
+
+            {/* 字数限制提示 */}
+            {newComment.length > 400 && (
+              <div className="text-xs text-gray-500 mt-1 text-right">{newComment.length}/500</div>
+            )}
           </div>
-
-          <Textarea
-            className="resize-none"
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="写下你的评论..."
-            rows={2}
-            maxLength={500}
-          />
-        </div>
-
-        <div className="flex justify-end mt-2">
-          <Button variant="subtle" onClick={handleSubmitComment} disabled={!newComment.trim()}>
-            发送
-          </Button>
-        </div>
-      </div>
-
-      {/* 字数限制提示 */}
-      {newComment.length > 400 && (
-        <div className="text-xs text-gray-500 mb-2 text-right">{newComment.length}/500</div>
+        </>
       )}
 
       {/* 评论列表 */}
