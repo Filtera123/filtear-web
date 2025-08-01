@@ -640,7 +640,7 @@ const ImageDetailModal: React.FC<ImageDetailModalProps> = ({ post, initialIndex 
       </aside>
 
       {/* 关闭按钮 */}
-      <button onClick={onClose} className="absolute top-6 left-6 z-50 bg-black bg-opacity-70 text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-opacity-100 transition-opacity">
+      <button onClick={onClose} className="absolute top-16 left-4 z-50 bg-black bg-opacity-70 text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-opacity-100 transition-opacity">
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
         </svg>
