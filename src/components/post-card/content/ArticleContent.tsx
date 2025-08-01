@@ -30,25 +30,30 @@ export default function ArticleContent({ post }: ArticleContentProps) {
         {post.title}
       </h2>
 
-      {/* 分隔线 */}
-      <hr className="border-gray-200 mb-4" />
-
       {post.abstract && (
-        <Blockquote.Root
-          variant="plain"
-          className="text-gray-700 ml-4 cursor-pointer hover:text-gray-900 mb-4 italic"
-          onClick={onPostClick}
-        >
-          <Float placement="top-start" offsetY="2">
-            <Blockquote.Icon />
-          </Float>
-          <Blockquote.Content cite="Uzumaki Naruto">
-            <span className="line-clamp-3">{post.abstract}</span>
-          </Blockquote.Content>
-          <Blockquote.Caption>
-            — <cite>{post.author}</cite>
-          </Blockquote.Caption>
-        </Blockquote.Root>
+        <>
+          {/* 引言上方横线 */}
+          <hr className="border-gray-200 mb-4" />
+          
+          <Blockquote.Root
+            variant="plain"
+            className="text-gray-700 ml-4 cursor-pointer hover:text-gray-900 mb-4 italic"
+            onClick={onPostClick}
+          >
+            <Float placement="top-start" offsetY="2">
+              <Blockquote.Icon />
+            </Float>
+            <Blockquote.Content cite="Uzumaki Naruto">
+              <span className="line-clamp-3">{post.abstract}</span>
+            </Blockquote.Content>
+            <Blockquote.Caption>
+              — <cite>{post.author}</cite>
+            </Blockquote.Caption>
+          </Blockquote.Root>
+          
+          {/* 引言下方横线 */}
+          <hr className="border-gray-200 mb-4" />
+        </>
       )}
 
       {/* 帖子内容 */}

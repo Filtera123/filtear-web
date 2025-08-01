@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Popover } from '@chakra-ui/react';
 import CommentSection from '@/components/comment/CommentSection';
@@ -43,6 +43,8 @@ interface VideoDetailModalProps {
 }
 
 const VideoDetailModal: React.FC<VideoDetailModalProps> = ({ post, onClose }) => {
+  const [fixedCommentText, setFixedCommentText] = useState('');
+  
   const { 
     likes, 
     isLike, 
@@ -123,6 +125,22 @@ const VideoDetailModal: React.FC<VideoDetailModalProps> = ({ post, onClose }) =>
     });
   }, [post.id]); // 只依赖 post.id，避免重复添加
 
+  // 固定评论输入框处理函数
+  const handleFixedCommentSubmit = () => {
+    if (fixedCommentText.trim()) {
+      // 这里可以调用评论提交逻辑
+      console.log('提交评论:', fixedCommentText);
+      setFixedCommentText('');
+    }
+  };
+
+  const handleFixedCommentKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleFixedCommentSubmit();
+    }
+  };
+
   // 支持 ESC 关闭
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -152,7 +170,7 @@ const VideoDetailModal: React.FC<VideoDetailModalProps> = ({ post, onClose }) =>
           </div>
         </div>
         {/* 右侧信息 + 评论 */}
-        <aside className="w-[360px] p-4 bg-white text-black overflow-y-auto border-l border-gray-200" onClick={e => e.stopPropagation()}>
+        <aside className="w-[360px] p-4 pb-20 bg-white text-black overflow-y-auto border-l border-gray-200" onClick={e => e.stopPropagation()}>
           {/* 作者信息 */}
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center">
@@ -254,9 +272,10 @@ const VideoDetailModal: React.FC<VideoDetailModalProps> = ({ post, onClose }) =>
             </Popover.Root>
           </div>
           {/* 评论区 */}
-          <CommentSection postId={post.id} comments={post.commentList || []} showAllComments={true} />
+          <CommentSection postId={post.id} comments={post.commentList || []} showAllComments={true} hideCommentInput={true} />
         </aside>
       </div>
+
       {/* 关闭按钮 */}
       <button onClick={onClose} className="absolute top-6 left-6 z-50 bg-black bg-opacity-70 text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-opacity-100">
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -265,7 +284,58 @@ const VideoDetailModal: React.FC<VideoDetailModalProps> = ({ post, onClose }) =>
       </button>
     </div>
   );
-  return createPortal(modalContent, document.body);
+
+  // 固定评论输入框 - 方框风格
+  const fixedCommentInput = (
+    <div 
+      className="fixed bottom-0 right-0 z-[9999] bg-white rounded-t-lg shadow-lg border border-gray-200 p-3 flex items-center space-x-3 w-[360px] backdrop-blur-sm bg-white/95 hover:shadow-xl transition-all duration-200"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+        <img
+          src="/default-avatar.png"
+          alt="当前用户"
+          className="w-8 h-8 rounded-full object-cover"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.style.display = 'none';
+            target.parentElement!.innerHTML = `<span class="text-white font-medium text-xs">当</span>`;
+          }}
+        />
+      </div>
+      <input
+        type="text"
+        value={fixedCommentText}
+        onChange={(e) => setFixedCommentText(e.target.value)}
+        onKeyPress={handleFixedCommentKeyPress}
+        onClick={(e) => e.stopPropagation()}
+        placeholder="写下你的评论..."
+        className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-md outline-none focus:border-blue-500 bg-gray-50 placeholder-gray-400"
+        maxLength={500}
+      />
+      <button 
+        onClick={(e) => {
+          e.stopPropagation();
+          handleFixedCommentSubmit();
+        }}
+        disabled={!fixedCommentText.trim()}
+        className={`px-4 py-2 text-sm rounded-md transition-colors ${
+          fixedCommentText.trim() 
+            ? 'bg-blue-500 text-white hover:bg-blue-600' 
+            : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+        }`}
+      >
+        发送
+      </button>
+    </div>
+  );
+
+  return (
+    <>
+      {createPortal(modalContent, document.body)}
+      {createPortal(fixedCommentInput, document.body)}
+    </>
+  );
 };
 
 export default VideoDetailModal;
