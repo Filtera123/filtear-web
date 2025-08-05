@@ -38,8 +38,8 @@ export default function ImageContent({ post, onImageClick }: ImageContentProps) 
   // 图片查看状态
   const [isViewing, setIsViewing] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [imageRotation, setImageRotation] = useState(0);
   const [thumbnailStartIndex, setThumbnailStartIndex] = useState(0);
+
   
   const [aspectRatio, setAspectRatio] = useState<string | undefined>();
   const count = post.images.length;
@@ -53,7 +53,6 @@ export default function ImageContent({ post, onImageClick }: ImageContentProps) 
     // 优先使用内部查看模式
     setCurrentIndex(index);
     setIsViewing(true);
-    setImageRotation(0);
     // 计算缩略图起始索引，确保当前图片在可见范围内
     const maxThumbnails = 9;
     if (index >= thumbnailStartIndex + maxThumbnails) {
@@ -66,12 +65,31 @@ export default function ImageContent({ post, onImageClick }: ImageContentProps) 
   // 退出查看模式
   const handleClose = () => {
     setIsViewing(false);
-    setImageRotation(0);
   };
 
-  // 旋转图片
-  const handleRotate = () => {
-    setImageRotation(prev => prev + 90);
+  // 翻页功能
+  const handleNext = () => {
+    const nextIndex = (currentIndex + 1) % limitedImages.length;
+    setCurrentIndex(nextIndex);
+    // 更新缩略图起始索引
+    const maxThumbnails = 9;
+    if (nextIndex >= thumbnailStartIndex + maxThumbnails) {
+      setThumbnailStartIndex(Math.max(0, nextIndex - maxThumbnails + 1));
+    } else if (nextIndex < thumbnailStartIndex) {
+      setThumbnailStartIndex(nextIndex);
+    }
+  };
+
+  const handlePrev = () => {
+    const prevIndex = (currentIndex - 1 + limitedImages.length) % limitedImages.length;
+    setCurrentIndex(prevIndex);
+    // 更新缩略图起始索引
+    const maxThumbnails = 9;
+    if (prevIndex >= thumbnailStartIndex + maxThumbnails) {
+      setThumbnailStartIndex(Math.max(0, prevIndex - maxThumbnails + 1));
+    } else if (prevIndex < thumbnailStartIndex) {
+      setThumbnailStartIndex(prevIndex);
+    }
   };
 
   // 查看大图（跳转到详情页）
@@ -88,7 +106,6 @@ export default function ImageContent({ post, onImageClick }: ImageContentProps) 
   // 切换图片
   const handleThumbnailClick = (index: number) => {
     setCurrentIndex(index);
-    setImageRotation(0);
   };
 
   // 缩略图导航
@@ -100,6 +117,31 @@ export default function ImageContent({ post, onImageClick }: ImageContentProps) 
       setThumbnailStartIndex(Math.min(count - maxThumbnails, thumbnailStartIndex + 1));
     }
   };
+
+  // 键盘事件处理
+  useEffect(() => {
+    if (!isViewing) return;
+    
+    const handleKeyDown = (e: KeyboardEvent) => {
+      switch (e.key) {
+        case 'ArrowLeft':
+          e.preventDefault();
+          handlePrev();
+          break;
+        case 'ArrowRight':
+          e.preventDefault();
+          handleNext();
+          break;
+        case 'Escape':
+          e.preventDefault();
+          handleClose();
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isViewing, handlePrev, handleNext, handleClose]);
 
   // 这是处理单张图片的关键:
   // 当只有一张图片时，我们需要加载它来获取原始宽高比
@@ -138,7 +180,14 @@ export default function ImageContent({ post, onImageClick }: ImageContentProps) 
 
     if (count === 1) {
       return (
-        <div className="h-[410px] rounded-2xl overflow-hidden" style={{ aspectRatio }}>
+        <div 
+          className="h-[410px] rounded-2xl overflow-hidden"
+          style={{ 
+            aspectRatio,
+            maxWidth: '100%',
+            width: 'fit-content'
+          }}
+        >
           <ImageItem
             imageUrl={limitedImages[0].url}
             className="w-full h-full"
@@ -224,7 +273,7 @@ export default function ImageContent({ post, onImageClick }: ImageContentProps) 
       {/* 帖子标题 */}
       <h2
         className="text-lg font-semibold text-gray-900 mb-4 leading-tight cursor-pointer hover:text-blue-600 transition-colors"
-        style={{ fontFamily: "'Source Han Sans CN', 'Noto Sans CJK SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif" }}
+        style={{ fontFamily: "'Source Han Sans CN', 'Source Han Sans', sans-serif" }}
         onClick={onPostClick}
       >
         {post.title}
@@ -234,7 +283,7 @@ export default function ImageContent({ post, onImageClick }: ImageContentProps) 
       {post.content && (
         <div
           className="text-gray-700 text-sm leading-relaxed mb-3 cursor-pointer hover:text-gray-900 transition-colors"
-          style={{ fontFamily: "'Source Han Sans CN', 'Noto Sans CJK SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif" }}
+          style={{ fontFamily: "'Source Han Sans CN', 'Source Han Sans', sans-serif" }}
           onClick={onPostClick}
         >
           {post.content}
@@ -258,15 +307,7 @@ export default function ImageContent({ post, onImageClick }: ImageContentProps) 
                   </svg>
                   <span>收起</span>
                 </button>
-                <button
-                  onClick={handleRotate}
-                  className="flex items-center space-x-1 text-gray-600 hover:text-gray-800 transition-colors text-sm"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                  <span>旋转</span>
-                </button>
+
                 <button
                   onClick={handleViewLarge}
                   className="flex items-center space-x-1 text-gray-600 hover:text-gray-800 transition-colors text-sm"
@@ -283,15 +324,29 @@ export default function ImageContent({ post, onImageClick }: ImageContentProps) 
             </div>
 
             {/* 主图区域 */}
-            <div className="h-[500px] flex items-center justify-center bg-gray-50">
+            <div className="h-[500px] flex items-center justify-center bg-gray-50 relative">
+              {/* 左侧hover区域 */}
+              {limitedImages.length > 1 && (
+                <div 
+                  className="absolute left-0 top-0 w-1/3 h-full z-10"
+                  style={{ cursor: 'url(\'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTIwIDI0TDEyIDE2TDIwIDhWMjRaIiBmaWxsPSIjMDAwIiBzdHJva2U9IiNGRkYiIHN0cm9rZS13aWR0aD0iMSIvPgo8L3N2Zz4K\') 16 16, w-resize' }}
+                  onClick={handlePrev}
+                />
+              )}
+
+              {/* 右侧hover区域 */}
+              {limitedImages.length > 1 && (
+                <div 
+                  className="absolute right-0 top-0 w-1/3 h-full z-10"
+                  style={{ cursor: 'url(\'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDhMMjAgMTZMMTIgMjRWOFoiIGZpbGw9IiMwMDAiIHN0cm9rZT0iI0ZGRiIgc3Ryb2tlLXdpZHRoPSIxIi8+Cjwvc3ZnPgo=\') 16 16, e-resize' }}
+                  onClick={handleNext}
+                />
+              )}
+              
               <img
                 src={limitedImages[currentIndex].url}
                 alt={limitedImages[currentIndex].alt || post.title}
                 className="max-h-full max-w-full object-contain"
-                style={{
-                  transform: `rotate(${imageRotation}deg)`,
-                  transition: 'transform 0.3s ease'
-                }}
               />
             </div>
 

@@ -217,7 +217,7 @@ export default function DynamicDetail() {
         {/* 主体区域 */}
         <main className="w-full max-w-3xl bg-white px-6 py-8 shadow-sm rounded">
           {/* 标题 */}
-          <h1 className="text-3xl font-bold mb-4 text-center" style={{ fontFamily: "'Source Han Sans CN', 'Noto Sans CJK SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif" }}>{post.title}</h1>
+          <h1 className="text-3xl font-bold mb-4 text-center" style={{ fontFamily: "'Source Han Sans CN', 'Source Han Sans', sans-serif" }}>{post.title}</h1>
 
           {/* 作者信息 */}
           <div className="flex items-center justify-center mb-2">
@@ -256,7 +256,7 @@ export default function DynamicDetail() {
             </div>
           )}
 
-          <div className="text-base leading-relaxed space-y-4 text-gray-800" style={{ fontFamily: "'Source Han Sans CN', 'Noto Sans CJK SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif" }}>
+          <div className="text-base leading-relaxed space-y-4 text-gray-800" style={{ fontFamily: "'Source Han Sans CN', 'Source Han Sans', sans-serif" }}>
             {post.content.split('\n').map((para, index) => (
               <p key={index}>{para}</p>
             ))}

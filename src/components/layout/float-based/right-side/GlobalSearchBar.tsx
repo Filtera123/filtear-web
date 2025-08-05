@@ -77,7 +77,7 @@ const GlobalSearchBar: React.FC = () => {
   }, [navigate]);
 
   const handleFocus = () => {
-    if (query === '') {
+    if (query === '' && historyList.length > 0) {
       setIsHistoryVisible(true);
     }
   };
@@ -86,6 +86,10 @@ const GlobalSearchBar: React.FC = () => {
     setHistoryList(prev => {
       const next = [...prev];
       next.splice(index, 1);
+      // 如果删除后没有历史记录了，关闭下拉框
+      if (next.length === 0) {
+        setIsHistoryVisible(false);
+      }
       return next;
     });
   }, []);
@@ -122,6 +126,7 @@ const GlobalSearchBar: React.FC = () => {
 
   const handleClearAllHistory = () => {
     setHistoryList([]);
+    setIsHistoryVisible(false); // 清除历史后关闭下拉框
   };
 
   return (
@@ -175,7 +180,7 @@ const GlobalSearchBar: React.FC = () => {
           layout="vertical"
         />
 
-        {isHistoryVisible && !query && (
+        {isHistoryVisible && !query && historyList.length > 0 && (
           <div className="absolute bg-white w-full mt-2 border border-gray-300 rounded-sm z-10 max-h-96 overflow-y-auto">
             <div className="flex justify-between items-center px-4 py-2 font-bold text-sm">
               <span>最近搜索</span>

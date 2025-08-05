@@ -154,7 +154,7 @@ export default function BasePostCard({ post }: PostCardProps) {
         {/* 头部：用户信息和关注按钮 */}
         {/* 用户头像 */}
         <div
-          className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all"
+          className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all flex-shrink-0"
           onClick={handleUserAvatarClick}
         >
           <Image
@@ -164,7 +164,7 @@ export default function BasePostCard({ post }: PostCardProps) {
             fallbackSrc={`https://via.placeholder.com/40x40?text=${post.author[0]}`}
           />
         </div>
-        <div className="flex-1">
+        <div className="flex-1 min-w-0 overflow-hidden">
           <PostHeader post={post} />
 
           {/* 根据类型渲染不同的内容 */}

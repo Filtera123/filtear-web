@@ -584,7 +584,7 @@ export default function TagVirtualPostList({ tagName }: TagVirtualPostListProps)
       {/* 确保有内容且DOM稳定时才渲染瀑布流，避免初始布局跳动 */}
       {filteredPosts.length > 0 && isGridReady ? (
         <MasonryLayout 
-          columns={{ default: 2, md: 3, lg: 4, xl: 5 }}
+          columns={{ default: 2, md: 3, lg: 3, xl: 4 }}
           gap="1rem"
           className="max-w-7xl mx-auto"
         >

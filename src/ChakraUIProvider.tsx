@@ -6,8 +6,8 @@ export const system = createSystem(defaultConfig, {
   theme: {
     tokens: {
       fonts: {
-        heading: { value: `'Source Han Sans CN', 'Noto Sans CJK SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif` },
-        body: { value: `'Source Han Sans CN', 'Noto Sans CJK SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif` },
+        heading: { value: `'Source Han Sans CN', 'Source Han Sans', sans-serif` },
+        body: { value: `'Source Han Sans CN', 'Source Han Sans', sans-serif` },
       },
     },
   },

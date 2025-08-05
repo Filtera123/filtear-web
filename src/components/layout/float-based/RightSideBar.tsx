@@ -33,9 +33,11 @@ export default function RightSideBar() {
       {/* 悬浮固定的Top按钮 - 调整到左下角，最上层显示 */}
       <button
         onClick={handleScrollToTop}
-        className="bg-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg hover:bg-blue-600 transition-colors absolute bottom-4 left-4 z-50"
+        className="bg-white text-black rounded-full w-12 h-12 flex items-center justify-center shadow-lg hover:bg-gray-50 border border-gray-200 transition-colors absolute bottom-4 left-4 z-50"
       >
-        Top
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19V5m-7 7l7-7 7 7" />
+        </svg>
       </button>
     </aside>
   );

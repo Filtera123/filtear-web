@@ -15,7 +15,7 @@ interface MasonryLayoutProps {
 
 export default function MasonryLayout({ 
   children, 
-  columns = { default: 2, md: 3, lg: 4, xl: 5 },
+  columns = { default: 2, md: 3, lg: 3, xl: 4 },
   gap = '1rem',
   className = ''
 }: MasonryLayoutProps) {

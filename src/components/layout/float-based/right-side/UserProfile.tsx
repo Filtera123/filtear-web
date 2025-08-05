@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { createPortal } from 'react-dom';
 
 export default function UserProfile() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [activeAccount, setActiveAccount] = useState(0);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
@@ -32,11 +34,55 @@ export default function UserProfile() {
   // 获取其他账号列表（排除当前登录账号）
   const otherAccounts = accounts.filter((_, index) => index !== activeAccount);
 
-  // 处理退出登录
+  // 处理退出登录点击 - 显示确认弹窗
   const handleLogout = () => {
     setIsExpanded(false);
+    setShowLogoutConfirm(true);
+  };
+
+  // 确认退出登录
+  const confirmLogout = () => {
+    setShowLogoutConfirm(false);
+    // 清除登录状态
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('user_info');
+    // 跳转到登录页
     navigate('/login');
   };
+
+  // 取消退出登录
+  const cancelLogout = () => {
+    setShowLogoutConfirm(false);
+  };
+
+  // 禁用背景滚动
+  useEffect(() => {
+    if (showLogoutConfirm) {
+      // 保存当前滚动位置
+      const scrollY = window.scrollY;
+      const body = document.body;
+      
+      // 获取滚动条宽度
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      
+      // 禁用滚动并防止内容跳动
+      body.style.position = 'fixed';
+      body.style.top = `-${scrollY}px`;
+      body.style.width = '100%';
+      body.style.overflow = 'hidden';
+      body.style.paddingRight = `${scrollbarWidth}px`;
+      
+      return () => {
+        // 恢复滚动
+        body.style.position = '';
+        body.style.top = '';
+        body.style.width = '';
+        body.style.overflow = '';
+        body.style.paddingRight = '';
+        window.scrollTo(0, scrollY);
+      };
+    }
+  }, [showLogoutConfirm]);
 
   return (
     <div className=" bg-white p-4 relative border border-gray-200 rounded-sm" ref={containerRef}>
@@ -116,6 +162,41 @@ export default function UserProfile() {
             </button>
           </div>
         </div>
+      )}
+
+      {/* 退出登录确认弹窗 */}
+      {showLogoutConfirm && createPortal(
+        <div 
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/30" 
+          style={{ 
+            zIndex: 9999, 
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh'
+          }}
+        >
+          <div className="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">确认退出登录</h3>
+            <p className="text-gray-600 mb-6">您确定要退出当前账号吗？退出后需要重新登录才能继续使用。</p>
+            <div className="flex space-x-3">
+              <button
+                onClick={cancelLogout}
+                className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+              >
+                取消
+              </button>
+              <button
+                onClick={confirmLogout}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+              >
+                确认退出
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
       )}
     </div>
   );

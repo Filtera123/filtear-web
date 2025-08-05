@@ -23,7 +23,7 @@ export interface BasePost {
   category: string;
   categorySlug: string;
   title: string;
-  tags: string[];
+  tags: TagItem[];
   isLike: boolean;
   likes: number;
   comments: number;

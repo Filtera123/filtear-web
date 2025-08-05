@@ -446,7 +446,7 @@ export default function RecentlyViewed() {
             // 瀑布流网格视图
             <div className="px-4">
               <MasonryLayout 
-                columns={{ default: 2, md: 3, lg: 4, xl: 5 }}
+                columns={{ default: 2, md: 3, lg: 3, xl: 4 }}
                 gap="1rem"
                 className="max-w-7xl mx-auto"
               >

@@ -334,14 +334,16 @@ export default function TumblrCard({
         'cursor-pointer hover:shadow-md transition-all duration-200',
         'break-inside-avoid mb-4 group'
       )}
+      style={{ minWidth: '200px' }}
       onClick={handleCardClick}
     >
       {/* 顶部用户信息栏 */}
       <div className="px-4 py-3 border-b border-gray-50">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between min-w-0">
           <div 
             className="flex items-center space-x-2 hover:opacity-70 transition-opacity flex-1 min-w-0"
             onClick={handleUserClick}
+            style={{ minWidth: '120px' }}
           >
             <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
               <Image

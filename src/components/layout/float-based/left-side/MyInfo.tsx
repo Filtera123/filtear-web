@@ -23,7 +23,7 @@ export default function MyInfo() {
           <Link
             key={path}
             to={path}
-            className="py-2 px-4 w-fit flex gap-2 transition-colors hover:bg-gray-100 rounded-xl text-md"
+            className="py-2 px-4 w-full flex gap-2 transition-colors hover:bg-gray-100 rounded-xl text-md"
           >
             <Icon stroke={2} />
             <span>{label}</span>

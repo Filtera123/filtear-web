@@ -24,7 +24,7 @@ export default function ArticleContent({ post }: ArticleContentProps) {
       {/* 帖子标题 */}
       <h2
         className="text-lg font-semibold text-gray-900 mb-4 leading-tight cursor-pointer hover:text-blue-600 transition-colors"
-        style={{ fontFamily: "'Source Han Sans CN', 'Noto Sans CJK SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif" }}
+        style={{ fontFamily: "'Source Han Sans CN', 'Source Han Sans', sans-serif" }}
         onClick={onPostClick}
       >
         {post.title}
@@ -61,7 +61,7 @@ export default function ArticleContent({ post }: ArticleContentProps) {
         className={`text-gray-700 text-sm leading-relaxed mb-3 cursor-pointer hover:text-gray-900 transition-colors ${
           post.abstract ? 'line-clamp-7' : 'line-clamp-9'
         }`}
-        style={{ fontFamily: "'Source Han Sans CN', 'Noto Sans CJK SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif" }}
+        style={{ fontFamily: "'Source Han Sans CN', 'Source Han Sans', sans-serif" }}
         onClick={onPostClick}
       >
         {post.content}
