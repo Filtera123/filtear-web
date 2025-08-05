@@ -35,22 +35,12 @@ const ImageItem: React.FC<{
 export default function ImageContent({ post, onImageClick }: ImageContentProps) {
   const navigate = useNavigate();
   
-  // 处理文字内容点击事件 - 改为触发图片模态框
-  const onPostClick = () => {
-    if (onImageClick) {
-      // 如果有onImageClick回调，触发第一张图片的模态框
-      onImageClick(post, 0);
-    } else {
-      // 如果没有回调，则跳转到页面（保持兼容性）
-      navigate(`/post/image/${post.id}`, { 
-        state: { 
-          ...post,
-          fromPage: window.location.pathname // 记录当前页面路径
-        } 
-      });
-    }
-  };
-
+  // 图片查看状态
+  const [isViewing, setIsViewing] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [imageRotation, setImageRotation] = useState(0);
+  const [thumbnailStartIndex, setThumbnailStartIndex] = useState(0);
+  
   const [aspectRatio, setAspectRatio] = useState<string | undefined>();
   const count = post.images.length;
 
@@ -60,8 +50,54 @@ export default function ImageContent({ post, onImageClick }: ImageContentProps) 
 
   // 处理图片点击事件
   const handleImageClick = (index: number) => {
-    if (onImageClick) {
-      onImageClick(post, index);
+    // 优先使用内部查看模式
+    setCurrentIndex(index);
+    setIsViewing(true);
+    setImageRotation(0);
+    // 计算缩略图起始索引，确保当前图片在可见范围内
+    const maxThumbnails = 9;
+    if (index >= thumbnailStartIndex + maxThumbnails) {
+      setThumbnailStartIndex(Math.max(0, index - maxThumbnails + 1));
+    } else if (index < thumbnailStartIndex) {
+      setThumbnailStartIndex(index);
+    }
+  };
+
+  // 退出查看模式
+  const handleClose = () => {
+    setIsViewing(false);
+    setImageRotation(0);
+  };
+
+  // 旋转图片
+  const handleRotate = () => {
+    setImageRotation(prev => prev + 90);
+  };
+
+  // 查看大图（跳转到详情页）
+  const handleViewLarge = () => {
+    navigate(`/post/image/${post.id}`, { 
+      state: { 
+        ...post,
+        fromPage: window.location.pathname,
+        initialIndex: currentIndex
+      } 
+    });
+  };
+
+  // 切换图片
+  const handleThumbnailClick = (index: number) => {
+    setCurrentIndex(index);
+    setImageRotation(0);
+  };
+
+  // 缩略图导航
+  const handleThumbnailNav = (direction: 'prev' | 'next') => {
+    const maxThumbnails = 9;
+    if (direction === 'prev') {
+      setThumbnailStartIndex(Math.max(0, thumbnailStartIndex - 1));
+    } else {
+      setThumbnailStartIndex(Math.min(count - maxThumbnails, thumbnailStartIndex + 1));
     }
   };
 
@@ -90,6 +126,12 @@ export default function ImageContent({ post, onImageClick }: ImageContentProps) 
 
   // 主容器的通用样式
   const containerClasses = 'grid h-[410px] rounded-2xl overflow-hidden gap-[2px] mb-3';
+
+  // 处理文字内容点击事件
+  const onPostClick = () => {
+    // 优先使用内部查看模式
+    handleImageClick(0);
+  };
 
   const handleImageGalleryRender = () => {
     // 根据图片数量返回不同的布局
@@ -200,7 +242,115 @@ export default function ImageContent({ post, onImageClick }: ImageContentProps) 
       )}
 
       {/* 图片展示区域 */}
-      <div className="mb-3">{handleImageGalleryRender()}</div>
+      <div className="mb-3">
+        {isViewing ? (
+          // 图片查看模式
+          <div className="bg-gray-100 rounded-2xl overflow-hidden">
+            {/* 顶部工具栏 */}
+            <div className="flex items-center justify-between p-3 bg-white border-b border-gray-200">
+              <div className="flex items-center space-x-4">
+                <button
+                  onClick={handleClose}
+                  className="flex items-center space-x-1 text-gray-600 hover:text-gray-800 transition-colors text-sm"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                  </svg>
+                  <span>收起</span>
+                </button>
+                <button
+                  onClick={handleRotate}
+                  className="flex items-center space-x-1 text-gray-600 hover:text-gray-800 transition-colors text-sm"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  <span>旋转</span>
+                </button>
+                <button
+                  onClick={handleViewLarge}
+                  className="flex items-center space-x-1 text-gray-600 hover:text-gray-800 transition-colors text-sm"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                  </svg>
+                  <span>查看大图</span>
+                </button>
+              </div>
+              <div className="text-gray-500 text-sm">
+                {currentIndex + 1} / {count}
+              </div>
+            </div>
+
+            {/* 主图区域 */}
+            <div className="h-[500px] flex items-center justify-center bg-gray-50">
+              <img
+                src={limitedImages[currentIndex].url}
+                alt={limitedImages[currentIndex].alt || post.title}
+                className="max-h-full max-w-full object-contain"
+                style={{
+                  transform: `rotate(${imageRotation}deg)`,
+                  transition: 'transform 0.3s ease'
+                }}
+              />
+            </div>
+
+            {/* 底部缩略图 */}
+            <div className="p-3 bg-white border-t border-gray-200">
+              <div className="flex items-center justify-center space-x-2">
+                {/* 左箭头 */}
+                {thumbnailStartIndex > 0 && (
+                  <button
+                    onClick={() => handleThumbnailNav('prev')}
+                    className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-300 transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+                )}
+
+                {/* 缩略图列表 */}
+                <div className="flex space-x-2 overflow-hidden">
+                  {limitedImages.slice(thumbnailStartIndex, thumbnailStartIndex + 9).map((img, index) => {
+                    const actualIndex = thumbnailStartIndex + index;
+                    const isActive = actualIndex === currentIndex;
+                    
+                    return (
+                      <img
+                        key={actualIndex}
+                        src={img.url}
+                        alt={img.alt || `img-${actualIndex}`}
+                        onClick={() => handleThumbnailClick(actualIndex)}
+                        className={`w-12 h-12 object-cover rounded cursor-pointer transition-all duration-200 ${
+                          isActive 
+                            ? 'border-2 border-orange-500 opacity-100' 
+                            : 'opacity-60 hover:opacity-80'
+                        }`}
+                      />
+                    );
+                  })}
+                </div>
+
+                {/* 右箭头 */}
+                {thumbnailStartIndex + 9 < count && (
+                  <button
+                    onClick={() => handleThumbnailNav('next')}
+                    className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-300 transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        ) : (
+          // 正常显示模式
+          handleImageGalleryRender()
+        )}
+      </div>
     </div>
   );
 }
