@@ -9,6 +9,7 @@ import MasonryLayout from '../components/ui/MasonryLayout';
 import TumblrCard from '../components/ui/TumblrCard';
 import { useTagPageStore } from './TagPage.store';
 import type { ContentFilter, HotSubTab, LatestSubTab, TagPageTab, ViewMode } from './TagPage.types';
+import { getRandomIpLocation } from '../utils/mockData';
 
 // 定义返回类型
 interface TagPostsResponse {
@@ -30,13 +31,15 @@ const fetchTagPosts = async (
 
   const pageSize = 10;
   const posts = Array.from({ length: pageSize }, (_, i) => {
-    const postType = getPostTypeByFilter(contentFilter, i);
+    // 对于动态tab，专门生成动态类型的帖子
+    const postType = tab === 'dynamic' ? PostType.DYNAMIC : getPostTypeByFilter(contentFilter, i);
     const basePost = {
       id: `${tab}-${subTab}-${contentFilter}-${pageParam}-${i}`,
       title: `关于 #${tagName} 的帖子 ${pageParam * pageSize + i + 1}`,
       content: `这是关于 ${tagName} 标签的内容，当前筛选：${tab} - ${subTab} - ${contentFilter}`,
       author: `用户${i + 1}`,
       authorAvatar: `https://picsum.photos/40/40?random=${i}`,
+      authorIpLocation: getRandomIpLocation(i + pageParam * pageSize),
       createdAt: new Date(Date.now() - Math.random() * 86400000 * 7).toISOString(),
       updatedAt: new Date(Date.now() - Math.random() * 86400000 * 7).toISOString(),
       slug: `post-${i}`,
@@ -164,8 +167,8 @@ const getPostTypeByFilter = (filter: ContentFilter, index: number): PostTypeValu
     case 'text':
       return PostType.ARTICLE;
     case 'all':
-      // 随机返回不同类型
-      const types = [PostType.ARTICLE, PostType.IMAGE, PostType.VIDEO];
+      // 随机返回不同类型（包含动态类型）
+      const types = [PostType.ARTICLE, PostType.IMAGE, PostType.VIDEO, PostType.DYNAMIC];
       return types[index % types.length];
     default:
       return PostType.ARTICLE;
@@ -178,8 +181,16 @@ interface TagVirtualPostListProps {
 
 export default function TagVirtualPostList({ tagName }: TagVirtualPostListProps) {
   const navigate = useNavigate();
-  const { currentTab, currentLatestSubTab, currentHotSubTab, currentContentFilter, viewMode } =
-    useTagPageStore();
+  const { 
+    currentTab, 
+    currentLatestSubTab, 
+    currentHotSubTab, 
+    currentContentFilter, 
+    viewMode,
+    tabs,
+    updateScrollOffset,
+    markTabAsVisited
+  } = useTagPageStore();
 
   // 本地状态管理点赞状态
   const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({});
@@ -228,13 +239,17 @@ export default function TagVirtualPostList({ tagName }: TagVirtualPostListProps)
     return data?.pages.flatMap((page: TagPostsResponse) => page.list) ?? [];
   }, [data]);
 
-  // 过滤帖子类型（对于动态tab，只显示动态类型的帖子）
+  // 过滤帖子类型（对于动态tab，由于数据生成阶段已经确保只生成动态类型，无需再过滤）
   const filteredPosts = useMemo(() => {
     if (currentTab === 'dynamic') {
-      return allPosts.filter((post) => post.type === PostType.DYNAMIC);
+      // 动态tab的数据在生成阶段已经保证都是动态类型，直接返回
+      return allPosts;
     }
     return allPosts;
   }, [allPosts, currentTab]);
+
+  // 获取当前tab的滚动状态
+  const currentTabState = tabs[currentTab];
 
   // 虚拟化配置 - 仅在列表视图下使用
   const virtualizer = useWindowVirtualizer({
@@ -242,11 +257,55 @@ export default function TagVirtualPostList({ tagName }: TagVirtualPostListProps)
       viewMode === 'list' ? (hasNextPage ? filteredPosts.length + 1 : filteredPosts.length) : 0,
     estimateSize: () => 200,
     overscan: 5,
+    // 只有在tab已访问过且数据加载完成时才使用保存的滚动位置
+    initialOffset: currentTabState.visitedBefore && !isLoading ? currentTabState.scrollOffset : 0,
     getScrollElement: () => window,
     scrollMargin: 0,
   });
 
   const items = virtualizer.getVirtualItems();
+
+  // 滚动监听 - 实时更新当前tab的滚动位置（防抖处理）
+  const handleScroll = useCallback(() => {
+    // 只有在数据加载完成时才记录滚动位置
+    if (!isLoading && filteredPosts.length > 0) {
+      updateScrollOffset(currentTab, window.scrollY);
+    }
+  }, [currentTab, updateScrollOffset, isLoading, filteredPosts.length]);
+
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    
+    const debouncedHandleScroll = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(handleScroll, 50); // 50ms防抖
+    };
+
+    window.addEventListener('scroll', debouncedHandleScroll, { passive: true });
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('scroll', debouncedHandleScroll);
+    };
+  }, [handleScroll]);
+
+  // 切换tab时的滚动位置恢复
+  useEffect(() => {
+    const tabState = tabs[currentTab];
+
+    if (!tabState.visitedBefore) {
+      // 首次访问，从顶部开始
+      window.scrollTo(0, 0);
+      markTabAsVisited(currentTab);
+    } else {
+      // 已访问过，恢复到上次位置
+      // 只有在数据加载完成且不是首次加载时才恢复滚动位置
+      if (!isLoading && filteredPosts.length > 0) {
+        setTimeout(() => {
+          window.scrollTo(0, tabState.scrollOffset);
+        }, 200); // 增加延时确保DOM完全渲染
+      }
+    }
+  }, [currentTab, tabs, markTabAsVisited, isLoading, filteredPosts.length]);
 
   // 当切换到网格视图时，添加短暂延迟确保DOM稳定
   useEffect(() => {
@@ -551,7 +610,16 @@ export default function TagVirtualPostList({ tagName }: TagVirtualPostListProps)
                 >
                   {post && (
                     <div className="relative">
-                      <BasePostCard post={post} />
+                      <BasePostCard 
+                        post={{
+                          ...post,
+                          isLike: getPostLikeStatus(post),
+                          fromPage: window.location.pathname
+                        }}
+                        onLike={() => handleLikeClick({ stopPropagation: () => {} } as React.MouseEvent, post)}
+                        onUserClick={() => handleUserProfileClick({ stopPropagation: () => {} } as React.MouseEvent, post)}
+                        onPostClick={() => handlePostClick(post)}
+                      />
                     </div>
                   )}
                 </div>

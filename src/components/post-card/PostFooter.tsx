@@ -70,7 +70,19 @@ const getTotalCommentCount = (comments: Comment[]): number => {
   }, 0);
 };
 
-export default function PostFooter({ post }: PostFooterProps) {
+export default function PostFooter({ 
+  post, 
+  onLike, 
+  onAddComment, 
+  onLikeComment, 
+  onReplyComment, 
+  onUserClick, 
+  onBlockComment, 
+  onReportComment, 
+  onBlockUser, 
+  onPostClick, 
+  onHeightChange 
+}: PostFooterProps) {
 
   const { currentTab } = useHomePostListStore();
   const { expandedComments, toggleComments } = useCommentStore();
@@ -131,7 +143,13 @@ export default function PostFooter({ post }: PostFooterProps) {
   });
 
   const handleLike = () => {
-    likeMutation.mutate(!post.isLike);
+    // 如果有外部传入的点赞回调，优先使用
+    if (onLike) {
+      onLike(post.id);
+    } else {
+      // 否则使用默认的点赞逻辑（首页）
+      likeMutation.mutate(!post.isLike);
+    }
   };
 
   const onCommentToggle = () => {

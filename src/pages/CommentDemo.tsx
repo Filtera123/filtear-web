@@ -1,17 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { CollapsibleCommentSection } from '../components/comment';
 import type { Comment } from '../components/comment/comment.type';
+import { IP_LOCATIONS } from '@/utils/mockData';
 
 // 模拟评论数据
 const generateMockComments = (count: number): Comment[] => {
   const comments: Comment[] = [];
   
   for (let i = 1; i <= count; i++) {
+    const ipLocations = IP_LOCATIONS;
+    
     const comment: Comment = {
       id: `comment-${i}`,
       userId: `user-${i}`,
       userName: `用户${i}`,
       userAvatar: `https://i.pravatar.cc/32?img=${i}`,
+      userIpLocation: ipLocations[i % ipLocations.length],
       content: `这是第${i}条评论的内容。${i % 3 === 0 ? '这条评论比较长，包含了更多的文字内容，用来测试不同长度评论的显示效果和高度计算功能。' : ''}`,
       createdAt: new Date(Date.now() - i * 60000).toISOString(),
       likes: Math.floor(Math.random() * 50),
@@ -22,6 +26,7 @@ const generateMockComments = (count: number): Comment[] => {
           userId: `user-${i + 10}`,
           userName: `回复者${i}`,
           userAvatar: `https://i.pravatar.cc/32?img=${i + 10}`,
+          userIpLocation: ipLocations[(i + 1) % ipLocations.length],
           content: `这是对第${i}条评论的回复`,
           createdAt: new Date(Date.now() - i * 30000).toISOString(),
           likes: Math.floor(Math.random() * 20),
@@ -55,12 +60,13 @@ export default function CommentDemo() {
     loadComments(commentCount);
   }, []);
 
-  const handleAddComment = (postId: number, content: string) => {
+  const handleAddComment = (_postId: string, content: string) => {
     const newComment: Comment = {
       id: `comment-${Date.now()}`,
       userId: 'current-user',
       userName: '当前用户',
       userAvatar: 'https://i.pravatar.cc/32?img=1',
+      userIpLocation: '北京',
       content,
       createdAt: new Date().toISOString(),
       likes: 0,
@@ -88,6 +94,7 @@ export default function CommentDemo() {
       userId: 'current-user',
       userName: '当前用户',
       userAvatar: 'https://i.pravatar.cc/32?img=1',
+      userIpLocation: '北京',
       content,
       createdAt: new Date().toISOString(),
       likes: 0,
@@ -179,10 +186,10 @@ export default function CommentDemo() {
               onAddComment={handleAddComment}
               onLikeComment={handleLikeComment}
               onReplyComment={handleReplyComment}
-              onUserClick={(userId) => console.log('点击用户:', userId)}
-              onBlockComment={(commentId) => console.log('屏蔽评论:', commentId)}
-              onReportComment={(commentId) => console.log('举报评论:', commentId)}
-              onBlockUser={(userId) => console.log('屏蔽用户:', userId)}
+              onUserClick={(userId: string) => console.log('点击用户:', userId)}
+              onBlockComment={(commentId: string) => console.log('屏蔽评论:', commentId)}
+              onReportComment={(commentId: string) => console.log('举报评论:', commentId)}
+              onBlockUser={(userId: string) => console.log('屏蔽用户:', userId)}
               onPostClick={handleLoadMoreComments}
               currentUserId="current-user"
               currentUserName="当前用户"

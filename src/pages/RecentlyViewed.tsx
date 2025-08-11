@@ -7,6 +7,7 @@ import TumblrCard from '@/components/ui/TumblrCard';
 import { PostType, type PostItem } from '@/components/post-card/post.types';
 import { BasePostCard } from '@/components/post-card';
 import { cn } from '@/utils/cn';
+import { getRandomIpLocation } from '@/utils/mockData';
 
 // 视图模式类型
 type ViewMode = 'list' | 'grid';
@@ -77,6 +78,7 @@ const convertBrowsingRecordToPostItem = (record: BrowsingRecord): PostItem => {
     id: record.id,
     author: record.author,
     authorAvatar: record.authorAvatar || `https://via.placeholder.com/40x40?text=${record.author[0]}`,
+    authorIpLocation: getRandomIpLocation(idHash),
     createdAt: record.viewTime,
     updatedAt: record.viewTime,
     slug: `browsing-${record.id}`,

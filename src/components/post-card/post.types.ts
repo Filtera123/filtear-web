@@ -16,6 +16,7 @@ export interface BasePost {
   id: string;
   author: string;
   authorAvatar: string;
+  authorIpLocation?: string; // 新增：作者IP地址
   createdAt: string;
   updatedAt: string;
   slug: string;

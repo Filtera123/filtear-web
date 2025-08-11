@@ -2,10 +2,11 @@ import { PostType, type PostItem } from '@/components/post-card/post.types';
 
 // 文章类型帖子（带引言）
 export const mockArticlePost: PostItem = {
-  id: 1,
+  id: '1',
   type: PostType.ARTICLE,
   author: '技术博主小王',
   authorAvatar: 'https://avatars.githubusercontent.com/u/1?v=4',
+  authorIpLocation: '北京',
   createdAt: '2024-01-15T10:30:00Z',
   updatedAt: '2024-01-15T10:30:00Z',
   slug: 'react-best-practices',
@@ -15,7 +16,13 @@ export const mockArticlePost: PostItem = {
   abstract: '本文总结了在企业级React项目中的实战经验，涵盖组件设计、状态管理、性能优化等核心主题，帮助开发者构建更加健壮和可维护的现代前端应用。',
   content: 'React 作为目前最流行的前端框架之一，在企业级应用开发中扮演着重要角色。本文将分享一些在实际项目中总结的最佳实践，包括组件设计模式、状态管理、性能优化等方面的经验。\n\n在组件设计方面，我们应该遵循单一职责原则，确保每个组件只负责一个特定的功能。同时，合理使用Props和State，避免不必要的重渲染。\n\n状态管理是React应用的核心，选择合适的状态管理方案对项目的可维护性至关重要。对于简单的应用，使用Context API就足够了，而复杂的应用则需要考虑使用Redux或Zustand等专业的状态管理库。\n\n性能优化也是不可忽视的一环，通过合理使用React.memo、useMemo、useCallback等优化手段，可以显著提升应用的性能表现...',
   wordCount: 6800,
-  tags: ['React', 'JavaScript', '前端开发', '最佳实践', '性能优化'],
+  tags: [
+    { id: '1', name: 'React' },
+    { id: '2', name: 'JavaScript' },
+    { id: '3', name: '前端开发' },
+    { id: '4', name: '最佳实践' },
+    { id: '5', name: '性能优化' }
+  ],
   isLike: false,
   likes: 156,
   comments: 23,
@@ -26,10 +33,11 @@ export const mockArticlePost: PostItem = {
 
 // 文章类型帖子（无引言）
 export const mockArticlePostNoAbstract: PostItem = {
-  id: 5,
+  id: '5',
   type: PostType.ARTICLE,
   author: '程序员老李',
   authorAvatar: 'https://avatars.githubusercontent.com/u/5?v=4',
+  authorIpLocation: '上海',
   createdAt: '2024-01-20T08:30:00Z',
   updatedAt: '2024-01-20T08:30:00Z',
   slug: 'typescript-advanced',
@@ -38,7 +46,12 @@ export const mockArticlePostNoAbstract: PostItem = {
   title: 'TypeScript 高级技巧与实践',
   content: 'TypeScript 已经成为现代前端开发的标配工具。在这篇文章中，我将分享一些高级的TypeScript使用技巧和实践经验。\n\n首先，我们来了解一下条件类型的强大之处。条件类型允许我们基于类型检查来选择不同的类型分支，这在构建类型安全的API时非常有用。\n\n其次，映射类型可以帮助我们基于已有类型创建新的类型，大大提高了代码的可复用性和类型安全性。\n\n最后，我们还将探讨模块声明、装饰器等高级特性的使用场景和最佳实践...',
   wordCount: 4200,
-  tags: ['TypeScript', 'JavaScript', '类型系统', '高级技巧'],
+  tags: [
+    { id: '6', name: 'TypeScript' },
+    { id: '7', name: 'JavaScript' },
+    { id: '8', name: '类型系统' },
+    { id: '9', name: '高级技巧' }
+  ],
   isLike: true,
   likes: 98,
   comments: 15,
@@ -49,10 +62,11 @@ export const mockArticlePostNoAbstract: PostItem = {
 
 // 单张图片帖子
 export const mockSingleImagePost: PostItem = {
-  id: 6,
+  id: '6',
   type: PostType.IMAGE,
   author: '摄影师小陈',
   authorAvatar: 'https://avatars.githubusercontent.com/u/6?v=4',
+  authorIpLocation: '广东',
   createdAt: '2024-01-19T14:20:00Z',
   updatedAt: '2024-01-19T14:20:00Z',
   slug: 'sunset-photography',
@@ -68,7 +82,12 @@ export const mockSingleImagePost: PostItem = {
       height: 600
     }
   ],
-  tags: ['摄影', '日落', '海边', '风景'],
+  tags: [
+    { id: '10', name: '摄影' },
+    { id: '11', name: '日落' },
+    { id: '12', name: '海边' },
+    { id: '13', name: '风景' }
+  ],
   isLike: false,
   likes: 124,
   comments: 18,
@@ -79,10 +98,11 @@ export const mockSingleImagePost: PostItem = {
 
 // 图片类型帖子（多张图片，测试9宫格+剩余数量）
 export const mockImagePost: PostItem = {
-  id: 2,
+  id: '2',
   type: PostType.IMAGE,
   author: '摄影师李梅',
   authorAvatar: 'https://avatars.githubusercontent.com/u/2?v=4',
+  authorIpLocation: '江苏',
   createdAt: '2024-01-16T14:20:00Z',
   updatedAt: '2024-01-16T14:20:00Z',
   slug: 'nature-photography',
@@ -104,7 +124,13 @@ export const mockImagePost: PostItem = {
     { url: 'https://images.unsplash.com/photo-1571920267507-e3e76c2bb5f7?w=400', alt: '茉莉' },
     { url: 'https://images.unsplash.com/photo-1516205651411-aef33a44f7c2?w=400', alt: '兰花' }
   ],
-  tags: ['摄影', '花卉', '春天', '自然', '花园'],
+  tags: [
+    { id: '14', name: '摄影' },
+    { id: '15', name: '花卉' },
+    { id: '16', name: '春天' },
+    { id: '17', name: '自然' },
+    { id: '18', name: '花园' }
+  ],
   isLike: true,
   likes: 189,
   comments: 32,
@@ -115,10 +141,11 @@ export const mockImagePost: PostItem = {
 
 // 四张图片帖子（测试田字格布局）
 export const mockFourImagePost: PostItem = {
-  id: 7,
+  id: '7',
   type: PostType.IMAGE,
   author: '旅行摄影师',
   authorAvatar: 'https://avatars.githubusercontent.com/u/7?v=4',
+  authorIpLocation: '浙江',
   createdAt: '2024-01-21T11:30:00Z',
   updatedAt: '2024-01-21T11:30:00Z',
   slug: 'city-views',
@@ -132,7 +159,12 @@ export const mockFourImagePost: PostItem = {
     { url: 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=400', alt: '建筑细节' },
     { url: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=400', alt: '夜景灯光' }
   ],
-  tags: ['城市', '建筑', '摄影', '风景'],
+  tags: [
+    { id: '19', name: '城市' },
+    { id: '20', name: '建筑' },
+    { id: '21', name: '摄影' },
+    { id: '22', name: '风景' }
+  ],
   isLike: false,
   likes: 76,
   comments: 9,
@@ -143,10 +175,11 @@ export const mockFourImagePost: PostItem = {
 
 // 视频类型帖子
 export const mockVideoPost: PostItem = {
-  id: 3,
+  id: '3',
   type: PostType.VIDEO,
   author: 'UP主小明',
   authorAvatar: 'https://avatars.githubusercontent.com/u/3?v=4',
+  authorIpLocation: '美国',
   createdAt: '2024-01-17T16:45:00Z',
   updatedAt: '2024-01-17T16:45:00Z',
   slug: 'cooking-tutorial',
@@ -161,7 +194,13 @@ export const mockVideoPost: PostItem = {
     width: 1280,
     height: 720
   },
-  tags: ['烹饪', '意大利面', '教程', '美食', '生活技能'],
+  tags: [
+    { id: '23', name: '烹饪' },
+    { id: '24', name: '意大利面' },
+    { id: '25', name: '教程' },
+    { id: '26', name: '美食' },
+    { id: '27', name: '生活技能' }
+  ],
   isLike: false,
   likes: 234,
   comments: 45,
@@ -172,10 +211,11 @@ export const mockVideoPost: PostItem = {
 
 // 纯文字动态
 export const mockTextDynamicPost: PostItem = {
-  id: 8,
+  id: '8',
   type: PostType.DYNAMIC,
   author: '思考者小王',
   authorAvatar: 'https://avatars.githubusercontent.com/u/8?v=4',
+  authorIpLocation: '湖北',
   createdAt: '2024-01-22T16:20:00Z',
   updatedAt: '2024-01-22T16:20:00Z',
   slug: 'life-thoughts',
@@ -183,7 +223,13 @@ export const mockTextDynamicPost: PostItem = {
   categorySlug: 'thoughts',
   title: '关于成长的一些思考',
   content: '最近在思考成长这个话题。成长不仅仅是年龄的增长，更是心智的成熟和视野的开阔。\n\n每个人的成长轨迹都不相同，有的人早慧，有的人大器晚成。重要的是保持好奇心和学习的热情。\n\n在这个快节奏的时代，我们容易被各种信息和压力包围，但真正的成长往往发生在安静的时刻，当我们停下来反思和沉淀的时候。\n\n愿我们都能在各自的道路上，以自己的节奏，慢慢成长，慢慢变好。\n\n#成长 #思考 #生活感悟',
-  tags: ['成长', '思考', '生活', '感悟', '心理'],
+  tags: [
+    { id: '28', name: '成长' },
+    { id: '29', name: '思考' },
+    { id: '30', name: '生活' },
+    { id: '31', name: '感悟' },
+    { id: '32', name: '心理' }
+  ],
   isLike: true,
   likes: 45,
   comments: 12,
@@ -194,10 +240,11 @@ export const mockTextDynamicPost: PostItem = {
 
 // 带图片的动态
 export const mockDynamicPost: PostItem = {
-  id: 4,
+  id: '4',
   type: PostType.DYNAMIC,
   author: '旅行达人小张',
   authorAvatar: 'https://avatars.githubusercontent.com/u/4?v=4',
+  authorIpLocation: '浙江',
   createdAt: '2024-01-18T09:15:00Z',
   updatedAt: '2024-01-18T09:15:00Z',
   slug: 'travel-moment',
@@ -213,7 +260,13 @@ export const mockDynamicPost: PostItem = {
     { url: 'https://images.unsplash.com/photo-1567073049833-5b9a0b9ff7e9?w=400', alt: '柳树成荫' },
     { url: 'https://images.unsplash.com/photo-1565552645632-d725f8bfc19d?w=400', alt: '湖心亭' }
   ],
-  tags: ['旅行', '西湖', '杭州', '生活', '美景'],
+  tags: [
+    { id: '33', name: '旅行' },
+    { id: '34', name: '西湖' },
+    { id: '35', name: '杭州' },
+    { id: '36', name: '生活' },
+    { id: '37', name: '美景' }
+  ],
   isLike: false,
   likes: 67,
   comments: 8,

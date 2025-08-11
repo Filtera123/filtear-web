@@ -4,6 +4,7 @@ import { IconUser, IconUsers, IconHeart, IconEdit, IconSettings, IconUserPlus, I
 import { useNavigate } from 'react-router-dom';
 import { useReportContext } from '../../components/report';
 import type { UserProfileInfo } from '../UserProfile.types';
+import { formatIpLocation } from '@/utils/ipLocation';
 
 interface ProfileHeaderProps {
   userInfo: UserProfileInfo;
@@ -192,9 +193,11 @@ export default function ProfileHeader({
               </div>
               
               {/* IP 地址 */}
-              <div className="text-xs text-gray-500">
-                IP: {userInfo.ipLocation}
-              </div>
+              {userInfo.ipLocation && (
+                <div className="text-xs text-gray-400">
+                  {formatIpLocation(userInfo.ipLocation)}
+                </div>
+              )}
             </div>
           </div>
 

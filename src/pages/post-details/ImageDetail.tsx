@@ -7,6 +7,7 @@ import { usePostActions } from '@/hooks/usePostActions';
 import { useBrowsingHistoryStore } from '@/stores/browsingHistoryStore';
 import CommentSection from '@/components/comment/CommentSection';
 import { useReportContext } from '@/components/report';
+import { getSimpleLocation } from '@/utils/ipLocation';
 
 // 格式化时间显示
 const formatTime = (dateString: string): string => {
@@ -553,6 +554,12 @@ const ImageDetailModal: React.FC<ImageDetailModalProps> = ({ post, initialIndex 
         {/* 发布时间和正文 */}
         <div className="text-xs text-gray-500 mb-2" style={{ fontFamily: "'Source Han Sans CN', 'Source Han Sans', sans-serif" }}>{formatTime(post.createdAt)}</div>
         <div className="text-sm text-gray-700 mb-4" style={{ fontFamily: "'Source Han Sans CN', 'Source Han Sans', sans-serif" }}>{post.content}</div>
+        {/* IP地址 */}
+        {post.authorIpLocation && (
+          <div className="text-xs text-gray-400 mb-4">
+            {getSimpleLocation(post.authorIpLocation)}
+          </div>
+        )}
         {/* 浏览 评论 点赞 */}
         <div className="flex space-x-4 text-xs text-gray-500 mb-4">
           <div className="text-gray-600 text-xl">

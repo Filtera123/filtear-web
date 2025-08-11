@@ -14,7 +14,16 @@ import type {
 } from './TagPage.types';
 import { VIEW_MODES } from './TagPage.types';
 
+// 标签页tab的滚动状态
+interface TagTabScrollState {
+  scrollOffset: number;
+  visitedBefore: boolean;
+}
+
 interface TagPageStore extends TagPageState {
+  // Tab滚动状态
+  tabs: Record<TagPageTab, TagTabScrollState>;
+  
   // Actions
   setCurrentTab: (tab: TagPageTab) => void;
   setCurrentLatestSubTab: (subTab: LatestSubTab) => void;
@@ -23,6 +32,10 @@ interface TagPageStore extends TagPageState {
   setViewMode: (mode: ViewMode) => void;
   setTagDetail: (tag: TagDetail | null) => void;
   setIsLoading: (loading: boolean) => void;
+  
+  // 滚动位置管理
+  updateScrollOffset: (tab: TagPageTab, offset: number) => void;
+  markTabAsVisited: (tab: TagPageTab) => void;
   
   // 订阅/取消订阅标签
   toggleSubscription: () => void;
@@ -45,8 +58,18 @@ const getSavedViewMode = (): ViewMode => {
   }
 };
 
+// 从localStorage获取保存的当前tab，如果没有则使用默认值
+const getSavedCurrentTab = (): TagPageTab => {
+  try {
+    const savedTab = localStorage.getItem('tagPageCurrentTab');
+    return savedTab === 'dynamic' || savedTab === 'hot' || savedTab === 'latest' ? savedTab : 'latest';
+  } catch (error) {
+    return 'latest';
+  }
+};
+
 const initialState: TagPageState = {
-  currentTab: 'latest',
+  currentTab: getSavedCurrentTab(),
   currentLatestSubTab: 'latest_publish',
   currentHotSubTab: 'daily',
   currentContentFilter: 'all',
@@ -55,12 +78,28 @@ const initialState: TagPageState = {
   isLoading: false,
 };
 
-export const useTagPageStore = create<TagPageStore>((set) => ({
+const initialTabsState: Record<TagPageTab, TagTabScrollState> = {
+  latest: { scrollOffset: 0, visitedBefore: false },
+  hot: { scrollOffset: 0, visitedBefore: false },
+  dynamic: { scrollOffset: 0, visitedBefore: false },
+};
+
+export const useTagPageStore = create<TagPageStore>((set, get) => ({
   ...initialState,
+  tabs: initialTabsState,
   
-  setCurrentTab: (tab) => set(() => ({
-    currentTab: tab,
-  })),
+  setCurrentTab: (tab) => {
+    // 保存当前tab到localStorage
+    try {
+      localStorage.setItem('tagPageCurrentTab', tab);
+    } catch (error) {
+      console.warn('Failed to save current tab to localStorage', error);
+    }
+    
+    return set(() => ({
+      currentTab: tab,
+    }));
+  },
   
   setCurrentLatestSubTab: (subTab) => set(() => ({
     currentLatestSubTab: subTab,
@@ -96,6 +135,26 @@ export const useTagPageStore = create<TagPageStore>((set) => ({
     isLoading: loading,
   })),
   
+  updateScrollOffset: (tab, offset) => {
+    const state = get();
+    set({
+      tabs: {
+        ...state.tabs,
+        [tab]: { ...state.tabs[tab], scrollOffset: offset },
+      },
+    });
+  },
+  
+  markTabAsVisited: (tab) => {
+    const state = get();
+    set({
+      tabs: {
+        ...state.tabs,
+        [tab]: { ...state.tabs[tab], visitedBefore: true },
+      },
+    });
+  },
+  
   toggleSubscription: () => set((state) => ({
     tagDetail: state.tagDetail ? {
       ...state.tagDetail,
@@ -112,7 +171,10 @@ export const useTagPageStore = create<TagPageStore>((set) => ({
   
   resetState: () => set((state) => ({
     ...initialState,
-    // 保留当前视图模式，不重置
+    // 保留当前视图模式和当前tab，不重置
     viewMode: state.viewMode,
+    currentTab: state.currentTab,
+    // 保留滚动状态，不重置
+    tabs: state.tabs,
   })),
 })); 

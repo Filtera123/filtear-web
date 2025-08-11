@@ -3,10 +3,13 @@ import { useTagPageStore } from '../../pages/TagPage.store';
 import { cn } from '../../utils/cn';
 
 export default function TagPageRightSideBar() {
-  const { tagDetail, toggleSubscription, toggleBlock } = useTagPageStore();
+  const { tagDetail, toggleSubscription, toggleBlock, currentTab, updateScrollOffset } = useTagPageStore();
 
   // 处理回到顶部的函数 - 与主页右侧栏相同的实现
   const handleScrollToTop = () => {
+    // 清除当前tab的滚动位置记录，防止自动恢复
+    updateScrollOffset(currentTab, 0);
+    
     // 平滑滚动到顶部
     window.scrollTo({
       top: 0,

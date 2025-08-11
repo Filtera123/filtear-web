@@ -8,6 +8,7 @@ import { usePostActions } from '@/hooks/usePostActions';
 import { useBrowsingHistoryStore } from '@/stores/browsingHistoryStore';
 import DetailPageHeader from '@/components/layout/DetailPageHeader';
 import Tag from '@/components/tag/Tag';
+import { getSimpleLocation } from '@/utils/ipLocation';
 
 // 在文件顶部添加 mock 数据
 const mockArticles = [
@@ -18,6 +19,7 @@ const mockArticles = [
     content: '这是一篇关于nihao的文章...\n正文内容示例。',
     author: '测试作者',
     authorAvatar: 'https://example.com/avatar1.jpg',
+    authorIpLocation: '北京',
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
     slug: 'nihao',
@@ -41,6 +43,7 @@ const mockArticles = [
     content: '这是一篇关于ninjago的文章...\n正文内容示例。',
     author: '忍者作者',
     authorAvatar: 'https://example.com/avatar2.jpg',
+    authorIpLocation: '上海',
     createdAt: '2024-01-02T00:00:00Z',
     updatedAt: '2024-01-02T00:00:00Z',
     slug: 'ninjago',
@@ -354,7 +357,14 @@ export default function ArticleDetail() {
           </div>
 
           {/* 字数提示 */}
-          <div className="mt-8 text-xs text-gray-400 text-center">全文 {post.wordCount} 字</div>
+          <div className="mt-8 text-xs text-gray-400 text-left">全文 {post.wordCount} 字</div>
+          
+          {/* IP地址 */}
+          {post.authorIpLocation && (
+            <div className="mt-4 text-xs text-gray-400 text-left">
+              {getSimpleLocation(post.authorIpLocation)}
+            </div>
+          )}
           
           {showCommentSection && (
             <div id="comment-section" className="mt-8">

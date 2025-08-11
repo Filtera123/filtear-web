@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { UserProfileInfo, UserProfileState, ProfileTab, WorksFilterType, ViewMode } from './UserProfile.types';
 import { ProfileTabs, WorksFilter, VIEW_MODES } from './UserProfile.types';
+import { getRandomIpLocation, withAuthorIp } from '@/utils/mockData';
 
 // 从localStorage获取保存的视图模式，如果没有则使用默认值
 const getSavedViewMode = (): ViewMode => {
@@ -173,7 +174,7 @@ export const mockGetUserInfo = (userId: string): Promise<UserProfileInfo | null>
         username: `@${userId}`,
         avatar: `https://picsum.photos/id/${avatarId}/100/100`,
         bio: isCurrentUser ? '这是我的个性签名，可以编辑' : `这是${userId}的个性签名`,
-        ipLocation: '上海',
+        ipLocation: getRandomIpLocation(avatarId),
         followerCount: Math.floor(Math.random() * 1000) + 100,
         followingCount: Math.floor(Math.random() * 500) + 50,
         likeCount: Math.floor(Math.random() * 5000) + 1000,
@@ -192,7 +193,7 @@ export const mockGetUserPosts = (userId: string, tab: ProfileTab, filter: WorksF
     setTimeout(() => {
       const posts = Array.from({ length: 10 }, (_, i) => {
         const postType = filter === WorksFilter.ALL ? ['article', 'image', 'video', 'dynamic'][Math.floor(Math.random() * 4)] : filter;
-        const basePost = {
+        const basePost = withAuthorIp({
           id: `${userId}-post-${i}`,
           author: `用户${userId}`,
           authorAvatar: `https://picsum.photos/id/${Math.floor(Math.random() * 100)}/40/40`,
@@ -214,7 +215,7 @@ export const mockGetUserPosts = (userId: string, tab: ProfileTab, filter: WorksF
           isLike: Math.random() > 0.5,
           isFollowing: Math.random() > 0.5,
           commentList: [],
-        };
+        }, i);
 
         // 根据帖子类型添加特定属性
         switch (postType) {

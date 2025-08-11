@@ -5,18 +5,22 @@ import type { TagItem } from '@components/tag/tag.type.ts';
 import { HOME_TABS, type HomeTabs } from '@pages/home/type.ts';
 import { v4 as uuidv4 } from 'uuid';
 import { PostType, type PostItem } from '@/components';
+import { IP_LOCATIONS } from '@/utils/mockData';
 
 const generateMockComments = (postId: string, type: HomeTabs): Comment[] => {
   const commentCount = Math.floor(Math.random() * 12) + 3;
   const userPrefix =
     type === 'subscriptions' ? '订阅用户' : type === 'following' ? '关注用户' : '推荐用户';
 
+  const ipLocations = IP_LOCATIONS;
+  
   return Array.from({ length: commentCount }, (_, i) => {
     const comment: Comment = {
       id: `comment-${postId}-${i}`,
       userId: `user${(i % 4) + 1}`,
       userName: `${userPrefix}${(i % 4) + 1}`,
       userAvatar: '/default-avatar.png',
+      userIpLocation: ipLocations[i % ipLocations.length],
       content:
         type === 'subscriptions'
           ? `精彩内容！第 ${i + 1} 条评论：订阅你的频道真是太值得了。`
@@ -34,6 +38,7 @@ const generateMockComments = (postId: string, type: HomeTabs): Comment[] => {
                 userId: `user${((i + 1) % 4) + 1}`,
                 userName: `回复用户${((i + 1) % 4) + 1}`,
                 userAvatar: '/default-avatar.png',
+                userIpLocation: ipLocations[(i + 1) % ipLocations.length],
                 content: `回复评论 ${i + 1} 的内容...`,
                 createdAt: new Date(Date.now() - Math.random() * 86400000).toISOString(),
                 likes: Math.floor(Math.random() * 5),
@@ -147,10 +152,13 @@ const generateMockPosts = (count: number, type: HomeTabs): PostItem[] => {
     const author = authors[i % authors.length];
     const category = categories[i % categories.length];
 
+    const authorIpLocations = IP_LOCATIONS;
+    
     const basePost = {
       id,
       author,
       authorAvatar: `https://avatars.githubusercontent.com/u/${i + (type === 'subscriptions' ? 2000 : type === 'following' ? 1000 : 0)}?v=4`,
+      authorIpLocation: authorIpLocations[i % authorIpLocations.length],
       createdAt: new Date(Date.now() - Math.random() * 86400000 * 5).toISOString(),
       updatedAt: new Date().toISOString(),
       slug: `${type}-post-${id}`,

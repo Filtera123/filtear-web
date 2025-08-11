@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { Popover } from '@chakra-ui/react';
 import { type Comment } from './comment.type';
 import { useReportContext } from '../report';
+import { getSimpleLocation } from '@/utils/ipLocation';
 
 interface Props {
   comment: Comment;
@@ -109,6 +110,11 @@ export default function CommentItem({
               {comment.userName}
             </span>
             <span className="text-xs text-gray-500">{formatTime(comment.createdAt)}</span>
+            {comment.userIpLocation && (
+              <span className="text-xs text-gray-400">
+                {getSimpleLocation(comment.userIpLocation)}
+              </span>
+            )}
           </div>
 
           {/* 评论文本 */}

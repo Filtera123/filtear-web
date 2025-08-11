@@ -2,10 +2,13 @@ import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import CommentSection from '@/components/comment/CommentSection';
 import type { DynamicPost } from '@/components/post-card/post.types';
+import { PostType } from '@/components/post-card/post.types';
 import { usePostActions } from '@/hooks/usePostActions';
 import { useBrowsingHistoryStore } from '@/stores/browsingHistoryStore';
 import DetailPageHeader from '@/components/layout/DetailPageHeader';
 import Tag from '@/components/tag/Tag';
+import { getSimpleLocation } from '@/utils/ipLocation';
+import { mockPostsByType } from '@/mocks/post/data';
 
 export default function DynamicDetail() {
   const getImageGridClass = (count: number) => {
@@ -24,8 +27,15 @@ export default function DynamicDetail() {
   };
   const location = useLocation();
   const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const { id } = useParams();
-  const post = location.state?.post as (DynamicPost & { scrollToComments?: boolean }) | undefined;
+  const { postId } = useParams();
+  const { state } = useLocation();
+  
+  // 优先使用state中的数据，如果没有则从模拟数据中查找
+  let post = state as (DynamicPost & { scrollToComments?: boolean }) | undefined;
+  if (!post && postId) {
+    const mockDynamicPosts = (mockPostsByType as any)[PostType.DYNAMIC] as DynamicPost[];
+    post = mockDynamicPosts.find(p => p.id === postId);
+  }
   const navigate = useNavigate();
   const { addRecord } = useBrowsingHistoryStore();
 
@@ -61,8 +71,10 @@ export default function DynamicDetail() {
       }, 100);
     }
   }, [post?.scrollToComments]);
+
+  // 如果没有找到帖子数据，显示Not Found
   if (!post) {
-    return <div className="text-center py-20">Not Found</div>;
+    return <div className="text-center py-20">动态内容未找到</div>;
   }
 
   const {
@@ -329,6 +341,13 @@ export default function DynamicDetail() {
                   </div>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* IP地址 */}
+          {post.authorIpLocation && (
+            <div className="mt-4 text-xs text-gray-400 text-left">
+              {getSimpleLocation(post.authorIpLocation)}
             </div>
           )}
 

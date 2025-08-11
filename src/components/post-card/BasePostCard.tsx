@@ -11,7 +11,19 @@ import PostTags from './PostTags';
 import ImageDetailModal from '@/pages/post-details/ImageDetail';
 import VideoDetailModal from '@/pages/post-details/VideoDetail';
 
-export default function BasePostCard({ post }: PostCardProps) {
+export default function BasePostCard({ 
+  post, 
+  onLike, 
+  onUserClick, 
+  onPostClick,
+  onAddComment,
+  onLikeComment,
+  onReplyComment,
+  onBlockComment,
+  onReportComment,
+  onBlockUser,
+  onHeightChange
+}: PostCardProps) {
   const postCardRef = useRef<HTMLDivElement>(null);
   const commentRef = useRef<HTMLDivElement>(null);
   const [commentBoxHeight, setCommentBoxHeight] = useState(0);
@@ -175,7 +187,19 @@ export default function BasePostCard({ post }: PostCardProps) {
 
           {/* 底部交互按钮和评论区 - 与用户头像对齐 */}
           <div className="ml-[-3rem]">
-            <PostFooter post={post} />
+            <PostFooter 
+        post={post} 
+        onLike={onLike}
+        onAddComment={handleAddComment}
+        onLikeComment={handleLikeComment}
+        onReplyComment={handleReplyComment}
+        onUserClick={handleUserClick}
+        onBlockComment={handleBlockComment}
+        onReportComment={handleReportComment}
+        onBlockUser={onBlockUser}
+        onPostClick={onPostClick}
+        onHeightChange={onHeightChange}
+      />
           </div>
         </div>
       </div>
