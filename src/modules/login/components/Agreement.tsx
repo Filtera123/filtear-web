@@ -19,7 +19,7 @@ export const Agreement: React.FC<AgreementProps> = ({
   };
 
   const linkStyle = {
-    color: '#8b5cf6',
+    color: '#7E44C6',
     textDecoration: 'none',
     '&:hover': {
       textDecoration: 'underline',
@@ -35,9 +35,9 @@ export const Agreement: React.FC<AgreementProps> = ({
               onChange={handleChange}
               size="small"
               sx={{
-                color: error ? '#ff4d4f' : '#8b5cf6',
+                color: error ? '#ff4d4f' : '#7E44C6',
                 '&.Mui-checked': {
-                  color: '#8b5cf6',
+                  color: '#7E44C6',
                 },
               }}
             />

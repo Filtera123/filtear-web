@@ -27,7 +27,7 @@ export default function BasePostCard({
   const postCardRef = useRef<HTMLDivElement>(null);
   const commentRef = useRef<HTMLDivElement>(null);
   const [commentBoxHeight, setCommentBoxHeight] = useState(0);
-  const { expandedComments, comments, setComments, toggleCommentLike } = useCommentStore();
+  const { expandedComments, comments, setComments, toggleCommentLike, addComment, addReply } = useCommentStore();
   const navigate = useNavigate();
   const [showImageModal, setShowImageModal] = useState(false);
   const [modalIndex, setModalIndex] = useState(0);
@@ -94,13 +94,47 @@ export default function BasePostCard({
   // 处理添加评论
   const handleAddComment = (postId: string, content: string) => {
     console.log('添加评论到帖子:', postId, '内容:', content);
-    // TODO: 这里应该调用API添加新评论
+    
+    // 创建新评论对象
+    const newComment = {
+      id: Date.now().toString(), // 简单的ID生成，实际应用中应该由后端生成
+      userId: 'current_user_id', // 实际应用中应该从用户状态获取
+      userName: '当前用户', // 实际应用中应该从用户状态获取
+      userAvatar: '/default-avatar.png', // 实际应用中应该从用户状态获取
+      userIpLocation: '上海', // 可选字段
+      content: content,
+      createdAt: new Date().toISOString(),
+      likes: 0,
+      isLiked: false,
+      replies: []
+    };
+    
+    // 添加到store
+    addComment(postId, newComment);
+    console.log('评论已添加:', newComment);
   };
 
   // 处理回复评论
   const handleReplyComment = (commentId: string, content: string) => {
     console.log('回复评论:', commentId, '内容:', content);
-    // TODO: 这里应该调用API添加回复
+    
+    // 创建新回复对象
+    const newReply = {
+      id: Date.now().toString() + '_reply', // 简单的ID生成，实际应用中应该由后端生成
+      userId: 'current_user_id', // 实际应用中应该从用户状态获取
+      userName: '当前用户', // 实际应用中应该从用户状态获取
+      userAvatar: '/default-avatar.png', // 实际应用中应该从用户状态获取
+      userIpLocation: '上海', // 可选字段
+      content: content,
+      createdAt: new Date().toISOString(),
+      likes: 0,
+      isLiked: false,
+      replies: []
+    };
+    
+    // 添加回复到store
+    addReply(post.id, commentId, newReply);
+    console.log('回复已添加:', newReply);
   };
 
   // 处理用户点击
@@ -166,7 +200,8 @@ export default function BasePostCard({
         {/* 头部：用户信息和关注按钮 */}
         {/* 用户头像 */}
         <div
-          className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all flex-shrink-0"
+          className="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer hover:ring-2 hover:opacity-90 transition-all flex-shrink-0"
+          style={{ backgroundColor: '#7E44C6' }}
           onClick={handleUserAvatarClick}
         >
           <Image

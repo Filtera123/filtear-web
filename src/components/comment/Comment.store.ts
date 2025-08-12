@@ -8,6 +8,7 @@ interface CommentStoreState {
   setComments: (postId: string, comments: Comment[]) => void;
   toggleCommentLike: (postId: string, commentId: string) => void;
   addComment: (postId: string, comment: Comment) => void;
+  addReply: (postId: string, commentId: string, reply: Comment) => void;
 }
 
 // 递归更新评论或回复的点赞状态
@@ -30,7 +31,26 @@ const updateCommentLike = (comments: Comment[], commentId: string): Comment[] =>
   });
 };
 
-export const useCommentStore = create<CommentStoreState>((set, get) => ({
+// 递归添加回复到指定的评论
+const addReplyToComment = (comments: Comment[], commentId: string, reply: Comment): Comment[] => {
+  return comments.map(comment => {
+    if (comment.id === commentId) {
+      return {
+        ...comment,
+        replies: [reply, ...(comment.replies || [])] // 新回复添加到开头
+      };
+    }
+    if (comment.replies) {
+      return {
+        ...comment,
+        replies: addReplyToComment(comment.replies, commentId, reply)
+      };
+    }
+    return comment;
+  });
+};
+
+export const useCommentStore = create<CommentStoreState>((set) => ({
   expandedComments: {},
   comments: {},
   
@@ -70,7 +90,20 @@ export const useCommentStore = create<CommentStoreState>((set, get) => ({
       return {
         comments: {
           ...state.comments,
-          [postId]: [...postComments, comment],
+          [postId]: [comment, ...postComments], // 新评论添加到开头
+        },
+      };
+    }),
+    
+  addReply: (postId, commentId, reply) =>
+    set((state) => {
+      const postComments = state.comments[postId] || [];
+      const updatedComments = addReplyToComment(postComments, commentId, reply);
+      
+      return {
+        comments: {
+          ...state.comments,
+          [postId]: updatedComments,
         },
       };
     }),

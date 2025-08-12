@@ -174,9 +174,10 @@ export default function TagManagement() {
               disabled={!hasUnsavedChanges}
               className={`flex items-center gap-2 px-6 py-2 rounded-md transition-colors ${
                 hasUnsavedChanges 
-                  ? 'bg-blue-500 text-white hover:bg-blue-600 shadow-sm' 
+                  ? 'text-white hover:opacity-90 shadow-sm' 
                   : 'bg-gray-200 text-gray-500 cursor-not-allowed'
               }`}
+              style={hasUnsavedChanges ? { backgroundColor: '#7E44C6' } : {}}
             >
               <IconDeviceFloppy size={20} />
               保存排序
@@ -198,9 +199,10 @@ export default function TagManagement() {
                 onDragEnd={handleDragEnd}
                 className={`bg-white p-4 rounded-md border ${
                   draggingTagId === (tag.id || tag.name)
-                    ? 'border-blue-500 opacity-50'
-                    : 'border-gray-200'
+                    ? 'opacity-50'
+                    : ''
                 } transition-all hover:shadow-md cursor-grab relative`}
+                style={draggingTagId === (tag.id || tag.name) ? { borderColor: '#7E44C6' } : {}}
               >
                 <div className="flex flex-col">
                   {/* Tag name, number and post count on one line */}
@@ -231,7 +233,15 @@ export default function TagManagement() {
                     </button>
                     <button
                       onClick={() => openConfirmDialog(tag.id || tag.name, tag.name, 'block')}
-                      className="text-gray-400 hover:text-orange-500 transition-colors py-1 px-3 rounded-md hover:bg-orange-50 text-sm flex items-center gap-1"
+                      className="text-gray-400 hover:opacity-80 transition-opacity py-1 px-3 rounded-md text-sm flex items-center gap-1"
+                      onMouseEnter={(e) => {
+                        (e.target as HTMLElement).style.color = '#7E44C6';
+              (e.target as HTMLElement).style.backgroundColor = '#f3f0ff';
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.target as HTMLElement).style.color = '#9ca3af';
+              (e.target as HTMLElement).style.backgroundColor = 'transparent';
+                      }}
                     >
                       <IconShieldOff size={14} />
                       屏蔽
@@ -275,8 +285,9 @@ export default function TagManagement() {
                 className={`px-4 py-2 text-white rounded-md transition-colors ${
                   confirmDialogState.action === 'unfollow' 
                     ? 'bg-red-500 hover:bg-red-600' 
-                    : 'bg-orange-500 hover:bg-orange-600'
+                    : 'text-white hover:opacity-90'
                 }`}
+                style={confirmDialogState.action !== 'unfollow' ? { backgroundColor: '#7E44C6' } : {}}
               >
                 确定
               </button>

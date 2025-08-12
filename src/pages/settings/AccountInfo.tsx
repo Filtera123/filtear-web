@@ -562,7 +562,7 @@ export default function AccountInfo() {
                 <div className="text-sm text-gray-600">
                   {unsavedChanges && (
                     <span className="flex items-center">
-                      <div className="w-2 h-2 bg-orange-500 rounded-full mr-2"></div>
+                      <div className="w-2 h-2 rounded-full mr-2" style={{ backgroundColor: '#7E44C6' }}></div>
                       有未保存的更改
                     </span>
                   )}
@@ -579,7 +579,7 @@ export default function AccountInfo() {
                   <Button 
                     type="submit" 
                     variant="contained" 
-                    sx={{ backgroundColor: '#8b5cf6', '&:hover': { backgroundColor: '#7c3aed' } }}
+                    sx={{ backgroundColor: '#7E44C6', '&:hover': { backgroundColor: '#6D38B1' } }}
                     disabled={loading.save}
                     startIcon={loading.save ? <CircularProgress size={16} color="inherit" /> : <IconCheck size={16} />}
                   >

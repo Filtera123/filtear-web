@@ -83,7 +83,7 @@ export default function CreatorCenter() {
         <div className="w-64 bg-white shadow-sm border-r min-h-screen">
           <div className="p-6 border-b">
             <div className="flex items-center space-x-3">
-              <IconPencil size={24} className="text-blue-600" />
+              <IconPencil size={24} className="text-purple-600" />
               <h1 className="text-xl font-semibold text-gray-900">创作者中心</h1>
             </div>
           </div>
@@ -95,7 +95,7 @@ export default function CreatorCenter() {
                   onClick={() => handleMenuClick(item.id)}
                   className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-left transition-colors ${
                     activeItem === item.id
-                      ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                      ? 'bg-purple-50 text-purple-700 border border-purple-200'
                       : 'text-gray-700 hover:bg-gray-100'
                   }`}
                 >

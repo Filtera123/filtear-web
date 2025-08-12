@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import { useCommentStore } from '@/components/comment/Comment.store';
 import VideoDetailModal from './VideoDetail';
 
 export default function VideoDetailPage() {
   const { postId } = useParams<{ postId: string }>();
   const location = useLocation();
   const navigate = useNavigate();
+  const { comments: storeComments, setComments } = useCommentStore();
   const [post, setPost] = useState<any>(null);
 
   // 从路由状态或API获取帖子数据
@@ -39,6 +41,14 @@ export default function VideoDetailPage() {
       setPost(mockPost);
     }
   }, [postId, location.state]);
+
+  // 初始化评论数据到store
+  useEffect(() => {
+    if (post && post.commentList !== undefined && !storeComments[post.id]) {
+      setComments(post.id, post.commentList);
+      console.log('初始化视频详情页评论数据:', post.id, post.commentList);
+    }
+  }, [post, storeComments, setComments]);
 
   const handleClose = () => {
     // 检查是否有指定的来源页面

@@ -148,7 +148,7 @@ export default function UserProfile() {
           )}
 
           <div className="border-t">
-            <button className="w-full text-left text-sm text-blue-500 hover:bg-gray-100 p-3">
+            <button className="w-full text-left text-sm hover:bg-gray-100 p-3" style={{ color: '#7E44C6' }}>
               添加更多账号
             </button>
           </div>

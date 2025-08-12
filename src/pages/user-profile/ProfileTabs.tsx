@@ -91,9 +91,10 @@ export default function ProfileTabs({
                 className={cn(
                   'text-base font-medium px-4 py-2 rounded-md transition-colors',
                   tab.current 
-                    ? 'text-blue-600 bg-blue-50' 
-                    : 'text-gray-700 hover:text-blue-600 hover:bg-blue-50'
+                    ? 'bg-purple-50' 
+                    : 'text-gray-700 hover:opacity-80'
                 )}
+                style={tab.current ? { color: '#7E44C6', backgroundColor: '#f3f0ff' } : {}}
               >
                 {tab.name}
               </Tabs.Trigger>
@@ -106,9 +107,14 @@ export default function ProfileTabs({
               className={cn(
                 'p-2 rounded-md border',
                 viewMode === VIEW_MODES.Grid 
-                  ? 'bg-blue-50 border-blue-200 text-blue-600'
+                  ? 'border-purple-200' 
                   : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
               )}
+              style={viewMode === VIEW_MODES.Grid ? { 
+                backgroundColor: '#f3f0ff', 
+                borderColor: '#d4c4f9',
+                color: '#7E44C6'
+              } : {}}
               aria-label={viewMode === VIEW_MODES.List ? '切换到网格视图' : '切换到列表视图'}
             >
               {viewMode === VIEW_MODES.List ? (

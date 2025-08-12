@@ -272,7 +272,7 @@ export default function ImageContent({ post, onImageClick }: ImageContentProps) 
     <div>
       {/* 帖子标题 */}
       <h2
-        className="text-lg font-semibold text-gray-900 mb-4 leading-tight cursor-pointer hover:text-blue-600 transition-colors"
+        className="text-lg font-semibold text-gray-900 mb-4 leading-tight cursor-pointer hover:text-purple-600 transition-colors"
         style={{ fontFamily: "'Source Han Sans CN', 'Source Han Sans', sans-serif" }}
         onClick={onPostClick}
       >
@@ -379,9 +379,10 @@ export default function ImageContent({ post, onImageClick }: ImageContentProps) 
                         onClick={() => handleThumbnailClick(actualIndex)}
                         className={`w-12 h-12 object-cover rounded cursor-pointer transition-all duration-200 ${
                           isActive 
-                            ? 'border-2 border-orange-500 opacity-100' 
+                            ? 'border-2 opacity-100' 
                             : 'opacity-60 hover:opacity-80'
                         }`}
+                        style={isActive ? { borderColor: '#7E44C6' } : {}}
                       />
                     );
                   })}

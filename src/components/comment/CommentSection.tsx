@@ -143,7 +143,7 @@ export default function CommentSection({
           <div className="mb-4">
             {/* 输入框和发送按钮 */}
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#7E44C6' }}>
                 <img
                   src={currentUserAvatar}
                   alt={currentUserName}
@@ -162,18 +162,22 @@ export default function CommentSection({
                 onChange={(e) => setNewComment(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="写下你的评论..."
-                className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-full outline-none focus:border-blue-500"
+                className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-full outline-none transition-all"
+
+                onFocus={(e) => (e.target as HTMLInputElement).style.borderColor = '#7E44C6'}
+              onBlur={(e) => (e.target as HTMLInputElement).style.borderColor = '#e5e7eb'}
                 maxLength={500}
               />
 
               <button 
                 onClick={handleSubmitComment}
                 disabled={!newComment.trim()}
-                className={`px-3 py-2 text-sm rounded-full transition-colors ${
+                className={`px-3 py-2 text-sm rounded-full transition-opacity ${
                   newComment.trim() 
-                    ? 'bg-blue-500 text-white hover:bg-blue-600' 
+                    ? 'text-white hover:opacity-90' 
                     : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                 }`}
+                style={newComment.trim() ? { backgroundColor: '#7E44C6' } : {}}
               >
                 发送
               </button>
@@ -211,7 +215,8 @@ export default function CommentSection({
             <div className="py-3 border-t border-gray-50">
               <button
                 onClick={() => onPostClick?.(postId)}
-                className="text-sm text-blue-600 hover:text-blue-800 transition-colors flex items-center justify-center space-x-1"
+                className="text-sm hover:opacity-80 transition-opacity flex items-center justify-center space-x-1"
+                style={{ color: '#7E44C6' }}
               >
                 <span>查看全部 {totalCommentCount} 条评论</span>
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

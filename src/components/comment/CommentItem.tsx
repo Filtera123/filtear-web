@@ -84,7 +84,8 @@ export default function CommentItem({
       <div className="flex space-x-3">
         {/* 用户头像 */}
         <div 
-          className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all flex-shrink-0"
+          className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer hover:ring-2 hover:opacity-90 transition-all flex-shrink-0"
+          style={{ backgroundColor: '#7E44C6' }}
           onClick={() => onUserClick?.(comment.userId)}
         >
           <img 
@@ -104,7 +105,8 @@ export default function CommentItem({
           {/* 用户名和时间 */}
           <div className="flex items-center space-x-2 mb-1">
             <span 
-              className="font-medium text-sm text-gray-900 cursor-pointer hover:text-blue-600 transition-colors"
+              className="font-medium text-sm text-gray-900 cursor-pointer hover:opacity-80 transition-opacity"
+              style={{ color: '#7E44C6' }}
               onClick={() => onUserClick?.(comment.userId)}
             >
               {comment.userName}
@@ -147,7 +149,10 @@ export default function CommentItem({
             {level < maxLevel && (
               <button 
                 onClick={() => onReplyClick?.(comment)}
-                className="text-xs text-gray-500 hover:text-blue-500 transition-colors"
+                className="text-xs text-gray-500 hover:opacity-80 transition-opacity"
+
+                onMouseEnter={(e) => (e.target as HTMLElement).style.color = '#7E44C6'}
+            onMouseLeave={(e) => (e.target as HTMLElement).style.color = '#6b7280'}
               >
                 回复
               </button>
@@ -219,7 +224,8 @@ export default function CommentItem({
               {/* 展开/折叠剩余回复按钮 */}
               <button 
                 onClick={() => setShowReplies(!showReplies)}
-                className="flex items-center space-x-1 text-xs text-blue-600 hover:text-blue-800 transition-colors mb-2 ml-8"
+                className="flex items-center space-x-1 text-xs hover:opacity-80 transition-opacity mb-2 ml-8"
+                style={{ color: '#7E44C6' }}
               >
                 <svg 
                   className={`w-3 h-3 transform transition-transform ${showReplies ? 'rotate-90' : 'rotate-0'}`} 

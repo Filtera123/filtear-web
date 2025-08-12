@@ -148,7 +148,7 @@ export default function CommentDemo() {
               <div className="flex items-center space-x-4">
                 <button
                   onClick={() => loadComments(3)}
-                  className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                  className="px-3 py-1 text-sm text-white rounded hover:opacity-90 transition-opacity" style={{ backgroundColor: '#7E44C6' }}
                   disabled={isLoading}
                 >
                   加载3条评论
@@ -162,7 +162,7 @@ export default function CommentDemo() {
                 </button>
                 <button
                   onClick={() => loadComments(15)}
-                  className="px-3 py-1 text-sm bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors"
+                  className="px-3 py-1 text-sm text-white rounded hover:opacity-90 transition-opacity" style={{ backgroundColor: '#7E44C6' }}
                   disabled={isLoading}
                 >
                   加载15条评论
@@ -171,7 +171,7 @@ export default function CommentDemo() {
               
               {isLoading && (
                 <div className="flex items-center space-x-2 text-sm text-gray-500">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2" style={{ borderBottomColor: '#7E44C6' }}></div>
                   <span>加载中...</span>
                 </div>
               )}

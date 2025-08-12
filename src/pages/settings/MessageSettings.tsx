@@ -143,10 +143,10 @@ export default function MessageSettings() {
                     color="default"
                     sx={{
                       '& .MuiSwitch-switchBase.Mui-checked': {
-                        color: '#8b5cf6',
+                        color: '#7E44C6',
                       },
                       '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                        backgroundColor: '#8b5cf6',
+                        backgroundColor: '#7E44C6',
                       },
                     }}
                   />
@@ -172,10 +172,10 @@ export default function MessageSettings() {
                     color="default"
                     sx={{
                       '& .MuiSwitch-switchBase.Mui-checked': {
-                        color: '#8b5cf6',
+                        color: '#7E44C6',
                       },
                       '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                        backgroundColor: '#8b5cf6',
+                        backgroundColor: '#7E44C6',
                       },
                     }}
                   />
@@ -201,10 +201,10 @@ export default function MessageSettings() {
                     color="default"
                     sx={{
                       '& .MuiSwitch-switchBase.Mui-checked': {
-                        color: '#8b5cf6',
+                        color: '#7E44C6',
                       },
                       '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                        backgroundColor: '#8b5cf6',
+                        backgroundColor: '#7E44C6',
                       },
                     }}
                   />
@@ -230,10 +230,10 @@ export default function MessageSettings() {
                     color="default"
                     sx={{
                       '& .MuiSwitch-switchBase.Mui-checked': {
-                        color: '#8b5cf6',
+                        color: '#7E44C6',
                       },
                       '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                        backgroundColor: '#8b5cf6',
+                        backgroundColor: '#7E44C6',
                       },
                     }}
                   />
@@ -259,10 +259,10 @@ export default function MessageSettings() {
                     color="default"
                     sx={{
                       '& .MuiSwitch-switchBase.Mui-checked': {
-                        color: '#8b5cf6',
+                        color: '#7E44C6',
                       },
                       '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                        backgroundColor: '#8b5cf6',
+                        backgroundColor: '#7E44C6',
                       },
                     }}
                   />
@@ -299,10 +299,10 @@ export default function MessageSettings() {
                     color="default"
                     sx={{
                       '& .MuiSwitch-switchBase.Mui-checked': {
-                        color: '#8b5cf6',
+                        color: '#7E44C6',
                       },
                       '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                        backgroundColor: '#8b5cf6',
+                        backgroundColor: '#7E44C6',
                       },
                     }}
                   />
@@ -334,10 +334,10 @@ export default function MessageSettings() {
                     color="default"
                     sx={{
                       '& .MuiSwitch-switchBase.Mui-checked': {
-                        color: '#8b5cf6',
+                        color: '#7E44C6',
                       },
                       '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                        backgroundColor: '#8b5cf6',
+                        backgroundColor: '#7E44C6',
                       },
                     }}
                   />
@@ -363,10 +363,10 @@ export default function MessageSettings() {
                     color="default"
                     sx={{
                       '& .MuiSwitch-switchBase.Mui-checked': {
-                        color: '#8b5cf6',
+                        color: '#7E44C6',
                       },
                       '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                        backgroundColor: '#8b5cf6',
+                        backgroundColor: '#7E44C6',
                       },
                     }}
                   />
@@ -394,10 +394,10 @@ export default function MessageSettings() {
                     color="default"
                     sx={{
                       '& .MuiSwitch-switchBase.Mui-checked': {
-                        color: '#8b5cf6',
+                        color: '#7E44C6',
                       },
                       '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                        backgroundColor: '#8b5cf6',
+                        backgroundColor: '#7E44C6',
                       },
                     }}
                   />

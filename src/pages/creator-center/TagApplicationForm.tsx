@@ -2,324 +2,298 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 interface TagApplicationFormData {
-  tagName: string;                    // 申请tag名称
-  relatedTagName: string;             // 申请关联的tag名称
-  tagCategory: string;                // tag分类
-  tagCategoryOther: string;           // 其他分类
-  workName: string;                   // 所属作品
-  workScope: string;                  // 分类所属范围  
-  workScopeOther: string;            // 其他范围
-  featureDescription: string;         // 申请tag区别于同名tag的特征说明
-  referenceEvidence: string;          // 相关参考依据
+  tagName: string;
+  description: string;
+  category: string;
+  reason: string;
+  examples: string;
+  rules: string;
+  contactInfo: string;
+  additionalInfo: string;
 }
 
-export default function TagApplicationForm() {
+const TagApplicationForm: React.FC = () => {
+  const navigate = useNavigate();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<TagApplicationFormData>({
     tagName: '',
-    relatedTagName: '',
-    tagCategory: '',
-    tagCategoryOther: '',
-    workName: '',
-    workScope: '',
-    workScopeOther: '',
-    featureDescription: '',
-    referenceEvidence: ''
+    description: '',
+    category: '',
+    reason: '',
+    examples: '',
+    rules: '',
+    contactInfo: '',
+    additionalInfo: ''
   });
-  
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [validationError, setValidationError] = useState<string>('');
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const navigate = useNavigate();
 
-  // tag分类选项
-  const tagCategories = [
-    { value: '角色', label: '角色' },
-    { value: 'IP作品', label: 'IP作品' },
-    { value: '角色关系', label: '角色关系' },
-    { value: '其它', label: '其它' }
-  ];
-
-  // 分类所属范围选项
-  const workScopes = [
-    { value: '文学', label: '文学' },
-    { value: '电视剧', label: '电视剧' },
-    { value: '电影', label: '电影' },
-    { value: '动漫', label: '动漫' },
-    { value: '游戏', label: '游戏' },
-    { value: '历史', label: '历史' },
-    { value: '真人同人创作', label: '真人同人创作' },
-    { value: '其它', label: '其它' }
-  ];
-
-  // 验证tag名称是否相同
-  const validateTagNames = (tagName: string, relatedTagName: string) => {
-    if (tagName && relatedTagName && tagName.trim() === relatedTagName.trim()) {
-      setValidationError('申请关联的tag名称不能与申请tag名称相同');
-      return false;
-    } else {
-      setValidationError('');
-      return true;
-    }
+  const handleInputChange = (field: keyof TagApplicationFormData, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+    setValidationError('');
   };
 
-  // 处理申请tag名称变化
-  const handleTagNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newTagName = e.target.value;
-    setFormData(prev => ({ ...prev, tagName: newTagName }));
-    validateTagNames(newTagName, formData.relatedTagName);
+  const validateForm = (): string => {
+    if (!formData.tagName.trim()) return '请输入标签名称';
+    if (!formData.description.trim()) return '请输入标签描述';
+    if (!formData.category) return '请选择标签分类';
+    if (!formData.reason.trim()) return '请说明申请理由';
+    return '';
   };
 
-  // 处理申请关联的tag名称变化
-  const handleRelatedTagNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newRelatedTagName = e.target.value;
-    setFormData(prev => ({ ...prev, relatedTagName: newRelatedTagName }));
-    validateTagNames(formData.tagName, newRelatedTagName);
-  };
-
-  // 提交表单
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // 提交前最终验证
-    if (!validateTagNames(formData.tagName, formData.relatedTagName)) {
+    const error = validateForm();
+    if (error) {
+      setValidationError(error);
       return;
     }
-    
+
     setIsSubmitting(true);
-    
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    console.log('提交申请数据:', formData);
-    setIsSubmitting(false);
-    
-    // 显示成功弹窗
-    setShowSuccessModal(true);
+    try {
+      // 模拟提交
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      alert('标签申请已提交，我们会在3-5个工作日内审核并回复');
+      navigate('/creator-center');
+    } catch (error) {
+      alert('提交失败，请重试');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  // 处理成功弹窗完成按钮
-  const handleSuccessComplete = () => {
-    setShowSuccessModal(false);
-    // 返回到进入创作者中心之前的页面
-    // -2 表示回到创作者中心的上一页（比如首页）
-    navigate(-2);
-  };
+  const categories = [
+    { value: 'technology', label: '科技' },
+    { value: 'lifestyle', label: '生活' },
+    { value: 'entertainment', label: '娱乐' },
+    { value: 'education', label: '教育' },
+    { value: 'sports', label: '体育' },
+    { value: 'business', label: '商业' },
+    { value: 'art', label: '艺术' },
+    { value: 'other', label: '其他' }
+  ];
 
-  // 成功弹窗组件
-  const SuccessModal = () => (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
-      <div className="bg-white rounded-lg shadow-xl p-12 max-w-sm w-full text-center">
-        {/* 绿色底白色对勾图标 */}
-        <div className="w-20 h-20 mx-auto mb-8 rounded-full bg-green-500 flex items-center justify-center">
-          <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-          </svg>
-        </div>
-        
-        {/* 标题 */}
-        <h2 className="text-xl font-semibold text-gray-900 mb-6">提交成功</h2>
-        
-        {/* 内容文字 */}
-        <p className="text-gray-600 text-sm leading-relaxed mb-10 px-2">
-          您的申请已提交，我们将尽快审核，审核期间请耐心等待，若申请完成我们将进行告知。感谢您的反馈。
-        </p>
-        
-        {/* 完成按钮 */}
-        <button
-          onClick={handleSuccessComplete}
-          className="px-8 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-full hover:bg-gray-50 transition-colors text-sm"
-        >
-          完成
-        </button>
-      </div>
-    </div>
-  );
+  const inputStyle = {
+    onFocus: (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+      (e.target as HTMLElement).style.outline = '2px solid #7E44C6';
+      (e.target as HTMLElement).style.borderColor = '#7E44C6';
+    },
+    onBlur: (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+      (e.target as HTMLElement).style.outline = 'none';
+      (e.target as HTMLElement).style.borderColor = '#d1d5db';
+    }
+  };
 
   return (
-    <div className="max-w-2xl mx-auto">
-      {/* 标题栏 */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">
-          重名tag申请
-        </h1>
-      </div>
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-4xl mx-auto py-8 px-4">
+        {/* 页头 */}
+        <div className="mb-8">
+          <button
+            onClick={() => navigate('/creator-center')}
+            className="text-gray-600 hover:opacity-80 transition-opacity mb-4"
+          >
+            ← 返回创作者中心
+          </button>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">申请新标签</h1>
+          <p className="text-gray-600">
+            请详细填写以下信息，我们将在3-5个工作日内审核您的申请
+          </p>
+        </div>
 
-      {/* 表单 */}
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="bg-white rounded-lg p-6 border border-gray-200">
-          {/* 申请tag名称 */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              申请tag名称 <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={formData.tagName}
-              onChange={handleTagNameChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              required
-            />
-          </div>
+        {/* 申请表单 */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* 基本信息 */}
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">基本信息</h2>
+              
+              {/* 标签名称 */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  申请关联的tag名称 <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.tagName}
+                  onChange={(e) => handleInputChange('tagName', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md transition-all"
+                  placeholder="请输入标签名称（2-20个字符）"
+                  maxLength={20}
+                  {...inputStyle}
+                />
+              </div>
 
-          {/* 申请关联的tag名称 */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              申请关联的tag名称 <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={formData.relatedTagName}
-              onChange={handleRelatedTagNameChange}
-              className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                validationError ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : 'border-gray-300'
-              }`}
-              required
-            />
+              {/* 标签分类 */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  标签分类 <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={formData.category}
+                  onChange={(e) => handleInputChange('category', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md transition-all"
+                  {...inputStyle}
+                >
+                  <option value="">请选择分类</option>
+                  {categories.map(cat => (
+                    <option key={cat.value} value={cat.value}>{cat.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* 标签描述 */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  标签描述 <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) => handleInputChange('description', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md transition-all resize-none"
+                  placeholder="请详细描述该标签的用途和适用范围（50-200字）"
+                  rows={4}
+                  maxLength={200}
+                  {...inputStyle}
+                />
+                <div className="text-xs text-gray-500 mt-1">
+                  {formData.description.length}/200
+                </div>
+              </div>
+            </div>
+
+            {/* 申请详情 */}
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">申请详情</h2>
+              
+              {/* 申请理由 */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  申请理由 <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  value={formData.reason}
+                  onChange={(e) => handleInputChange('reason', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md transition-all resize-none"
+                  placeholder="请说明为什么需要这个标签，以及它能解决什么问题"
+                  rows={4}
+                  maxLength={500}
+                  {...inputStyle}
+                />
+              </div>
+
+              {/* 使用示例 */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  使用示例
+                </label>
+                <textarea
+                  value={formData.examples}
+                  onChange={(e) => handleInputChange('examples', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md transition-all resize-none"
+                  placeholder="请提供一些该标签的使用示例"
+                  rows={3}
+                  maxLength={300}
+                  {...inputStyle}
+                />
+              </div>
+
+              {/* 管理规则 */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  管理规则
+                </label>
+                <textarea
+                  value={formData.rules}
+                  onChange={(e) => handleInputChange('rules', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md transition-all resize-none"
+                  placeholder="请说明该标签的管理规则和使用规范"
+                  rows={3}
+                  maxLength={300}
+                  {...inputStyle}
+                />
+              </div>
+            </div>
+
+            {/* 联系信息 */}
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">联系信息</h2>
+              
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  联系方式
+                </label>
+                <input
+                  type="text"
+                  value={formData.contactInfo}
+                  onChange={(e) => handleInputChange('contactInfo', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md transition-all"
+                  placeholder="邮箱或其他联系方式（用于沟通审核结果）"
+                  {...inputStyle}
+                />
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  补充说明
+                </label>
+                <textarea
+                  value={formData.additionalInfo}
+                  onChange={(e) => handleInputChange('additionalInfo', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md transition-all resize-none"
+                  placeholder="其他需要说明的信息"
+                  rows={3}
+                  maxLength={200}
+                  {...inputStyle}
+                />
+              </div>
+            </div>
+
+            {/* 错误提示 */}
             {validationError && (
-              <div className="mt-1 text-sm text-red-600">
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
                 {validationError}
               </div>
             )}
-          </div>
 
-          {/* tag分类 */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              tag分类：角色/IP作品/角色关系/其它 <span className="text-red-500">*</span>
-            </label>
-            <select
-              value={formData.tagCategory}
-              onChange={(e) => setFormData(prev => ({ ...prev, tagCategory: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              required
-            >
-              <option value="">请选择</option>
-              {tagCategories.map((category) => (
-                <option key={category.value} value={category.value}>
-                  {category.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* 其他（tag分类） */}
-          {formData.tagCategory === '其它' && (
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                其他 <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={formData.tagCategoryOther}
-                onChange={(e) => setFormData(prev => ({ ...prev, tagCategoryOther: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                required={formData.tagCategory === '其它'}
-              />
+            {/* 提交区域 */}
+            <div className="text-center">
+              <button
+                type="submit"
+                disabled={isSubmitting || !!validationError}
+                className="px-8 py-3 text-white rounded-full hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+                style={{ backgroundColor: '#7E44C6' }}
+              >
+                {isSubmitting ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>提交中...</span>
+                  </div>
+                ) : (
+                  '提交申请'
+                )}
+              </button>
             </div>
-          )}
-
-          {/* 所属作品 */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              所属作品 <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={formData.workName}
-              onChange={(e) => setFormData(prev => ({ ...prev, workName: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              required
-            />
-          </div>
-
-          {/* 分类所属范围 */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              分类所属范围：文学/电视剧/电影/动漫/游戏/历史/真人同人创作/其它
-            </label>
-            <select
-              value={formData.workScope}
-              onChange={(e) => setFormData(prev => ({ ...prev, workScope: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">请选择分类范围</option>
-              {workScopes.map((scope) => (
-                <option key={scope.value} value={scope.value}>
-                  {scope.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* 其他（分类所属范围） */}
-          {formData.workScope === '其它' && (
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                其他 <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={formData.workScopeOther}
-                onChange={(e) => setFormData(prev => ({ ...prev, workScopeOther: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                required={formData.workScope === '其它'}
-              />
-            </div>
-          )}
-
-          {/* 申请tag区别于同名tag的特征说明 */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              申请tag区别于同名tag的特征说明 <span className="text-red-500">*</span>
-            </label>
-            <textarea
-              value={formData.featureDescription}
-              onChange={(e) => setFormData(prev => ({ ...prev, featureDescription: e.target.value }))}
-              rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
-              required
-            />
-          </div>
-
-          {/* 相关参考依据 */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              相关参考依据（如官方发布链接等） <span className="text-red-500">*</span>
-            </label>
-            <div className="text-xs text-gray-500 mb-2">
-              如官方发布链接等，可提供其他证明链接，方便快速通过
-            </div>
-            <textarea
-              value={formData.referenceEvidence}
-              onChange={(e) => setFormData(prev => ({ ...prev, referenceEvidence: e.target.value }))}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
-              required
-            />
-          </div>
+          </form>
         </div>
 
-        {/* 提交区域 */}
-        <div className="text-center">
-          <button
-            type="submit"
-            disabled={isSubmitting || !!validationError}
-            className="px-8 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors"
-          >
-            {isSubmitting ? (
-              <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>提交中...</span>
-              </div>
-            ) : (
-              '提交'
-            )}
-          </button>
+        {/* 说明文字 */}
+        <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <h3 className="font-semibold text-blue-900 mb-2">申请须知</h3>
+          <ul className="text-blue-800 text-sm space-y-1">
+            <li>• 标签名称应该简洁明了，避免使用特殊字符</li>
+            <li>• 请确保标签具有一定的通用性和使用价值</li>
+            <li>• 申请审核通过后，您将成为该标签的管理员</li>
+            <li>• 我们保留对不符合规范的标签申请进行拒绝的权利</li>
+          </ul>
         </div>
-      </form>
-      
-      {/* 成功弹窗 */}
-      {showSuccessModal && <SuccessModal />}
+      </div>
     </div>
   );
-} 
+};
+
+export default TagApplicationForm;

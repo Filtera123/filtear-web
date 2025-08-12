@@ -277,7 +277,7 @@ export default function AccountSecurity() {
             <Button 
               type="submit" 
               variant="contained"
-              sx={{ backgroundColor: '#8b5cf6', '&:hover': { backgroundColor: '#7c3aed' } }}
+              sx={{ backgroundColor: '#7E44C6', '&:hover': { backgroundColor: '#6D38B1' } }}
             >
               确认修改
             </Button>
@@ -480,7 +480,7 @@ export default function AccountSecurity() {
           <Button 
             onClick={handlePhoneSubmit(onPhoneChangeSubmit)}
             variant="contained"
-            sx={{ backgroundColor: '#8b5cf6', '&:hover': { backgroundColor: '#7c3aed' } }}
+            sx={{ backgroundColor: '#7E44C6', '&:hover': { backgroundColor: '#6D38B1' } }}
           >
             确认更换
           </Button>
@@ -590,7 +590,7 @@ export default function AccountSecurity() {
           <Button 
             onClick={handleResetSubmit(onPasswordResetSubmit)}
             variant="contained"
-            sx={{ backgroundColor: '#8b5cf6', '&:hover': { backgroundColor: '#7c3aed' } }}
+            sx={{ backgroundColor: '#7E44C6', '&:hover': { backgroundColor: '#6D38B1' } }}
           >
             重置密码
           </Button>

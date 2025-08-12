@@ -73,7 +73,7 @@ export default function NotificationItem({ notification }: NotificationItemProps
   if (notification.type === 'system') {
     return (
       <div className="flex items-start space-x-3 p-4 hover:bg-gray-50 transition-colors border-b border-gray-100">
-        <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+        <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#7E44C6' }}>
           <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
           </svg>
@@ -118,7 +118,8 @@ export default function NotificationItem({ notification }: NotificationItemProps
       <div className="flex-1">
         <div className="text-sm text-gray-700 leading-relaxed">
           <span 
-            className="font-medium text-gray-900 cursor-pointer hover:text-blue-600"
+            className="font-medium text-gray-900 cursor-pointer hover:opacity-80 transition-opacity"
+            style={{ color: '#7E44C6' }}
             onClick={handleUserClick}
           >
             {notification.user?.name}
@@ -166,7 +167,7 @@ export default function NotificationItem({ notification }: NotificationItemProps
 
         {/* 评论内容 */}
         {notification.type === 'comment' && notification.content && (
-          <div className="mt-2 p-3 bg-blue-50 rounded-lg">
+          <div className="mt-2 p-3 rounded-lg" style={{ backgroundColor: '#f3f0ff' }}>
             <div className="text-gray-700 text-sm">
               "{notification.content}"
             </div>

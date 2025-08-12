@@ -436,7 +436,7 @@ const SearchResults: React.FC = () => {
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-medium">相关标签</h3>
           <button 
-            className="text-blue-500 text-sm"
+            className="text-sm hover:opacity-80 transition-opacity" style={{ color: '#7E44C6' }}
             onClick={() => setActiveTab(SEARCH_TABS.Tags)}
           >
             查看全部
@@ -462,7 +462,7 @@ const SearchResults: React.FC = () => {
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-medium">相关作品</h3>
           <button 
-            className="text-blue-500 text-sm"
+            className="text-sm hover:opacity-80 transition-opacity" style={{ color: '#7E44C6' }}
             onClick={() => setActiveTab(SEARCH_TABS.Posts)}
           >
             查看全部
@@ -493,7 +493,7 @@ const SearchResults: React.FC = () => {
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-medium">相关用户</h3>
           <button 
-            className="text-blue-500 text-sm"
+            className="text-sm hover:opacity-80 transition-opacity" style={{ color: '#7E44C6' }}
             onClick={() => setActiveTab(SEARCH_TABS.Users)}
           >
             查看全部
@@ -528,7 +528,7 @@ const SearchResults: React.FC = () => {
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-medium">相关动态</h3>
           <button 
-            className="text-blue-500 text-sm"
+            className="text-sm hover:opacity-80 transition-opacity" style={{ color: '#7E44C6' }}
             onClick={() => setActiveTab(SEARCH_TABS.Activities)}
           >
             查看全部

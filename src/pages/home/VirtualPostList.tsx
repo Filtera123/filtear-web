@@ -9,7 +9,7 @@ import { fetchTweets } from './data.mock';
 import PostArea from './PostArea';
 
 // 获取类型配置
-const getTypeConfig = (type: PostListType) => {
+const getTypeConfig = (type: HomeTabs) => {
   const configs = {
     recommended: {
       name: '推荐',
@@ -40,15 +40,16 @@ const getTypeConfig = (type: PostListType) => {
 };
 
 interface Props {
-  type?: PostListType;
+  type?: HomeTabs;
 }
 
 // 自定义 hook 使用 React Query
 const useTweetsInfiniteQuery = (tab: HomeTabs) => {
   return useInfiniteQuery({
     queryKey: ['tweets', tab],
-    queryFn: ({ pageParam = 0 }) => fetchTweets(tab, pageParam),
-    getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.page + 1 : undefined),
+    queryFn: ({ pageParam = 0 }) => fetchTweets(tab, pageParam as number),
+    getNextPageParam: (lastPage: any) => (lastPage.hasMore ? lastPage.page + 1 : undefined),
+    initialPageParam: 0,
   });
 };
 
@@ -166,7 +167,7 @@ const VirtualPostList: React.FC<Props> = () => {
       {/* 加载指示器 */}
       {isFetching && (
         <div className="flex justify-center items-center py-6">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderBottomColor: '#7E44C6' }}></div>
           <span className="ml-2 text-gray-600">{config.loadingText}</span>
         </div>
       )}

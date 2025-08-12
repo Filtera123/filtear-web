@@ -34,7 +34,8 @@ export default function PostDetail() {
         {/* 返回按钮 */}
         <Link 
           to="/" 
-          className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-6"
+          className="inline-flex items-center hover:opacity-80 transition-opacity mb-6"
+          style={{ color: '#7E44C6' }}
         >
           ← 返回列表
         </Link>
@@ -45,14 +46,15 @@ export default function PostDetail() {
         {/* 作者信息 */}
         <div className="flex items-center space-x-3 mb-6">
           <Link to={`/user/${post.author}`}>
-            <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all">
+            <div className="w-12 h-12 rounded-full flex items-center justify-center cursor-pointer hover:ring-2 hover:opacity-90 transition-all" style={{ backgroundColor: '#7E44C6' }}>
               <span className="text-white font-medium">{post.author[0]}</span>
             </div>
           </Link>
           <div>
             <Link 
               to={`/user/${post.author}`}
-              className="font-medium text-gray-900 hover:text-blue-600 transition-colors"
+              className="font-medium text-gray-900 hover:opacity-80 transition-opacity"
+            style={{ color: '#7E44C6' }}
             >
               {post.author}
             </Link>

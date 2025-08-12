@@ -270,10 +270,10 @@ const Login: React.FC = () => {
                 fontWeight: 500,
               },
               '& .MuiTab-root.Mui-selected': {
-                color: '#8b5cf6',
+                color: '#7E44C6',
               },
               '& .MuiTabs-indicator': {
-                backgroundColor: '#8b5cf6',
+                backgroundColor: '#7E44C6',
                 height: '2px',
               },
             }}
@@ -306,11 +306,11 @@ const Login: React.FC = () => {
               sx={{
                 '& .MuiOutlinedInput-root': {
                   '&.Mui-focused fieldset': {
-                    borderColor: '#8b5cf6',
+                    borderColor: '#7E44C6',
                   },
                 },
                 '& .MuiInputLabel-root.Mui-focused': {
-                  color: '#8b5cf6',
+                  color: '#7E44C6',
                 },
               }}
             />
@@ -340,11 +340,11 @@ const Login: React.FC = () => {
                        flex: 1,
                        '& .MuiOutlinedInput-root': {
                          '&.Mui-focused fieldset': {
-                           borderColor: '#8b5cf6',
+                           borderColor: '#7E44C6',
                          },
                        },
                        '& .MuiInputLabel-root.Mui-focused': {
-                         color: '#8b5cf6',
+                         color: '#7E44C6',
                        },
                      }}
                    />
@@ -354,10 +354,10 @@ const Login: React.FC = () => {
                     disabled={loading || countdown.isRunning}
                     sx={{
                       minWidth: '120px',
-                      backgroundColor: countdown.isRunning ? '#e6e6e6' : '#8b5cf6',
+                      backgroundColor: countdown.isRunning ? '#e6e6e6' : '#7E44C6',
                       color: countdown.isRunning ? '#999' : 'white',
                       '&:hover': {
-                        backgroundColor: countdown.isRunning ? '#e6e6e6' : '#7c3aed',
+                        backgroundColor: countdown.isRunning ? '#e6e6e6' : '#6D38B1',
                       },
                       '&:disabled': {
                         backgroundColor: '#e6e6e6',
@@ -388,11 +388,11 @@ const Login: React.FC = () => {
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     '&.Mui-focused fieldset': {
-                      borderColor: '#8b5cf6',
+                      borderColor: '#7E44C6',
                     },
                   },
                   '& .MuiInputLabel-root.Mui-focused': {
-                    color: '#8b5cf6',
+                    color: '#7E44C6',
                   },
                 }}
               />
@@ -414,10 +414,10 @@ const Login: React.FC = () => {
               disabled={!canSubmit()}
               sx={{
                 height: '44px',
-                backgroundColor: canSubmit() ? '#8b5cf6' : '#e6e6e6',
+                backgroundColor: canSubmit() ? '#7E44C6' : '#e6e6e6',
                 color: canSubmit() ? 'white' : '#999',
                 '&:hover': {
-                  backgroundColor: canSubmit() ? '#7c3aed' : '#e6e6e6',
+                  backgroundColor: canSubmit() ? '#6D38B1' : '#e6e6e6',
                 },
                 '&:disabled': {
                   backgroundColor: '#e6e6e6',

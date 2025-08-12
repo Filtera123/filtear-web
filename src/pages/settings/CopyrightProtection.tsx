@@ -73,10 +73,10 @@ export default function CopyrightProtection() {
                     color="default"
                     sx={{
                       '& .MuiSwitch-switchBase.Mui-checked': {
-                        color: '#8b5cf6',
+                        color: '#7E44C6',
                       },
                       '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                        backgroundColor: '#8b5cf6',
+                        backgroundColor: '#7E44C6',
                       },
                     }}
                   />
@@ -102,10 +102,10 @@ export default function CopyrightProtection() {
                     color="default"
                     sx={{
                       '& .MuiSwitch-switchBase.Mui-checked': {
-                        color: '#8b5cf6',
+                        color: '#7E44C6',
                       },
                       '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                        backgroundColor: '#8b5cf6',
+                        backgroundColor: '#7E44C6',
                       },
                     }}
                   />
@@ -129,9 +129,9 @@ export default function CopyrightProtection() {
                 <FormControlLabel 
                   value="bottom-right" 
                   control={<Radio size="small" sx={{
-                    color: '#8b5cf6',
+                    color: '#7E44C6',
                     '&.Mui-checked': {
-                      color: '#8b5cf6',
+                      color: '#7E44C6',
                     },
                   }} />} 
                   label="底部靠右" 
@@ -139,9 +139,9 @@ export default function CopyrightProtection() {
                 <FormControlLabel 
                   value="bottom-center" 
                   control={<Radio size="small" sx={{
-                    color: '#8b5cf6',
+                    color: '#7E44C6',
                     '&.Mui-checked': {
-                      color: '#8b5cf6',
+                      color: '#7E44C6',
                     },
                   }} />} 
                   label="底部居中" 
@@ -149,9 +149,9 @@ export default function CopyrightProtection() {
                 <FormControlLabel 
                   value="center" 
                   control={<Radio size="small" sx={{
-                    color: '#8b5cf6',
+                    color: '#7E44C6',
                     '&.Mui-checked': {
-                      color: '#8b5cf6',
+                      color: '#7E44C6',
                     },
                   }} />} 
                   label="图片中心" 
@@ -187,10 +187,10 @@ export default function CopyrightProtection() {
                     color="default"
                     sx={{
                       '& .MuiSwitch-switchBase.Mui-checked': {
-                        color: '#8b5cf6',
+                        color: '#7E44C6',
                       },
                       '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                        backgroundColor: '#8b5cf6',
+                        backgroundColor: '#7E44C6',
                       },
                     }}
                   />
@@ -216,10 +216,10 @@ export default function CopyrightProtection() {
                     color="default"
                     sx={{
                       '& .MuiSwitch-switchBase.Mui-checked': {
-                        color: '#8b5cf6',
+                        color: '#7E44C6',
                       },
                       '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                        backgroundColor: '#8b5cf6',
+                        backgroundColor: '#7E44C6',
                       },
                     }}
                   />

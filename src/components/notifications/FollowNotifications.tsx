@@ -97,7 +97,8 @@ export default function FollowNotifications() {
                   />
                   <button
                     onClick={handlePageJump}
-                    className="px-2 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600 transition-colors"
+                    className="px-2 py-1 text-white rounded text-xs hover:opacity-90 transition-opacity"
+                    style={{ backgroundColor: '#7E44C6' }}
                   >
                     跳转
                   </button>
@@ -114,7 +115,8 @@ export default function FollowNotifications() {
               ) : (
                 <span
                   onClick={() => setIsJumpingPage(true)}
-                  className="cursor-pointer hover:text-blue-600 transition-colors"
+                  className="cursor-pointer hover:opacity-80 transition-opacity"
+                  style={{ color: '#7E44C6' }}
                 >
                   {currentPage}/{totalPages}页
                 </span>

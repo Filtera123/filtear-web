@@ -140,7 +140,7 @@ const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({ query, onSuggesti
           {/* 标签栏 */}
           <div className="flex-1 min-w-0">
             <div className="font-bold text-sm text-gray-700 mb-2 flex items-center gap-1">
-              <IconTag size={16} className="text-purple-500" />
+              <IconTag size={16} style={{ color: '#7E44C6' }} />
               相关标签
             </div>
             <div className="flex flex-col space-y-2">
@@ -164,7 +164,7 @@ const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({ query, onSuggesti
           {/* 用户栏 */}
           <div className="flex-1 min-w-0">
             <div className="font-bold text-sm text-gray-700 mb-2 flex items-center gap-1">
-              <IconUser size={16} className="text-blue-500" />
+              <IconUser size={16} style={{ color: '#7E44C6' }} />
               相关用户
             </div>
             <div className="flex flex-wrap gap-2">
@@ -231,7 +231,7 @@ const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({ query, onSuggesti
           {query && showSuggestions && tags.length > 0 && (
             <div>
               <div className="px-4 py-2 font-bold text-sm text-gray-700 flex items-center gap-1">
-                <IconTag size={16} className="text-purple-500" />
+                <IconTag size={16} style={{ color: '#7E44C6' }} />
                 相关标签
               </div>
               <div className="flex flex-col space-y-2">
@@ -261,7 +261,7 @@ const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({ query, onSuggesti
           {query && showSuggestions && users.length > 0 && (
             <div>
               <div className="px-4 py-2 font-bold text-sm text-gray-700 flex items-center gap-1">
-                <IconUser size={16} className="text-blue-500" />
+                <IconUser size={16} style={{ color: '#7E44C6' }} />
                 相关用户
               </div>
               {users.map((user) => (

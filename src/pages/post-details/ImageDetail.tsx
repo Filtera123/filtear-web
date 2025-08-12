@@ -6,6 +6,7 @@ import type { ImagePost } from '@/components/post-card/post.types';
 import { usePostActions } from '@/hooks/usePostActions';
 import { useBrowsingHistoryStore } from '@/stores/browsingHistoryStore';
 import CommentSection from '@/components/comment/CommentSection';
+import { useCommentStore } from '@/components/comment/Comment.store';
 import { useReportContext } from '@/components/report';
 import { getSimpleLocation } from '@/utils/ipLocation';
 
@@ -75,6 +76,7 @@ const ImageDetailModal: React.FC<ImageDetailModalProps> = ({ post, initialIndex 
   } = usePostActions(post);
   const { addRecord } = useBrowsingHistoryStore();
   const { openReportModal } = useReportContext();
+  const { addComment, addReply, toggleCommentLike, comments: storeComments, setComments } = useCommentStore();
 
   // 添加安全检查，确保post和images存在
   if (!post || !post.images || post.images.length === 0) {
@@ -90,7 +92,8 @@ const ImageDetailModal: React.FC<ImageDetailModalProps> = ({ post, initialIndex 
           <p className="text-gray-600 mb-4">图片数据无效或缺失</p>
           <button 
             onClick={onClose}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            className="px-4 py-2 text-white rounded hover:opacity-90 transition-opacity"
+            style={{ backgroundColor: '#7E44C6' }}
           >
             关闭
           </button>
@@ -330,6 +333,16 @@ const ImageDetailModal: React.FC<ImageDetailModalProps> = ({ post, initialIndex 
     });
   }, [post.id]); // 只依赖 post.id，避免重复添加
 
+  // 初始化评论数据到store
+  useEffect(() => {
+    if (post.commentList && !storeComments[post.id]) {
+      setComments(post.id, post.commentList);
+    }
+  }, [post.commentList, post.id, storeComments, setComments]);
+
+  // 获取当前帖子的评论数据（优先使用store中的数据）
+  const currentComments = storeComments[post.id] || post.commentList || [];
+
   const handleNext = () => setCurrentIndex((prev) => (prev + 1) % post.images.length);
   const handlePrev = () => setCurrentIndex((prev) => (prev - 1 + post.images.length) % post.images.length);
   const handleThumbnailClick = (index: number) => setCurrentIndex(index);
@@ -337,8 +350,23 @@ const ImageDetailModal: React.FC<ImageDetailModalProps> = ({ post, initialIndex 
   // 固定评论输入框处理函数
   const handleFixedCommentSubmit = () => {
     if (fixedCommentText.trim()) {
-      // 这里可以调用评论提交逻辑
-      console.log('提交评论:', fixedCommentText);
+      // 创建新评论对象
+      const newComment = {
+        id: Date.now().toString(),
+        userId: 'current_user_id',
+        userName: '当前用户',
+        userAvatar: '/default-avatar.png',
+        userIpLocation: '上海',
+        content: fixedCommentText.trim(),
+        createdAt: new Date().toISOString(),
+        likes: 0,
+        isLiked: false,
+        replies: []
+      };
+      
+      // 添加评论到store
+      addComment(post.id, newComment);
+      console.log('评论已添加:', newComment);
       setFixedCommentText('');
     }
   };
@@ -348,6 +376,55 @@ const ImageDetailModal: React.FC<ImageDetailModalProps> = ({ post, initialIndex 
       e.preventDefault();
       handleFixedCommentSubmit();
     }
+  };
+
+  // CommentSection的回调函数
+  const handleCommentLikeClick = (commentId: string) => {
+    console.log('点赞评论:', commentId);
+    // 使用store更新评论点赞状态
+    toggleCommentLike(post.id, commentId);
+  };
+
+  const handleCommentReplySubmit = (commentId: string, content: string) => {
+    console.log('回复评论:', commentId, content);
+    
+    // 创建新回复对象
+    const newReply = {
+      id: Date.now().toString() + '_reply',
+      userId: 'current_user_id',
+      userName: '当前用户',
+      userAvatar: '/default-avatar.png',
+      userIpLocation: '上海',
+      content: content,
+      createdAt: new Date().toISOString(),
+      likes: 0,
+      isLiked: false,
+      replies: []
+    };
+    
+    // 添加回复到store
+    addReply(post.id, commentId, newReply);
+    console.log('图片详情页回复已添加:', newReply);
+  };
+
+  const handleCommentUserClick = (userId: string) => {
+    console.log('点击用户:', userId);
+    // TODO: 实现用户页面跳转
+  };
+
+  const handleCommentBlock = (commentId: string) => {
+    console.log('屏蔽评论:', commentId);
+    // TODO: 实现评论屏蔽逻辑
+  };
+
+  const handleCommentReport = (commentId: string) => {
+    console.log('举报评论:', commentId);
+    // TODO: 实现评论举报逻辑
+  };
+
+  const handleCommentUserBlock = (userId: string) => {
+    console.log('屏蔽用户:', userId);
+    // TODO: 实现用户屏蔽逻辑
   };
 
   // 键盘快捷键
@@ -545,7 +622,7 @@ const ImageDetailModal: React.FC<ImageDetailModalProps> = ({ post, initialIndex 
           <button
             onClick={isFollowing ? handleUnfollow : handleFollow}
             className={`text-sm transition-colors ${
-              isFollowing ? 'text-gray-500' : 'text-blue-500 hover:text-blue-600'
+              isFollowing ? 'text-gray-500' : 'hover:opacity-80 transition-opacity'
             }`}
           >
             {isFollowing ? '已关注' : '关注'}
@@ -569,7 +646,9 @@ const ImageDetailModal: React.FC<ImageDetailModalProps> = ({ post, initialIndex 
             </svg>
           </div>
           <span className="text-sm text-gray-600">{formatNumber(views)}</span>
-          <button className="text-gray-600 hover:text-blue-500 text-xl">
+          <button className="text-gray-600 hover:opacity-80 text-xl transition-opacity"
+            onMouseEnter={(e) => (e.target as HTMLElement).style.color = '#7E44C6'}
+            onMouseLeave={(e) => (e.target as HTMLElement).style.color = '#4b5563'}>
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
@@ -643,7 +722,18 @@ const ImageDetailModal: React.FC<ImageDetailModalProps> = ({ post, initialIndex 
           </Popover.Root>
         </div>
         {/* 评论区 */}
-        <CommentSection postId={post.id} comments={post.commentList || []} showAllComments={true} hideCommentInput={true} />
+        <CommentSection 
+          postId={post.id} 
+          comments={currentComments} 
+          showAllComments={true} 
+          hideCommentInput={true}
+          onLikeComment={handleCommentLikeClick}
+          onReplyComment={handleCommentReplySubmit}
+          onUserClick={handleCommentUserClick}
+          onBlockComment={handleCommentBlock}
+          onReportComment={handleCommentReport}
+          onBlockUser={handleCommentUserBlock}
+        />
       </aside>
 
       {/* 关闭按钮 */}
@@ -661,7 +751,7 @@ const ImageDetailModal: React.FC<ImageDetailModalProps> = ({ post, initialIndex 
       className="fixed bottom-0 right-0 z-[9999] bg-white rounded-t-lg shadow-lg border border-gray-200 p-3 flex items-center space-x-3 w-[360px] backdrop-blur-sm bg-white/95 hover:shadow-xl transition-all duration-200"
       onClick={(e) => e.stopPropagation()}
     >
-      <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+      <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#7E44C6' }}>
         <img
           src="/default-avatar.png"
           alt="当前用户"
@@ -680,7 +770,9 @@ const ImageDetailModal: React.FC<ImageDetailModalProps> = ({ post, initialIndex 
         onKeyPress={handleFixedCommentKeyPress}
         onClick={(e) => e.stopPropagation()}
         placeholder="写下你的评论..."
-        className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-md outline-none focus:border-blue-500 bg-gray-50 placeholder-gray-400"
+        className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-md outline-none bg-gray-50 placeholder-gray-400 transition-all"
+        onFocus={(e) => (e.target as HTMLInputElement).style.borderColor = '#7E44C6'}
+              onBlur={(e) => (e.target as HTMLInputElement).style.borderColor = '#e5e7eb'}
         maxLength={500}
       />
       <button 
@@ -691,9 +783,10 @@ const ImageDetailModal: React.FC<ImageDetailModalProps> = ({ post, initialIndex 
         disabled={!fixedCommentText.trim()}
         className={`px-4 py-2 text-sm rounded-md transition-colors ${
           fixedCommentText.trim() 
-            ? 'bg-blue-500 text-white hover:bg-blue-600' 
+            ? 'text-white hover:opacity-90' 
             : 'bg-gray-200 text-gray-400 cursor-not-allowed'
         }`}
+        style={fixedCommentText.trim() ? { backgroundColor: '#7E44C6' } : {}}
       >
         发送
       </button>

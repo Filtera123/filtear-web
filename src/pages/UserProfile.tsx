@@ -162,7 +162,8 @@ export default function UserProfile() {
           <p className="text-gray-600 mb-4">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+            className="px-4 py-2 text-white rounded-md hover:opacity-90 transition-opacity"
+            style={{ backgroundColor: '#7E44C6' }}
           >
             重新加载
           </button>
@@ -176,7 +177,7 @@ export default function UserProfile() {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="flex flex-col items-center space-y-4">
-          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-8 h-8 border-4 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#7E44C6', borderTopColor: 'transparent' }}></div>
           <span className="text-gray-500">加载用户信息...</span>
         </div>
       </div>
@@ -188,7 +189,7 @@ export default function UserProfile() {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="flex flex-col items-center space-y-4">
-          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-8 h-8 border-4 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#7E44C6', borderTopColor: 'transparent' }}></div>
           <span className="text-gray-500">正在获取用户信息...</span>
         </div>
       </div>
@@ -206,7 +207,8 @@ export default function UserProfile() {
           <p className="text-gray-600">请刷新页面重试</p>
           <button
             onClick={() => window.location.reload()}
-            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+            className="mt-4 px-4 py-2 text-white rounded-md hover:opacity-90 transition-opacity"
+            style={{ backgroundColor: '#7E44C6' }}
           >
             刷新页面
           </button>
@@ -244,7 +246,7 @@ export default function UserProfile() {
         {isPostsLoading && !isInitialLoad && (
           <div className="absolute inset-0 bg-gray-50/80 flex items-center justify-center z-10">
             <div className="flex items-center space-x-2">
-              <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+              <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#7E44C6', borderTopColor: 'transparent' }}></div>
               <span className="text-gray-600 text-sm">切换中...</span>
             </div>
           </div>

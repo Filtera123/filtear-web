@@ -4,11 +4,13 @@ import type { ArticlePost } from '@components/post-card/post.types';
 import type { BasePost } from '@components/post-card/post.types';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import CommentSection from '@/components/comment/CommentSection';
+import { useCommentStore } from '@/components/comment/Comment.store';
 import { usePostActions } from '@/hooks/usePostActions';
 import { useBrowsingHistoryStore } from '@/stores/browsingHistoryStore';
 import DetailPageHeader from '@/components/layout/DetailPageHeader';
 import Tag from '@/components/tag/Tag';
 import { getSimpleLocation } from '@/utils/ipLocation';
+import { useReportContext } from '@/components/report';
 
 // 在文件顶部添加 mock 数据
 const mockArticles = [
@@ -99,6 +101,8 @@ export default function ArticleDetail() {
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const moreMenuRef = useRef<HTMLDivElement>(null);
   const { addRecord } = useBrowsingHistoryStore();
+  const { openReportModal } = useReportContext();
+  const { comments: storeComments, setComments, addComment, addReply, toggleCommentLike } = useCommentStore();
 
   // 记录浏览历史
   useEffect(() => {
@@ -137,9 +141,91 @@ export default function ArticleDetail() {
       }, 100);
     }
   }, [post?.scrollToComments]);
+
+  // 初始化评论数据到store
+  useEffect(() => {
+    if (post?.commentList && !storeComments[post.id]) {
+      setComments(post.id, post.commentList);
+    }
+  }, [post?.commentList, post?.id, storeComments, setComments]);
+
   if (!post) {
     return <div className="text-center py-20">Not Found</div>;
   }
+
+  // 获取当前帖子的评论数据（优先使用store中的数据）
+  const currentComments = storeComments[post.id] || post.commentList || [];
+
+  // CommentSection的回调函数
+  const handleCommentAdd = (postId: string, content: string) => {
+    console.log('添加评论到文章:', postId, content);
+    
+    // 创建新评论对象
+    const newComment = {
+      id: Date.now().toString(),
+      userId: 'current_user_id',
+      userName: '当前用户',
+      userAvatar: '/default-avatar.png',
+      userIpLocation: '上海',
+      content: content,
+      createdAt: new Date().toISOString(),
+      likes: 0,
+      isLiked: false,
+      replies: []
+    };
+    
+    // 添加评论到store
+    addComment(postId, newComment);
+    console.log('文章评论已添加:', newComment);
+  };
+
+  const handleCommentLikeClick = (commentId: string) => {
+    console.log('点赞评论:', commentId);
+    // 使用store更新评论点赞状态
+    toggleCommentLike(post.id, commentId);
+  };
+
+  const handleCommentReplySubmit = (commentId: string, content: string) => {
+    console.log('回复评论:', commentId, content);
+    
+    // 创建新回复对象
+    const newReply = {
+      id: Date.now().toString() + '_reply',
+      userId: 'current_user_id',
+      userName: '当前用户',
+      userAvatar: '/default-avatar.png',
+      userIpLocation: '上海',
+      content: content,
+      createdAt: new Date().toISOString(),
+      likes: 0,
+      isLiked: false,
+      replies: []
+    };
+    
+    // 添加回复到store
+    addReply(post.id, commentId, newReply);
+    console.log('文章详情页回复已添加:', newReply);
+  };
+
+  const handleCommentUserClick = (userId: string) => {
+    console.log('点击用户:', userId);
+    // TODO: 实现用户页面跳转
+  };
+
+  const handleCommentBlock = (commentId: string) => {
+    console.log('屏蔽评论:', commentId);
+    // TODO: 实现评论屏蔽逻辑
+  };
+
+  const handleCommentReport = (commentId: string) => {
+    console.log('举报评论:', commentId);
+    // TODO: 实现评论举报逻辑
+  };
+
+  const handleCommentUserBlock = (userId: string) => {
+    console.log('屏蔽用户:', userId);
+    // TODO: 实现用户屏蔽逻辑
+  };
   // 解构 postActions
   const {
     likes,
@@ -195,7 +281,9 @@ export default function ArticleDetail() {
               setShowCommentSection(true);
               document.getElementById('comment-section')?.scrollIntoView({ behavior: 'smooth' });
             }}
-            className="text-gray-600 hover:text-blue-500 text-xl"
+            className="text-gray-600 hover:opacity-80 text-xl transition-opacity"
+            onMouseEnter={(e) => (e.target as HTMLElement).style.color = '#7E44C6'}
+            onMouseLeave={(e) => (e.target as HTMLElement).style.color = '#4b5563'}
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -239,53 +327,44 @@ export default function ArticleDetail() {
             </button>
 
             {showMoreMenu && (
-              <div className="absolute top-full right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
-                <button
-                  onClick={() => {
-                    handleReportPost();
-                    setShowMoreMenu(false);
-                  }}
-                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                >
-                  举报帖子
-                </button>
-                <button
-                  onClick={() => {
-                    handleBlockPost();
-                    setShowMoreMenu(false);
-                  }}
-                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                >
-                  屏蔽帖子
-                </button>
+              <div className="absolute top-full right-0 mt-1 w-20 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
                 {isFollowing && (
                   <button
                     onClick={() => {
                       handleUnfollow();
                       setShowMoreMenu(false);
                     }}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    className="w-full text-left px-2 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                   >
                     取消关注
                   </button>
                 )}
                 <button
                   onClick={() => {
+                    handleBlockPost();
+                    setShowMoreMenu(false);
+                  }}
+                  className="w-full text-left px-2 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                >
+                  屏蔽帖子
+                </button>
+                <button
+                  onClick={() => {
                     handleBlockUser();
                     setShowMoreMenu(false);
                   }}
-                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                  className="w-full text-left px-2 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                 >
                   屏蔽用户
                 </button>
                 <button
                   onClick={() => {
-                    handleReportUser();
+                    openReportModal(post.id, 'post', post.author);
                     setShowMoreMenu(false);
                   }}
-                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                  className="w-full text-left px-2 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                 >
-                  举报用户
+                  举报
                 </button>
               </div>
             )}
@@ -313,7 +392,10 @@ export default function ArticleDetail() {
             {!isFollowing ? (
               <button
                 onClick={handleFollow}
-                className="ml-4 px-2 py-1 text-sm text-blue-500 border border-blue-500 rounded hover:bg-blue-50"
+                className="ml-4 px-2 py-1 text-sm rounded hover:opacity-90 transition-opacity"
+                style={{ color: '#7E44C6', borderColor: '#7E44C6' }}
+                onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#f3f0ff'}
+              onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = 'transparent'}
               >
                 + 关注
               </button>
@@ -340,7 +422,7 @@ export default function ArticleDetail() {
               {/* 引言上方横线 */}
               <hr className="border-gray-200 mb-6" />
               
-              <blockquote className="border-l-4 border-blue-400 pl-4 text-gray-700 italic mb-8 font-italic" style={{ fontFamily: "'Source Han Sans CN', 'Source Han Sans', sans-serif" }}>
+              <blockquote className="border-l-4 pl-4 text-gray-700 italic mb-8 font-italic" style={{ fontFamily: "'Source Han Sans CN', 'Source Han Sans', sans-serif", borderLeftColor: '#7E44C6' }}>
                 {post.abstract}
               </blockquote>
               
@@ -370,8 +452,15 @@ export default function ArticleDetail() {
             <div id="comment-section" className="mt-8">
               <CommentSection 
                 postId={post.id} 
-                comments={post.commentList || []} 
+                comments={currentComments} 
                 showAllComments={true}
+                onAddComment={handleCommentAdd}
+                onLikeComment={handleCommentLikeClick}
+                onReplyComment={handleCommentReplySubmit}
+                onUserClick={handleCommentUserClick}
+                onBlockComment={handleCommentBlock}
+                onReportComment={handleCommentReport}
+                onBlockUser={handleCommentUserBlock}
               />
             </div>
           )}

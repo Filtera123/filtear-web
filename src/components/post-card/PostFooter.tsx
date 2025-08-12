@@ -189,8 +189,11 @@ export default function PostFooter({
             <button
               onClick={onCommentToggle}
               className={`flex items-center space-x-1 transition-colors cursor-pointer ${
-                expandedComments[post.id] ? 'text-blue-500' : 'text-gray-500 hover:text-blue-500'
+                expandedComments[post.id] ? '' : 'text-gray-500' 
               }`}
+              style={expandedComments[post.id] ? { color: '#7E44C6' } : {}}
+              onMouseEnter={(e) => !expandedComments[post.id] && ((e.target as HTMLElement).style.color = '#7E44C6')}
+            onMouseLeave={(e) => !expandedComments[post.id] && ((e.target as HTMLElement).style.color = '#6b7280')}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path

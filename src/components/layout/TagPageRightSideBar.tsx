@@ -1,9 +1,12 @@
+import { useState } from 'react';
 import { GlobalSearchBar } from './float-based/right-side';
 import { useTagPageStore } from '../../pages/TagPage.store';
+import TagReportModal from '../report/TagReportModal';
 import { cn } from '../../utils/cn';
 
 export default function TagPageRightSideBar() {
   const { tagDetail, toggleSubscription, toggleBlock, currentTab, updateScrollOffset } = useTagPageStore();
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
   // 处理回到顶部的函数 - 与主页右侧栏相同的实现
   const handleScrollToTop = () => {
@@ -17,13 +20,18 @@ export default function TagPageRightSideBar() {
     });
   };
 
+  // 处理举报标签
+  const handleReportTag = () => {
+    setIsReportModalOpen(true);
+  };
+
   if (!tagDetail) {
     return (
       <aside className="w-full flex flex-col pt-4 h-full relative">
         <div className="flex flex-col gap-6 flex-grow overflow-y-auto overflow-x-hidden scrollbar-hide">
           <GlobalSearchBar />
           <div className="flex justify-center items-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderBottomColor: '#7E44C6' }}></div>
           </div>
         </div>
         
@@ -97,26 +105,37 @@ export default function TagPageRightSideBar() {
               className={cn(
                 'w-full flex items-center justify-center space-x-2 py-2 px-4 rounded-lg font-medium text-sm transition-colors',
                 tagDetail.isSubscribed
-                  ? 'bg-blue-500 text-white hover:bg-blue-600'
+                  ? 'text-white hover:opacity-90' 
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               )}
+              style={tagDetail.isSubscribed ? { backgroundColor: '#7E44C6' } : {}}
             >
               <span>{tagDetail.isSubscribed ? '★' : '☆'}</span>
               <span>{tagDetail.isSubscribed ? '已订阅' : '订阅'}</span>
             </button>
             
-            <button
-              onClick={toggleBlock}
-              className={cn(
-                'w-full flex items-center justify-center space-x-2 py-2 px-4 rounded-lg font-medium text-sm transition-colors',
-                tagDetail.isBlocked
-                  ? 'bg-red-500 text-white hover:bg-red-600'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              )}
-            >
-              <span>🚫</span>
-              <span>{tagDetail.isBlocked ? '已屏蔽' : '屏蔽'}</span>
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={toggleBlock}
+                className={cn(
+                  'flex-1 flex items-center justify-center space-x-1 py-2 px-2 rounded-lg font-medium text-sm transition-colors',
+                  tagDetail.isBlocked
+                    ? 'bg-red-500 text-white hover:bg-red-600'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                )}
+              >
+                <span>🚫</span>
+                <span>{tagDetail.isBlocked ? '已屏蔽' : '屏蔽'}</span>
+              </button>
+              
+              <button
+                onClick={handleReportTag}
+                className="flex-1 flex items-center justify-center space-x-1 py-2 px-2 rounded-lg font-medium text-sm transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200"
+              >
+                <span>🚨</span>
+                <span>举报</span>
+              </button>
+            </div>
           </div>
         </div>
         
@@ -133,6 +152,14 @@ export default function TagPageRightSideBar() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19V5m-7 7l7-7 7 7" />
           </svg>
         </button>
+
+        {/* Tag举报弹窗 */}
+        <TagReportModal
+          isOpen={isReportModalOpen}
+          onClose={() => setIsReportModalOpen(false)}
+          tagName={tagDetail.name}
+          tagId={tagDetail.id}
+        />
     </aside>
   );
 } 

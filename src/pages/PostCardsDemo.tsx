@@ -82,12 +82,12 @@ export default function PostCardsDemo() {
           </p>
           
           {/* 图片预览功能说明 */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-            <h2 className="text-lg font-semibold text-blue-900 mb-2">🖼️ 图片预览功能</h2>
-            <p className="text-blue-700 mb-3">
+          <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6">
+            <h2 className="text-lg font-semibold text-purple-900 mb-2">🖼️ 图片预览功能</h2>
+            <p className="text-purple-700 mb-3">
               点击图片类型的帖子中的图片，可以打开增强版预览模式，支持以下功能：
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-blue-700">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-purple-700">
               <ul className="space-y-1">
                 <li>• 🖱️ 鼠标滚轮缩放图片 (25% → 50% → 75% → 100% → 125% → 150% → 200% → 300% → 400% → 500%)</li>
                 <li>• 🖱️ 拖拽移动图片（放大后）</li>
@@ -173,10 +173,10 @@ export default function PostCardsDemo() {
               <strong>类型支持：</strong>
             </p>
             <ul className="list-disc list-inside ml-4 space-y-1">
-              <li><span className="font-medium text-blue-600">文章类型：</span>显示文章标题、内容摘要和全文字数</li>
+              <li><span className="font-medium text-purple-600">文章类型：</span>显示文章标题、内容摘要和全文字数</li>
               <li><span className="font-medium text-green-600">图片类型：</span>支持单图显示和多图轮播，<strong>点击图片可打开增强预览模式</strong></li>
               <li><span className="font-medium text-purple-600">视频类型：</span>显示视频封面、时长和播放控制</li>
-              <li><span className="font-medium text-orange-600">动态类型：</span>支持文字内容和九宫格图片布局</li>
+              <li><span className="font-medium text-purple-600">动态类型：</span>支持文字内容和九宫格图片布局</li>
             </ul>
             <p>
               <strong>交互功能：</strong>所有类型都支持点赞、评论、关注、分享等完整的社交功能。

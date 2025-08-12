@@ -52,10 +52,10 @@ export default function DetailPageHeader({ className = '' }: DetailPageHeaderPro
             {/* 主页按钮 */}
             <button
               onClick={() => navigate('/')}
-              className="flex items-center justify-center w-9 h-9 rounded-full bg-gray-100 hover:bg-blue-50 hover:bg-blue-100 transition-colors group"
+              className="flex items-center justify-center w-9 h-9 rounded-full bg-gray-100 hover:bg-purple-50 hover:bg-purple-100 transition-colors group"
               title="主页"
             >
-              <svg className="w-5 h-5 text-gray-600 group-hover:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-gray-600 group-hover:text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
               </svg>
             </button>
@@ -132,7 +132,7 @@ export default function DetailPageHeader({ className = '' }: DetailPageHeaderPro
             {/* 用户头像 */}
             <button
               onClick={() => navigate('/user/current')}
-              className="relative flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 transition-all shadow-md hover:shadow-lg"
+              className="relative flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 transition-all shadow-md hover:shadow-lg"
               title="用户中心"
             >
               <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">

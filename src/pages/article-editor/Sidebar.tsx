@@ -1,72 +1,67 @@
-import React from 'react';
-import { useDraftStore } from '@components/editor/draft.store';
-import { Popover, PopoverButton, PopoverPanel } from '@headlessui/react';
-import { Button, Stack } from '@mui/material';
-import { IconCircleMinus } from '@tabler/icons-react';
-import { cn } from '@utils/cn';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
+import { Stack } from '@mui/material';
+import { useDraftStore } from '../../components/editor/draft.store';
 
 export default function Sidebar() {
   const { drafts, deleteDraft } = useDraftStore();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [, setSearchParams] = useSearchParams();
 
   return (
     <Stack spacing={2}>
-      <Link to="/" className="text-blue-500 hover:underline bg-white px-4 py-2 rounded-md">
+      <Link 
+        to="/" 
+        className="hover:underline hover:opacity-80 transition-opacity bg-white px-4 py-2 rounded-md" 
+        style={{ color: '#7E44C6' }}
+      >
         返回首页
       </Link>
       <div className="p-4 bg-white rounded-sm h-[calc(100vh-8rem)] overflow-y-auto">
         <p>
           <span>草稿箱</span>&nbsp;
-          <span className="text-gray-400">(1/25)</span>
+          <span className="text-gray-500">({drafts.length})</span>
         </p>
-        <div className="list-none p-0 mt-6 flex flex-col gap-2">
-          {drafts.map((draft, idx) => (
-            <div
-              role="button"
-              key={draft.id}
-              className={cn('mb-2 p-4 bg-gray-50 rounded-md text-sm cursor-pointer text-left', {
-                'bg-indigo-50':
-                  searchParams.get('id') === draft.tempDraftId ||
-                  searchParams.get('id') === draft.id,
-              })}
-              onClick={() => {
-                setSearchParams({
-                  id: draft.tempDraftId || draft.id,
-                });
-              }}
-            >
-              <Stack direction="row" spacing={1} justifyContent="space-between" alignItems="center">
-                <div>
-                  <span className="line-clamp-1">{draft.title || `未命名-${idx + 1}}`}</span>
-                  <span className="text-gray-500">{draft.updatedAt && draft.updatedAt}</span>
+        <div className="space-y-2 mt-4">
+          {drafts.length === 0 ? (
+            <p className="text-gray-500 text-sm">暂无草稿</p>
+          ) : (
+            drafts.map((draft: any) => (
+              <div key={draft.id} className="p-3 border border-gray-200 rounded-md">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <h4 className="font-medium text-sm mb-1 line-clamp-1">
+                      {draft.title || '无标题'}
+                    </h4>
+                    <p className="text-xs text-gray-500 mb-2">
+                      {new Date(draft.updatedAt).toLocaleString()}
+                    </p>
+                    {draft.content && (
+                      <p className="text-xs text-gray-600 line-clamp-2">
+                        {draft.content.slice(0, 50)}...
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex items-center space-x-1 ml-2">
+                    <button
+                      onClick={() => {
+                        setSearchParams({ draftId: draft.id });
+                      }}
+                      className="text-xs px-2 py-1 text-white rounded hover:opacity-90 transition-opacity"
+                      style={{ backgroundColor: '#7E44C6' }}
+                    >
+                      编辑
+                    </button>
+                    <button
+                      onClick={() => deleteDraft(draft.id)}
+                      className="text-xs px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+                    >
+                      删除
+                    </button>
+                  </div>
                 </div>
-                <Popover>
-                  <PopoverButton className="text-red-500 cursor-pointer p-1 hover:bg-red-50 rounded-full">
-                    <IconCircleMinus />
-                  </PopoverButton>
-                  <PopoverPanel
-                    transition
-                    anchor="bottom"
-                    className="divide-y p-4 divide-white/5 rounded-xl bg-white text-sm/6 transition duration-200 ease-in-out [--anchor-gap:--spacing(2)] data-closed:-translate-y-1 data-closed:opacity-0"
-                  >
-                    <Stack>
-                      <span> 请问你确定要删除草稿吗？</span>
-                      <div className="flex justify-end mt-2">
-                        <Button
-                          size="small"
-                          color="error"
-                          onClick={() => draft.id && deleteDraft(draft.tempDraftId || draft.id)}
-                        >
-                          删除
-                        </Button>
-                      </div>
-                    </Stack>
-                  </PopoverPanel>
-                </Popover>
-              </Stack>
-            </div>
-          ))}
+              </div>
+            ))
+          )}
         </div>
       </div>
     </Stack>

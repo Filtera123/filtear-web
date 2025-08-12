@@ -105,7 +105,7 @@ export default function ProfileHeader({
               className="w-20 h-20 rounded-full object-cover ring-2 ring-white border border-gray-200"
             />
             {userInfo.isVerified && (
-              <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+              <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center" style={{ backgroundColor: '#7E44C6' }}>
                 <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
@@ -165,7 +165,8 @@ export default function ProfileHeader({
                     <div className="flex items-center space-x-2">
                       <button
                         onClick={handleSaveBio}
-                        className="px-3 py-1 bg-blue-500 text-white text-xs rounded-md hover:bg-blue-600"
+                        className="px-3 py-1 text-white text-xs rounded-md hover:opacity-90 transition-opacity"
+                        style={{ backgroundColor: '#7E44C6' }}
                       >
                         保存
                       </button>
@@ -183,7 +184,8 @@ export default function ProfileHeader({
                     {userInfo.isCurrentUser && (
                       <button
                         onClick={() => setIsEditing(true)}
-                        className="text-blue-500 hover:text-blue-600"
+                        className="hover:opacity-80 transition-opacity"
+                        style={{ color: '#7E44C6' }}
                       >
                         <IconEdit size={14} />
                       </button>
@@ -219,8 +221,9 @@ export default function ProfileHeader({
                 className={`flex items-center space-x-1 px-3 py-1.5 rounded-full text-sm transition-colors ${
                   isFollowing
                     ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    : 'bg-blue-500 text-white hover:bg-blue-600'
+                    : 'text-white hover:opacity-90'
                 }`}
+              style={!isFollowing ? { backgroundColor: '#7E44C6' } : {}}
               >
                 {isFollowing ? (
                   <span>已关注</span>

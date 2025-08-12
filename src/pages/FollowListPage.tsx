@@ -107,9 +107,10 @@ export default function FollowListPage() {
               onClick={() => handleTabSwitch('followers')}
               className={`py-2 text-base font-medium border-b-2 transition-colors ${
                 selectedTab === 'followers'
-                  ? 'text-orange-500 border-orange-500'
+                  ? 'text-gray-700 border-gray-300'
                   : 'text-gray-500 border-transparent hover:text-gray-700'
               }`}
+              style={selectedTab === 'followers' ? { color: '#7E44C6', borderColor: '#7E44C6' } : {}}
             >
               关注
             </button>
@@ -117,9 +118,10 @@ export default function FollowListPage() {
               onClick={() => handleTabSwitch('following')}
               className={`py-2 text-base font-medium border-b-2 transition-colors ${
                 selectedTab === 'following'
-                  ? 'text-orange-500 border-orange-500'
+                  ? 'text-gray-700 border-gray-300'
                   : 'text-gray-500 border-transparent hover:text-gray-700'
               }`}
+              style={selectedTab === 'following' ? { color: '#7E44C6', borderColor: '#7E44C6' } : {}}
             >
               粉丝
             </button>
@@ -134,7 +136,7 @@ export default function FollowListPage() {
       <div className="px-4 py-4">
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderBottomColor: '#7E44C6' }}></div>
           </div>
         ) : users.length > 0 ? (
           <div className="space-y-3">
@@ -152,7 +154,7 @@ export default function FollowListPage() {
                       className="w-12 h-12 rounded-full object-cover"
                     />
                     {user.isVerified && (
-                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+                      <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center" style={{ backgroundColor: '#7E44C6' }}>
                         <svg
                           className="w-2.5 h-2.5 text-white"
                           fill="currentColor"
@@ -181,9 +183,16 @@ export default function FollowListPage() {
                   onClick={() => handleFollowToggle(user.id)}
                   className={`px-4 py-2 text-sm font-medium rounded-full transition-colors border ${
                     user.isFollowing
-                      ? 'bg-white text-orange-500 border-orange-500 hover:bg-orange-50'
-                      : 'bg-orange-500 text-white border-orange-500 hover:bg-orange-600'
+                      ? 'bg-white border-purple-500 hover:opacity-90' 
+                      : 'text-white border-purple-500 hover:opacity-90'
                   }`}
+                  style={user.isFollowing ? { 
+                    color: '#7E44C6',
+                    borderColor: '#7E44C6'
+                  } : { 
+                    backgroundColor: '#7E44C6',
+                    borderColor: '#7E44C6'
+                  }}
                 >
                   {user.isFollowing ? '已关注' : '关注'}
                 </button>

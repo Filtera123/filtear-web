@@ -1,7 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useBrowsingHistoryStore, type BrowsingRecord } from '@/stores/browsingHistoryStore';
+import { useCommentStore } from '@/components/comment/Comment.store';
 import { Image } from '@/components/ui';
+import { PostType, type PostItem } from '@/components/post-card/post.types';
+import { mockPosts } from '@/mocks/post/data';
+import { getRandomIpLocation } from '@/utils/mockData';
 
 // 时间格式化工具函数
 const formatViewTime = (dateString: string): string => {
@@ -37,8 +41,121 @@ const getMockDuration = (type: string): string => {
   return '';
 };
 
+// 生成字符串的固定哈希值
+const generateHashFromString = (str: string): number => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  return Math.abs(hash);
+};
+
+// 将浏览记录转换为PostItem格式（简化版）
+const convertBrowsingRecordToPostItem = (record: BrowsingRecord, storeComments: Record<string, any> = {}): PostItem => {
+  // 尝试从mockPosts中找到真实的帖子数据
+  const realPost = mockPosts.find(post => post.id === record.id);
+  
+  // 基于帖子ID生成固定的数据，确保数据一致性
+  const idHash = generateHashFromString(record.id);
+  const authorHash = generateHashFromString(record.author);
+  
+  // 获取评论数据：优先使用store中的数据，然后是真实帖子的评论，最后是空数组
+  const commentList = storeComments[record.id] || realPost?.commentList || [];
+  
+  const basePost = {
+    id: record.id,
+    author: record.author,
+    authorAvatar: record.authorAvatar || realPost?.authorAvatar || `https://via.placeholder.com/40x40?text=${record.author[0]}`,
+    authorIpLocation: realPost?.authorIpLocation || getRandomIpLocation(idHash),
+    createdAt: realPost?.createdAt || record.viewTime,
+    updatedAt: realPost?.updatedAt || record.viewTime,
+    slug: realPost?.slug || `browsing-${record.id}`,
+    summary: (realPost as any)?.abstract || record.title,
+    category: realPost?.category || typeDisplayMap[record.type],
+    categorySlug: realPost?.categorySlug || record.type,
+    title: record.title,
+    tags: realPost?.tags || [{ 
+      id: record.type, 
+      name: typeDisplayMap[record.type],
+      color: '#7E44C6'
+    }],
+    isLike: realPost?.isLike || false,
+    // 优先使用真实数据，否则使用固定生成的数据
+    likes: realPost?.likes || ((idHash % 50) + 10), // 10-59的固定点赞数
+    comments: commentList.length || realPost?.comments || ((idHash % 20) + 5), // 使用真实评论数量
+    commentList: commentList,
+    views: realPost?.views || ((idHash % 200) + 50), // 50-249的固定浏览数
+    isFollowing: realPost?.isFollowing || ((authorHash % 10) < 3), // 基于作者ID生成固定的关注状态（30%概率）
+  };
+
+  // 根据类型返回不同的PostItem
+  switch (record.type) {
+    case 'article':
+      return {
+        ...basePost,
+        type: PostType.ARTICLE,
+        content: realPost?.content || record.title,
+        abstract: (realPost as any)?.abstract || `这是一篇关于${record.title}的文章...`,
+        wordCount: (realPost as any)?.wordCount || ((idHash % 3000) + 1000), // 基于ID生成固定字数
+      };
+    
+    case 'image':
+      // 确保图片帖子至少有一张图片，避免详情页出错
+      const defaultThumbnail = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format';
+      return {
+        ...basePost,
+        type: PostType.IMAGE,
+        content: realPost?.content || record.title,
+        images: (realPost as any)?.images || [{
+          url: record.thumbnail || defaultThumbnail,
+          alt: record.title || '图片内容',
+          width: 800,
+          height: 600,
+        }],
+      };
+    
+    case 'video':
+      return {
+        ...basePost,
+        type: PostType.VIDEO,
+        content: realPost?.content || record.title,
+        video: (realPost as any)?.video || {
+          url: 'https://example.com/sample-video.mp4', // 使用示例视频URL
+          thumbnail: record.thumbnail || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format',
+          duration: 780, // 13分钟转换为秒
+          width: 1920,
+          height: 1080,
+        },
+      };
+    
+    case 'dynamic':
+      return {
+        ...basePost,
+        type: PostType.DYNAMIC,
+        content: realPost?.content || record.title,
+        images: (realPost as any)?.images || (record.thumbnail ? [{
+          url: record.thumbnail,
+          alt: record.title,
+        }] : undefined),
+      };
+    
+    default:
+      return {
+        ...basePost,
+        type: PostType.ARTICLE,
+        content: realPost?.content || record.title,
+        abstract: (realPost as any)?.abstract || `这是一篇关于${record.title}的内容...`,
+        wordCount: (realPost as any)?.wordCount || ((idHash % 2000) + 500), // 基于ID生成固定字数
+      };
+  }
+};
+
 export default function RecentlyViewed() {
   const { getRecentRecords, cleanupDuplicates } = useBrowsingHistoryStore();
+  const { comments: storeComments } = useCommentStore();
+  const navigate = useNavigate();
   const [recentRecords, setRecentRecords] = useState<BrowsingRecord[]>([]);
 
   // 组件挂载时清理重复数据
@@ -62,12 +179,23 @@ export default function RecentlyViewed() {
     return () => clearInterval(interval);
   }, [getRecentRecords]);
 
+  // 处理帖子点击
+  const handlePostClick = (record: BrowsingRecord) => {
+    const postData = convertBrowsingRecordToPostItem(record, storeComments);
+    navigate(record.url, { 
+      state: {
+        ...postData,
+        fromPage: '/recently-viewed-sidebar' // 记录来源页面
+      }
+    });
+  };
+
   return (
     <div className="bg-white rounded-sm border border-gray-200 p-4">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-lg font-semibold">最近浏览</h1>
         {recentRecords.length > 0 && (
-          <Link to="/recently-viewed" className="text-sm text-blue-500 hover:underline">
+          <Link to="/recently-viewed" className="text-sm hover:underline hover:opacity-80 transition-opacity" style={{ color: '#7E44C6' }}>
             查看更多
           </Link>
         )}
@@ -79,10 +207,10 @@ export default function RecentlyViewed() {
             {recentRecords.map((record) => {
               const duration = getMockDuration(record.type);
               return (
-                <Link
+                <div
                   key={`${record.id}-${record.viewTime}`}
-                  to={record.url}
-                  className="block hover:bg-gray-50 rounded-lg transition-colors"
+                  onClick={() => handlePostClick(record)}
+                  className="block hover:bg-gray-50 rounded-lg transition-colors cursor-pointer"
                 >
                   <div className="relative">
                     {/* 预览图容器 */}
@@ -140,7 +268,7 @@ export default function RecentlyViewed() {
                       </div>
                     </div>
                   </div>
-                </Link>
+                </div>
               );
             })}
           </div>

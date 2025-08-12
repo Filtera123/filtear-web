@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   CommentNotifications,
   FollowNotifications,
@@ -11,6 +12,7 @@ type TabType = 'like' | 'comment' | 'follow' | 'system';
 
 export default function Notifications() {
   const [activeTab, setActiveTab] = useState<TabType>('like');
+  const navigate = useNavigate();
 
   const tabs = [
     { key: 'like' as TabType, label: '喜欢', component: LikeNotifications },
@@ -24,6 +26,11 @@ export default function Notifications() {
     setActiveTab(tab);
   };
 
+  // 处理设置按钮点击
+  const handleSettingsClick = () => {
+    navigate('/settings?section=messages');
+  };
+
   // 获取当前激活标签的组件
   const ActiveComponent = tabs.find((tab) => tab.key === activeTab)?.component || LikeNotifications;
 
@@ -34,7 +41,7 @@ export default function Notifications() {
         <div className="flex items-center justify-between p-4 pb-0">
           {/* 标签容器 - 优化间距和布局 */}
           <div className="flex-1 flex gap-2"> {/* 增加标签之间的间距 */}
-            {tabs.map((tab, index) => (
+            {tabs.map((tab) => (
               <div key={tab.key} className="flex-1 relative">
                 <button
                   onClick={() => handleTabChange(tab.key)}
@@ -47,9 +54,10 @@ export default function Notifications() {
                   {tab.label}
                   {/* 底部指示器 - 优化位置和样式 */}
                   <div
-                    className={`absolute bottom-0 left-1/2 transform -translate-x-1/2 w-full h-0.5 rounded-full transition-all duration-200 ${ // 指示器宽度改为100%
-                      activeTab === tab.key ? 'bg-purple-500' : 'bg-transparent'
-                    }`}
+                    className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-full h-0.5 rounded-full transition-all duration-200"
+                    style={{ 
+                      backgroundColor: activeTab === tab.key ? '#7E44C6' : 'transparent'
+                    }}
                   />
                 </button>
                 {/* 移除竖线分割线，减少视觉拥挤 */}
@@ -59,7 +67,10 @@ export default function Notifications() {
 
           {/* 设置按钮 */}
           <div className="ml-4 pl-4 border-l border-gray-200">
-            <button className="text-gray-500 hover:text-gray-700 transition-colors p-2 rounded-lg hover:bg-gray-100">
+            <button 
+              onClick={handleSettingsClick}
+              className="text-gray-500 hover:text-gray-700 transition-colors p-2 rounded-lg hover:bg-gray-100"
+            >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"

@@ -1,37 +1,26 @@
-import { Grid } from '@mui/material';
-import Aside from './Aside';
-import Editor from './Editor';
 import Sidebar from './Sidebar';
+import Editor from './Editor';
+import Aside from './Aside';
 
 export default function ArticleEditor() {
-  // TODO: 通过 id 获取文章数据
-  // const params = useParams();
-
   return (
-    <Grid
-      className=" px-32 py-12 h-screen overflow-hidden overflow-y-auto relative"
-      container
-      spacing={2}
-    >
-      <Grid className="sticky top-0 border-r h-full border-gray-300" size="grow">
-        <Sidebar />
-      </Grid>
+    <div className="min-h-screen bg-gray-50">
+      <div className="flex h-screen">
+        {/* 左侧边栏 */}
+        <div className="w-1/4 h-full border-r border-gray-200 bg-white">
+          <Sidebar />
+        </div>
 
-      <Grid
-        size={{
-          xs: 12,
-          sm: 12,
-          md: 8,
-          lg: 8,
-          xl: 8,
-        }}
-      >
-        <Editor />
-      </Grid>
+        {/* 编辑器主体 */}
+        <div className="flex-1 h-full">
+          <Editor />
+        </div>
 
-      <Grid className="sticky top-0 h-full border-l border-gray-300" size="grow">
-        <Aside />
-      </Grid>
-    </Grid>
+        {/* 右侧边栏 */}
+        <div className="w-1/4 h-full border-l border-gray-200 bg-white">
+          <Aside />
+        </div>
+      </div>
+    </div>
   );
 }

@@ -98,7 +98,7 @@ export default function ReplyModal({
         {/* 原评论内容 */}
         <div className="p-4 bg-gray-50 border-b border-gray-200">
           <div className="flex space-x-3">
-            <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#7E44C6' }}>
               <img 
                 src={comment.userAvatar} 
                 alt={comment.userName} 
@@ -120,7 +120,7 @@ export default function ReplyModal({
         {/* 回复输入区域 */}
         <div className="p-4">
           <div className="flex space-x-3 mb-4">
-            <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#7E44C6' }}>
               <img 
                 src={currentUserAvatar} 
                 alt={currentUserName} 
@@ -138,7 +138,16 @@ export default function ReplyModal({
                 onChange={(e) => setReplyContent(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="发布你的回复..."
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent resize-none"
+
+                onFocus={(e) => {
+                  (e.target as HTMLElement).style.outline = `2px solid #7E44C6`;
+        (e.target as HTMLElement).style.borderColor = 'transparent';
+                }}
+                onBlur={(e) => {
+                  (e.target as HTMLElement).style.outline = 'none';
+        (e.target as HTMLElement).style.borderColor = '#d1d5db';
+                }}
                 rows={4}
                 maxLength={500}
                 autoFocus
@@ -158,7 +167,8 @@ export default function ReplyModal({
             <button
               onClick={handleSubmit}
               disabled={!replyContent.trim()}
-              className="px-4 py-2 bg-orange-400 text-white text-sm rounded-lg hover:bg-orange-500 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+              className="px-4 py-2 text-white text-sm rounded-lg hover:opacity-90 disabled:bg-gray-300 disabled:cursor-not-allowed transition-opacity"
+              style={{ backgroundColor: '#7E44C6' }}
             >
               回复
             </button>

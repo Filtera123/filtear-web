@@ -45,10 +45,10 @@ export const AuthButton: React.FC = () => {
         variant="contained"
         onClick={handleLogin}
         sx={{
-          backgroundColor: '#8b5cf6',
+          backgroundColor: '#7E44C6',
           color: 'white',
           '&:hover': {
-            backgroundColor: '#7c3aed',
+            backgroundColor: '#6D38B1',
           },
           borderRadius: '20px',
           padding: '8px 20px',

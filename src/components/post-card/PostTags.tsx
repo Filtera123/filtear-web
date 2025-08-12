@@ -137,7 +137,7 @@ export default function PostTags({ tags, onHeightChange }: PostTagsProps) {
         {needsExpansion && (
           <button
             onClick={handleToggleTags}
-            className={`absolute top-0 right-0 flex items-center space-x-0.5 text-xs text-blue-600 hover:text-blue-800 transition-colors bg-white h-6 px-3`}
+            className={`absolute top-0 right-0 flex items-center space-x-0.5 text-xs text-purple-600 hover:text-purple-800 transition-colors bg-white h-6 px-3`}
           >
             <span>{showAllTags ? '收起' : '展开'}</span>
             <svg

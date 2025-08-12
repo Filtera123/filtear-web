@@ -81,7 +81,7 @@ export default function PostHeader({ post }: PostHeaderProps) {
         {/* 用户名和时间 */}
         <div>
           <div
-            className="font-medium text-gray-900 text-sm cursor-pointer hover:text-blue-600 transition-colors"
+            className="font-medium text-gray-900 text-sm cursor-pointer hover:text-purple-600 transition-colors"
             onClick={handleUserClick}
           >
             {post.author}
@@ -97,8 +97,9 @@ export default function PostHeader({ post }: PostHeaderProps) {
           className={`px-4 py-1 rounded-full text-sm font-medium transition-colors ${
             isFollowing
               ? 'bg-gray-100 text-gray-600 cursor-not-allowed'
-              : 'bg-blue-500 text-white hover:bg-blue-600 cursor-pointer'
+              : 'text-white hover:opacity-90 cursor-pointer'
           }`}
+          style={!isFollowing ? { backgroundColor: '#7E44C6' } : {}}
           disabled={isFollowing}
         >
           {isFollowing ? '已关注' : '关注'}

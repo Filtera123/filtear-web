@@ -59,7 +59,7 @@ export default function TagPage() {
         },
         isSubscribed: Math.random() > 0.5,
         isBlocked: false,
-        color: '#3b82f6',
+        color: '#7E44C6',
       };
       setTagDetail(mockTagDetail);
     }
@@ -173,9 +173,14 @@ export default function TagPage() {
               className={cn(
                 'p-2 rounded-md border',
                 viewMode === VIEW_MODES.Grid 
-                  ? 'bg-blue-50 border-blue-200 text-blue-600'
+                  ? 'border-purple-200' 
                   : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
               )}
+              style={viewMode === VIEW_MODES.Grid ? { 
+                backgroundColor: '#f3f0ff', 
+                borderColor: '#d4c4f9',
+                color: '#7E44C6'
+              } : {}}
             >
               {viewMode === VIEW_MODES.List ? (
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -208,9 +213,10 @@ export default function TagPage() {
                     className={cn(
                       'px-4 py-1.5 rounded-full text-sm font-medium transition-colors',
                       subTab.current
-                        ? 'bg-blue-500 text-white'
+                        ? 'text-white' 
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     )}
+                    style={subTab.current ? { backgroundColor: '#7E44C6' } : {}}
                   >
                     {subTab.name}
                   </button>
@@ -229,9 +235,13 @@ export default function TagPage() {
                         className={cn(
                           'px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap',
                           currentContentFilter === filter.key
-                            ? 'bg-white text-blue-600 shadow-sm border border-blue-200 font-semibold'
+                            ? 'bg-white shadow-sm border font-semibold' 
                             : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
                         )}
+                        style={currentContentFilter === filter.key ? { 
+                          color: '#7E44C6',
+                          borderColor: '#d4c4f9'
+                        } : {}}
                       >
                         {filter.name}
                       </button>

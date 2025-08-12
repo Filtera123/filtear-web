@@ -8,6 +8,8 @@ import { PostType, type PostItem } from '@/components/post-card/post.types';
 import { BasePostCard } from '@/components/post-card';
 import { cn } from '@/utils/cn';
 import { getRandomIpLocation } from '@/utils/mockData';
+import { mockPosts } from '@/mocks/post/data';
+import { useCommentStore } from '@/components/comment/Comment.store';
 
 // 视图模式类型
 type ViewMode = 'list' | 'grid';
@@ -69,35 +71,41 @@ const generateHashFromString = (str: string): number => {
   return Math.abs(hash);
 };
 
-const convertBrowsingRecordToPostItem = (record: BrowsingRecord): PostItem => {
+const convertBrowsingRecordToPostItem = (record: BrowsingRecord, storeComments: Record<string, any> = {}): PostItem => {
+  // 尝试从mockPosts中找到真实的帖子数据
+  const realPost = mockPosts.find(post => post.id === record.id);
+  
   // 基于帖子ID生成固定的数据，确保数据一致性
   const idHash = generateHashFromString(record.id);
   const authorHash = generateHashFromString(record.author);
   
+  // 获取评论数据：优先使用store中的数据，然后是真实帖子的评论，最后是空数组
+  const commentList = storeComments[record.id] || realPost?.commentList || [];
+  
   const basePost = {
     id: record.id,
     author: record.author,
-    authorAvatar: record.authorAvatar || `https://via.placeholder.com/40x40?text=${record.author[0]}`,
-    authorIpLocation: getRandomIpLocation(idHash),
-    createdAt: record.viewTime,
-    updatedAt: record.viewTime,
-    slug: `browsing-${record.id}`,
-    summary: record.title,
-    category: typeDisplayMap[record.type],
-    categorySlug: record.type,
+    authorAvatar: record.authorAvatar || realPost?.authorAvatar || `https://via.placeholder.com/40x40?text=${record.author[0]}`,
+    authorIpLocation: realPost?.authorIpLocation || getRandomIpLocation(idHash),
+    createdAt: realPost?.createdAt || record.viewTime,
+    updatedAt: realPost?.updatedAt || record.viewTime,
+    slug: realPost?.slug || `browsing-${record.id}`,
+    summary: (realPost as any)?.abstract || record.title,
+    category: realPost?.category || typeDisplayMap[record.type],
+    categorySlug: realPost?.categorySlug || record.type,
     title: record.title,
-    tags: [{ 
+    tags: realPost?.tags || [{ 
       id: record.type, 
       name: typeDisplayMap[record.type],
-      color: '#3b82f6'
+      color: '#7E44C6'
     }],
-    isLike: false,
-    // 基于ID生成固定的数据，而不是随机数据
-    likes: (idHash % 50) + 10, // 10-59的固定点赞数
-    comments: (idHash % 20) + 5, // 5-24的固定评论数 
-    commentList: [],
-    views: (idHash % 200) + 50, // 50-249的固定浏览数
-    isFollowing: (authorHash % 10) < 3, // 基于作者ID生成固定的关注状态（30%概率）
+    isLike: realPost?.isLike || false,
+    // 优先使用真实数据，否则使用固定生成的数据
+    likes: realPost?.likes || ((idHash % 50) + 10), // 10-59的固定点赞数
+    comments: commentList.length || realPost?.comments || ((idHash % 20) + 5), // 使用真实评论数量
+    commentList: commentList,
+    views: realPost?.views || ((idHash % 200) + 50), // 50-249的固定浏览数
+    isFollowing: realPost?.isFollowing || ((authorHash % 10) < 3), // 基于作者ID生成固定的关注状态（30%概率）
   };
 
   // 根据类型返回不同的PostItem
@@ -106,9 +114,9 @@ const convertBrowsingRecordToPostItem = (record: BrowsingRecord): PostItem => {
       return {
         ...basePost,
         type: PostType.ARTICLE,
-        content: record.title,
-        abstract: `这是一篇关于${record.title}的文章...`,
-        wordCount: (idHash % 3000) + 1000, // 基于ID生成固定字数
+        content: realPost?.content || record.title,
+        abstract: (realPost as any)?.abstract || `这是一篇关于${record.title}的文章...`,
+        wordCount: (realPost as any)?.wordCount || ((idHash % 3000) + 1000), // 基于ID生成固定字数
       };
     
     case 'image':
@@ -117,8 +125,8 @@ const convertBrowsingRecordToPostItem = (record: BrowsingRecord): PostItem => {
       return {
         ...basePost,
         type: PostType.IMAGE,
-        content: record.title,
-        images: [{
+        content: realPost?.content || record.title,
+        images: (realPost as any)?.images || [{
           url: record.thumbnail || defaultThumbnail,
           alt: record.title || '图片内容',
           width: 800,
@@ -130,8 +138,8 @@ const convertBrowsingRecordToPostItem = (record: BrowsingRecord): PostItem => {
       return {
         ...basePost,
         type: PostType.VIDEO,
-        content: record.title,
-        video: {
+        content: realPost?.content || record.title,
+        video: (realPost as any)?.video || {
           url: 'https://example.com/sample-video.mp4', // 使用示例视频URL
           thumbnail: record.thumbnail || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format',
           duration: 780, // 13分钟转换为秒
@@ -144,26 +152,27 @@ const convertBrowsingRecordToPostItem = (record: BrowsingRecord): PostItem => {
       return {
         ...basePost,
         type: PostType.DYNAMIC,
-        content: record.title,
-        images: record.thumbnail ? [{
+        content: realPost?.content || record.title,
+        images: (realPost as any)?.images || (record.thumbnail ? [{
           url: record.thumbnail,
           alt: record.title,
-        }] : undefined,
+        }] : undefined),
       };
     
     default:
       return {
         ...basePost,
         type: PostType.ARTICLE,
-        content: record.title,
-        abstract: `这是一篇关于${record.title}的内容...`,
-        wordCount: (idHash % 2000) + 500, // 基于ID生成固定字数
+        content: realPost?.content || record.title,
+        abstract: (realPost as any)?.abstract || `这是一篇关于${record.title}的内容...`,
+        wordCount: (realPost as any)?.wordCount || ((idHash % 2000) + 500), // 基于ID生成固定字数
       };
   }
 };
 
 export default function RecentlyViewed() {
   const { records, removeRecord, cleanupDuplicates } = useBrowsingHistoryStore();
+  const { comments: storeComments } = useCommentStore();
   const [viewMode, setViewMode] = useState<ViewMode>(getSavedViewMode());
   
   // 页面加载时清理重复数据
@@ -182,7 +191,7 @@ export default function RecentlyViewed() {
   // 将浏览记录转换为PostItem列表
   const postItems = useMemo(() => {
     const items = sortedRecords.map(record => {
-      const converted = convertBrowsingRecordToPostItem(record);
+      const converted = convertBrowsingRecordToPostItem(record, storeComments);
       // 为每个帖子添加来源页面信息
       return {
         ...converted,
@@ -190,7 +199,7 @@ export default function RecentlyViewed() {
       };
     });
     return items;
-  }, [sortedRecords]);
+  }, [sortedRecords, storeComments]);
 
   // 切换视图模式
   const toggleViewMode = () => {
@@ -265,132 +274,66 @@ export default function RecentlyViewed() {
     });
   }, [navigate]);
 
+  // 处理BasePostCard的点赞
+  const handleBasePostLike = useCallback((post: PostItem) => {
+    setLikedPosts(prev => {
+      const currentLikeState = prev[post.id] !== undefined ? prev[post.id] : false;
+      const newLikeState = !currentLikeState;
+      
+      console.log(`${newLikeState ? '点赞' : '取消点赞'}帖子:`, post.id);
+      
+      return {
+        ...prev,
+        [post.id]: newLikeState
+      };
+    });
+  }, []);
+
+  // 处理BasePostCard的用户点击
+  const handleBasePostUserClick = useCallback((userId: string) => {
+    navigate(`/user/${userId}`);
+  }, [navigate]);
+
+  // 处理BasePostCard的帖子点击
+  const handleBasePostClick = useCallback((post: PostItem) => {
+    // 根据帖子类型跳转到相应的详情页
+    let detailUrl = '';
+    switch (post.type) {
+      case PostType.ARTICLE:
+        detailUrl = `/post/article/${post.id}`;
+        break;
+      case PostType.IMAGE:
+        detailUrl = `/post/image/${post.id}`;
+        break;
+      case PostType.VIDEO:
+        detailUrl = `/post/video/${post.id}`;
+        break;
+      case PostType.DYNAMIC:
+        detailUrl = `/post/dynamic/${post.id}`;
+        break;
+      default:
+        detailUrl = `/post/article/${(post as any).id}`;
+    }
+    navigate(detailUrl, { state: post });
+  }, [navigate]);
+
+  // 处理BasePostCard的评论添加
+  const handleBasePostAddComment = useCallback((postId: string, content: string) => {
+    console.log('在最近浏览页面添加评论:', postId, content);
+    // 这里可以添加评论逻辑，或者跳转到详情页
+  }, []);
+
+  // 处理BasePostCard的评论点赞
+  const handleBasePostLikeComment = useCallback((commentId: string) => {
+    console.log('点赞评论:', commentId);
+  }, []);
+
+  // 处理BasePostCard的回复评论
+  const handleBasePostReplyComment = useCallback((commentId: string, content: string) => {
+    console.log('回复评论:', commentId, content);
+  }, []);
 
 
-  // 网格视图渲染卡片  
-  const renderGridCard = (record: BrowsingRecord) => {
-    const isLiked = getPostLikeStatus(record);
-
-    return (
-      <div
-        key={record.id}
-        className="bg-white rounded-md shadow-sm border border-gray-200 h-full flex flex-col cursor-pointer hover:shadow-md transition-shadow relative group"
-        onClick={() => {
-          const postData = convertBrowsingRecordToPostItem(record);
-          navigate(record.url, { 
-            state: {
-              ...postData,
-              fromPage: '/recently-viewed' // 记录来源页面
-            }
-          });
-        }}
-      >
-        {/* 删除按钮 */}
-        <button
-          onClick={(e) => handleRemoveRecord(e, record.id)}
-          className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 bg-white bg-opacity-90 hover:bg-opacity-100 rounded-full p-1.5 text-gray-500 hover:text-red-500 transition-all"
-          title="删除此记录"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-
-        {/* 卡片内容区域 */}
-        <div className="flex-grow relative">
-          {/* 图片 / 视频 / 纯文本预览 */}
-          {record.type === 'image' && record.thumbnail ? (
-            <Image
-              src={record.thumbnail}
-              alt={record.title}
-              className="w-full h-full object-cover"
-            />
-          ) : record.type === 'video' && record.thumbnail ? (
-            <div className="h-full w-full bg-gray-100 relative">
-              <Image
-                src={record.thumbnail}
-                alt="视频缩略图"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-12 h-12 rounded-full bg-black/50 flex items-center justify-center">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
-                    <path d="M8 5v14l11-7z" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-          ) : record.thumbnail ? (
-            <div className="h-full w-full bg-gray-100 relative">
-              <Image
-                src={record.thumbnail}
-                alt={record.title}
-                className="w-full h-full object-cover"
-              />
-            </div>
-          ) : (
-            <div className="p-4 h-full overflow-hidden bg-gray-50">
-              <p className="text-sm line-clamp-6 text-gray-700">
-                {record.title}
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* 卡片底部信息区域 */}
-        <div className="p-3 border-t border-gray-100 bg-white">
-          {/* 标题 */}
-          <h3 className="text-sm font-medium line-clamp-2 mb-2 text-gray-900">
-            {record.title}
-          </h3>
-          
-          {/* 作者信息行 */}
-          <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
-            <span 
-              className="truncate hover:text-blue-600 cursor-pointer max-w-[100px]"
-              onClick={(e) => handleUserProfileClick(e, record)}
-            >
-              {record.author}
-            </span>
-            <span className="px-2 py-0.5 bg-gray-100 rounded-full flex-shrink-0">
-              {typeDisplayMap[record.type]}
-            </span>
-          </div>
-          
-          {/* 底部操作行 */}
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-gray-400">
-              {formatViewTime(record.viewTime)}
-            </span>
-            
-            {/* 点赞按钮 */}
-            <button
-              onClick={(e) => handleLikeClick(e, record)}
-              className={cn(
-                'flex items-center space-x-1 text-xs transition-colors',
-                isLiked ? 'text-red-500' : 'text-gray-500 hover:text-red-500'
-              )}
-            >
-              <svg
-                className={cn('w-4 h-4', isLiked ? 'fill-current' : '')}
-                fill={isLiked ? 'currentColor' : 'none'}
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                />
-              </svg>
-              <span>{isLiked ? 1 : 0}</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-6">
@@ -411,7 +354,7 @@ export default function RecentlyViewed() {
               className={cn(
                 'p-2 rounded-md border',
                 viewMode === VIEW_MODES.Grid 
-                  ? 'bg-blue-50 border-blue-200 text-blue-600'
+                  ? 'bg-purple-50 border-purple-200 text-purple-600'
                   : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
               )}
               aria-label={viewMode === VIEW_MODES.List ? '切换到网格视图' : '切换到列表视图'}
@@ -440,9 +383,26 @@ export default function RecentlyViewed() {
           viewMode === VIEW_MODES.List ? (
             // 列表视图 - 完全复用主页帖子卡片格式
             <div className="space-y-0">
-              {postItems.map((postItem) => (
-                <BasePostCard key={postItem.id} post={postItem} />
-              ))}
+              {postItems.map((postItem) => {
+                // 更新帖子的点赞状态
+                const updatedPost = {
+                  ...postItem,
+                  isLike: likedPosts[postItem.id] !== undefined ? likedPosts[postItem.id] : false
+                };
+                
+                return (
+                  <BasePostCard 
+                    key={postItem.id} 
+                    post={updatedPost}
+                    onLike={() => handleBasePostLike(updatedPost)}
+                    onUserClick={() => handleBasePostUserClick(updatedPost.author)}
+                    onPostClick={() => handleBasePostClick(updatedPost)}
+                    onAddComment={handleBasePostAddComment}
+                    onLikeComment={handleBasePostLikeComment}
+                    onReplyComment={handleBasePostReplyComment}
+                  />
+                );
+              })}
             </div>
           ) : (
             // 瀑布流网格视图
@@ -474,7 +434,8 @@ export default function RecentlyViewed() {
             </p>
             <button
               onClick={() => navigate('/')}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="px-6 py-2 text-white rounded-lg hover:opacity-90 transition-opacity"
+              style={{ backgroundColor: '#7E44C6' }}
             >
               去首页浏览
             </button>

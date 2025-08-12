@@ -42,7 +42,7 @@ export default function DynamicContent({ post }: DynamicContentProps) {
     <div>
       {/* 帖子标题 */}
       <h2
-        className="text-lg font-semibold text-gray-900 mb-4 leading-tight cursor-pointer hover:text-blue-600 transition-colors"
+        className="text-lg font-semibold text-gray-900 mb-4 leading-tight cursor-pointer hover:text-purple-600 transition-colors"
         style={{ fontFamily: "'Source Han Sans CN', 'Source Han Sans', sans-serif" }}
         onClick={onPostClick}
       >
@@ -135,7 +135,8 @@ export default function DynamicContent({ post }: DynamicContentProps) {
 
               <button
                 onClick={onPostClick}
-                className="text-blue-500 hover:text-blue-600 transition-colors"
+                className="hover:opacity-80 transition-opacity"
+                style={{ color: '#7E44C6' }}
               >
                 查看全部
               </button>
