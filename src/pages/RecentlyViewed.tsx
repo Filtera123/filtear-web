@@ -217,7 +217,8 @@ export default function RecentlyViewed() {
   // 处理用户点击
   const handleUserProfileClick = useCallback((e: React.MouseEvent, record: BrowsingRecord) => {
     e.stopPropagation();
-    navigate(`/user/${record.author}`);
+    const userId = record.authorId || record.author?.replace(/[^a-zA-Z0-9]/g, '') || 'unknown';
+    navigate(`/user/${userId}`);
   }, [navigate]);
 
   // 获取帖子当前的点赞状态

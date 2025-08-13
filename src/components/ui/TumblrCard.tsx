@@ -56,7 +56,8 @@ export default function TumblrCard({
     if (onUserClick) {
       onUserClick(post.author);
     } else {
-      navigate(`/user/${post.author}`);
+      const userId = post.authorId || post.author?.replace(/[^a-zA-Z0-9]/g, '') || 'unknown';
+      navigate(`/user/${userId}`);
     }
   };
 

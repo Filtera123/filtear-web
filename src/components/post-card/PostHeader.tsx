@@ -35,7 +35,9 @@ export default function PostHeader({ post }: PostHeaderProps) {
 
   // 处理用户名点击
   const handleUserClick = () => {
-    navigate(`/user/${post.author}`);
+    // 使用authorId或者fallback到author，确保使用纯英文/数字的用户ID
+    const userId = post.authorId || post.author?.replace(/[^a-zA-Z0-9]/g, '') || 'unknown';
+    navigate(`/user/${userId}`);
   };
 
   // 处理关注按钮点击
@@ -81,7 +83,7 @@ export default function PostHeader({ post }: PostHeaderProps) {
         {/* 用户名和时间 */}
         <div>
           <div
-            className="font-medium text-gray-900 text-sm cursor-pointer hover:text-purple-600 transition-colors"
+            className="font-medium text-gray-900 text-sm cursor-pointer hover:opacity-80 transition-opacity"
             onClick={handleUserClick}
           >
             {post.author}

@@ -13,6 +13,8 @@ import type {
   ViewMode 
 } from './TagPage.types';
 import { VIEW_MODES } from './TagPage.types';
+import { useTagSubscriptionStore } from '../stores/tagSubscriptionStore';
+import type { TagItem } from '../components/tag/tag.type';
 
 // 标签页tab的滚动状态
 interface TagTabScrollState {
@@ -155,12 +157,39 @@ export const useTagPageStore = create<TagPageStore>((set, get) => ({
     });
   },
   
-  toggleSubscription: () => set((state) => ({
-    tagDetail: state.tagDetail ? {
-      ...state.tagDetail,
-      isSubscribed: !state.tagDetail.isSubscribed,
-    } : null,
-  })),
+  toggleSubscription: () => {
+    const state = get();
+    if (!state.tagDetail) return;
+
+    // 获取全局订阅状态管理器的方法
+    const { followTag, unfollowTag } = useTagSubscriptionStore.getState();
+    
+    const isCurrentlySubscribed = state.tagDetail.isSubscribed;
+    const newSubscriptionState = !isCurrentlySubscribed;
+
+    // 同步更新全局订阅状态
+    if (newSubscriptionState) {
+      // 订阅 - 添加到全局订阅列表
+      const tagItem: TagItem = {
+        id: state.tagDetail.id,
+        name: state.tagDetail.name,
+        color: state.tagDetail.color || '#7E44C6',
+        isPopular: false
+      };
+      followTag(tagItem);
+    } else {
+      // 取消订阅 - 从全局订阅列表中移除
+      unfollowTag(state.tagDetail.id);
+    }
+
+    // 更新本地状态
+    set((state) => ({
+      tagDetail: state.tagDetail ? {
+        ...state.tagDetail,
+        isSubscribed: newSubscriptionState,
+      } : null,
+    }));
+  },
   
   toggleBlock: () => set((state) => ({
     tagDetail: state.tagDetail ? {

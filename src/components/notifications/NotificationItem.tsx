@@ -119,7 +119,6 @@ export default function NotificationItem({ notification }: NotificationItemProps
         <div className="text-sm text-gray-700 leading-relaxed">
           <span 
             className="font-medium text-gray-900 cursor-pointer hover:opacity-80 transition-opacity"
-            style={{ color: '#7E44C6' }}
             onClick={handleUserClick}
           >
             {notification.user?.name}

@@ -51,6 +51,9 @@ export default function TagReportModal({ isOpen, onClose, tagName, tagId }: TagR
     
     // TODO: 调用API提交举报
     
+    // 显示成功提示
+    alert('举报已提交，我们会在24小时内审核处理');
+    
     // 关闭弹窗
     onClose();
     

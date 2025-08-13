@@ -422,7 +422,7 @@ export default function ArticleDetail() {
               {/* 引言上方横线 */}
               <hr className="border-gray-200 mb-6" />
               
-              <blockquote className="border-l-4 pl-4 text-gray-700 italic mb-8 font-italic" style={{ fontFamily: "'Source Han Sans CN', 'Source Han Sans', sans-serif", borderLeftColor: '#7E44C6' }}>
+              <blockquote className="text-gray-700 mb-8" style={{ fontFamily: "'Source Han Sans CN', 'Source Han Sans', sans-serif" }}>
                 {post.abstract}
               </blockquote>
               

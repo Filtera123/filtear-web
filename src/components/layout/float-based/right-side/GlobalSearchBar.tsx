@@ -132,7 +132,7 @@ const GlobalSearchBar: React.FC = () => {
   return (
     <div className="flex justify-center">
       <div className="relative w-full max-w-md">
-        <div className="flex items-center w-full bg-white rounded-full shadow-md transition-all">
+        <div className="flex items-center w-full bg-white rounded-full border border-gray-200 transition-all">
           <input
             ref={searchInputRef}
             name="global-search"
@@ -144,7 +144,13 @@ const GlobalSearchBar: React.FC = () => {
             value={query}
             maxLength={30}
             onChange={(e) => setQuery(e.target.value)}
-            onFocus={handleFocus}
+            onFocus={(e) => {
+              handleFocus();
+              (e.target as HTMLInputElement).parentElement!.style.borderColor = '#7E44C6';
+            }}
+            onBlur={(e) => {
+              (e.target as HTMLInputElement).parentElement!.style.borderColor = '#e5e7eb';
+            }}
             onKeyDown={handleEnterKey}
             className="w-full pl-4 pr-2 py-2 bg-transparent rounded-full focus:outline-none text-gray-700 placeholder-gray-400"
           />
@@ -181,7 +187,7 @@ const GlobalSearchBar: React.FC = () => {
         />
 
         {isHistoryVisible && !query && historyList.length > 0 && (
-          <div className="absolute bg-white w-full mt-2 border border-gray-300 rounded-sm z-10 max-h-96 overflow-y-auto">
+          <div className="absolute bg-white w-full mt-2 border border-gray-300 rounded-lg z-10 max-h-96 overflow-y-auto" style={{ boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15), 0 0 10px rgba(0, 0, 0, 0.1)' }}>
             <div className="flex justify-between items-center px-4 py-2 font-bold text-sm">
               <span>最近搜索</span>
               <button onClick={handleClearAllHistory} className="text-gray-500 text-sm">

@@ -8,7 +8,6 @@ import {
   RadioGroup, 
   FormControlLabel, 
   Radio, 
-  Box, 
   Alert,
   CircularProgress,
   Snackbar,
@@ -23,7 +22,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs, { Dayjs } from 'dayjs';
 import 'dayjs/locale/zh-cn';
 import { useForm, Controller } from 'react-hook-form';
-import { IconUpload, IconTrash, IconCheck, IconX } from '@tabler/icons-react';
+import { IconUpload, IconTrash, IconCheck } from '@tabler/icons-react';
 
 interface AccountInfoForm {
   nickname: string;
@@ -298,23 +297,19 @@ export default function AccountInfo() {
             </Alert>
           )}
         </div>
-
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* 个人形象 */}
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          {/* 个人信息 */}
           <Card>
             <CardContent className="p-6">
-              <Typography variant="h6" className="font-semibold mb-4">
-                个人形象
+              <Typography variant="h6" className="font-bold text-gray-900 mb-6">
+                个人信息
               </Typography>
               
-              <div className="space-y-6">
-                {/* 头像上传 */}
-                <div>
-                  <Typography variant="body2" className="mb-2 font-medium">
-                    头像
-                  </Typography>
-                  <div className="flex items-center space-x-4">
-                    <div className="relative w-20 h-20 rounded-full border-2 border-gray-200 overflow-hidden flex items-center justify-center bg-gray-50">
+              <div className="flex flex-col lg:flex-row gap-8">
+                {/* 头像上传区域 - 居中 */}
+                <div className="flex flex-col items-center">
+                  <div className="relative mb-4">
+                    <div className="w-32 h-32 rounded-full border-4 border-gray-100 overflow-hidden bg-gray-50 flex items-center justify-center">
                       {uploadState.avatar ? (
                         <img 
                           src={uploadState.avatar} 
@@ -322,31 +317,36 @@ export default function AccountInfo() {
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <div className="text-gray-400 text-xs text-center">
-                          无头像
-                        </div>
-                      )}
-                      {loading.avatar && (
-                        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                          <CircularProgress size={24} sx={{ color: 'white' }} />
+                        <div className="text-gray-400 text-center">
+                          <svg className="w-12 h-12 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                          <div className="text-sm">无头像</div>
                         </div>
                       )}
                     </div>
-                    <div className="space-y-2">
-                      <Button 
-                        variant="outlined" 
-                        size="small"
-                        startIcon={<IconUpload size={16} />}
-                        onClick={handleAvatarUpload}
-                        disabled={loading.avatar}
-                      >
-                        {loading.avatar ? '上传中...' : '上传头像'}
-                      </Button>
-                      <Typography variant="caption" className="block text-gray-500">
-                        支持 JPG、PNG、WebP 格式，最大 5MB
-                      </Typography>
-                    </div>
+                    {loading.avatar && (
+                      <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
+                        <CircularProgress size={32} sx={{ color: 'white' }} />
+                      </div>
+                    )}
                   </div>
+                  <Button 
+                    variant="contained"
+                    startIcon={<IconUpload size={16} />}
+                    onClick={handleAvatarUpload}
+                    disabled={loading.avatar}
+                    sx={{
+                      backgroundColor: '#7E44C6',
+                      '&:hover': { backgroundColor: '#6D38B1' },
+                      mb: 2
+                    }}
+                  >
+                    {loading.avatar ? '上传中...' : '上传头像'}
+                  </Button>
+                  <Typography variant="caption" className="text-gray-500 text-center">
+                    支持 JPG、PNG、WebP<br/>最大 5MB
+                  </Typography>
                   <input
                     ref={avatarInputRef}
                     type="file"
@@ -356,164 +356,194 @@ export default function AccountInfo() {
                   />
                 </div>
 
-                {/* 背景图片上传 */}
-                <div>
-                  <Typography variant="body2" className="mb-2 font-medium">
-                    个人主页背景
-                  </Typography>
-                  <div className="flex flex-col space-y-3">
-                    <div className="relative w-full h-32 rounded-md border-2 border-gray-200 overflow-hidden flex items-center justify-center bg-gray-50">
-                      {uploadState.background ? (
-                        <img 
-                          src={uploadState.background} 
-                          alt={`${watchedValues.nickname || '用户'}的主页背景`}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="text-gray-400 text-center">
-                          <div>无背景图</div>
-                          <div className="text-xs mt-1">推荐尺寸 1500×500</div>
-                        </div>
-                      )}
-                      {loading.background && (
-                        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                          <CircularProgress size={32} sx={{ color: 'white' }} />
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex space-x-2">
-                      <Button 
-                        variant="outlined" 
+                {/* 昵称和个人简介 */}
+                <div className="flex-1 space-y-6">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">用户昵称</label>
+                    <Controller
+                      name="nickname"
+                      control={control}
+                      rules={{ 
+                        required: '昵称不能为空',
+                        validate: validateNickname
+                      }}
+                      render={({ field }) => (
+                                              <TextField
+                        {...field}
+                        placeholder="用户昵称"
+                        fullWidth
+                        variant="outlined"
                         size="small"
-                        startIcon={<IconUpload size={16} />}
-                        onClick={handleBackgroundUpload}
-                        disabled={loading.background}
-                      >
-                        {loading.background ? '上传中...' : '上传背景图'}
-                      </Button>
-                      {uploadState.background && (
-                        <Button 
-                          variant="text" 
-                          size="small" 
-                          color="error"
-                          startIcon={<IconTrash size={16} />}
-                          onClick={handleRemoveBackground}
-                        >
-                          移除背景图
-                        </Button>
+                        error={!!errors.nickname}
+                        helperText={errors.nickname?.message || "您的显示名称，其他用户将看到此名称"}
+                        inputProps={{ maxLength: 20 }}
+                        />
                       )}
-                    </div>
-                    <Typography variant="caption" className="text-gray-500">
-                      推荐尺寸 1500×500 像素，支持 JPG、PNG、WebP 格式，最大 10MB
-                    </Typography>
+                    />
                   </div>
-                  <input
-                    ref={backgroundInputRef}
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                    onChange={onBackgroundChange}
-                    style={{ display: 'none' }}
-                  />
+                  
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">个人简介</label>
+                    <Controller
+                      name="bio"
+                      control={control}
+                      rules={{
+                        maxLength: { value: maxBioLength, message: `简介不能超过${maxBioLength}个字符` }
+                      }}
+                      render={({ field }) => (
+                                              <TextField
+                        {...field}
+                        placeholder="介绍一下自己吧..."
+                        fullWidth
+                        multiline
+                        rows={3}
+                        variant="outlined"
+                        error={!!errors.bio}
+                        helperText={
+                          errors.bio?.message || 
+                          `简要介绍自己，让其他用户更好地了解您 (${bioLength}/${maxBioLength})`
+                        }
+                        inputProps={{ maxLength: maxBioLength }}
+                        sx={{
+                          '& .MuiInputBase-root': {
+                            '& textarea': {
+                              color: bioLength > maxBioLength ? 'error.main' : 'inherit'
+                            }
+                          }
+                        }}
+                        />
+                      )}
+                    />
+                  </div>
                 </div>
               </div>
             </CardContent>
           </Card>
-          
-          {/* 基础信息 */}
+
+          {/* 背景图片 */}
           <Card>
             <CardContent className="p-6">
-              <Typography variant="h6" className="font-semibold mb-4">
-                基础信息
+              <Typography variant="h6" className="font-bold text-gray-900 mb-6">
+                个人主页背景
               </Typography>
               
-              <div className="space-y-4">
-                <Controller
-                  name="nickname"
-                  control={control}
-                  rules={{ 
-                    required: '昵称不能为空',
-                    validate: validateNickname
-                  }}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      placeholder="请输入昵称"
-                      fullWidth
-                      variant="outlined"
-                      size="small"
-                      error={!!errors.nickname}
-                      helperText={errors.nickname?.message || "您的显示名称，其他用户将看到此名称"}
-                      inputProps={{ maxLength: 20 }}
+              <div className="flex items-center space-x-6">
+                <div className="relative w-48 h-24 rounded-lg border-2 border-dashed border-gray-300 overflow-hidden flex items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors">
+                  {uploadState.background ? (
+                    <img 
+                      src={uploadState.background} 
+                      alt={`${watchedValues.nickname || '用户'}的主页背景`}
+                      className="w-full h-full object-cover"
                     />
+                  ) : (
+                    <div className="text-gray-500 text-center">
+                      <svg className="w-8 h-8 mx-auto mb-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <div className="text-xs">无背景图</div>
+                    </div>
                   )}
-                />
+                  {loading.background && (
+                    <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                      <CircularProgress size={24} sx={{ color: 'white' }} />
+                    </div>
+                  )}
+                </div>
                 
-                <Controller
-                  name="bio"
-                  control={control}
-                  rules={{
-                    maxLength: { value: maxBioLength, message: `简介不能超过${maxBioLength}个字符` }
-                  }}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      placeholder="介绍一下自己吧..."
-                      fullWidth
-                      multiline
-                      rows={3}
-                      variant="outlined"
-                      error={!!errors.bio}
-                      helperText={
-                        errors.bio?.message || 
-                        `简要介绍自己，让其他用户更好地了解您 (${bioLength}/${maxBioLength})`
-                      }
-                      inputProps={{ maxLength: maxBioLength }}
+                <div className="flex-1 space-y-3">
+                  <div className="flex space-x-3">
+                    <Button 
+                      variant="contained"
+                      startIcon={<IconUpload size={16} />}
+                      onClick={handleBackgroundUpload}
+                      disabled={loading.background}
                       sx={{
-                        '& .MuiInputBase-root': {
-                          '& textarea': {
-                            color: bioLength > maxBioLength ? 'error.main' : 'inherit'
-                          }
-                        }
+                        backgroundColor: '#7E44C6',
+                        '&:hover': { backgroundColor: '#6D38B1' }
                       }}
-                    />
-                  )}
-                />
+                    >
+                      {loading.background ? '上传中...' : '上传背景图'}
+                    </Button>
+                    {uploadState.background && (
+                      <Button 
+                        variant="outlined"
+                        color="error"
+                        startIcon={<IconTrash size={16} />}
+                        onClick={handleRemoveBackground}
+                      >
+                        删除背景图
+                      </Button>
+                    )}
+                  </div>
+                  <Typography variant="body2" className="text-gray-600">
+                    推荐尺寸 1500×500 像素，支持 JPG、PNG、WebP 格式，最大 10MB
+                  </Typography>
+                </div>
               </div>
+              
+              <input
+                ref={backgroundInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={onBackgroundChange}
+                style={{ display: 'none' }}
+              />
             </CardContent>
           </Card>
 
-          {/* 个人资料 */}
+          {/* 其他资料 */}
           <Card>
             <CardContent className="p-6">
-              <Typography variant="h6" className="font-semibold mb-4">
-                个人资料
+              <Typography variant="h6" className="font-bold text-gray-900 mb-6">
+                其他资料
               </Typography>
               
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {/* 性别选择 */}
                 <div>
-                  <Typography variant="body2" className="mb-2 font-medium">
-                    性别 <Typography variant="caption" className="text-gray-500">(可选)</Typography>
-                  </Typography>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">
+                    性别 <span className="text-gray-500 font-normal">(可选)</span>
+                  </label>
                   <Controller
                     name="gender"
                     control={control}
                     render={({ field }) => (
-                      <RadioGroup {...field} row>
+                      <RadioGroup {...field} row sx={{ gap: 2 }}>
                         <FormControlLabel 
                           value="female" 
-                          control={<Radio size="small" />} 
-                          label="女" 
+                          control={<Radio sx={{ color: '#7E44C6', '&.Mui-checked': { color: '#7E44C6' } }} />} 
+                          label="女"
+                          sx={{
+                            backgroundColor: field.value === 'female' ? '#F3E8FF' : 'transparent',
+                            borderRadius: '8px',
+                            padding: '8px 12px',
+                            margin: 0,
+                            transition: 'all 0.2s'
+                          }}
                         />
                         <FormControlLabel 
                           value="male" 
-                          control={<Radio size="small" />} 
-                          label="男" 
+                          control={<Radio sx={{ color: '#7E44C6', '&.Mui-checked': { color: '#7E44C6' } }} />} 
+                          label="男"
+                          sx={{
+                            backgroundColor: field.value === 'male' ? '#F3E8FF' : 'transparent',
+                            borderRadius: '8px',
+                            padding: '8px 12px',
+                            margin: 0,
+                            transition: 'all 0.2s'
+                          }}
                         />
                         <FormControlLabel 
                           value="other" 
-                          control={<Radio size="small" />} 
-                          label="其他" 
+                          control={<Radio sx={{ color: '#7E44C6', '&.Mui-checked': { color: '#7E44C6' } }} />} 
+                          label="其他"
+                          sx={{
+                            backgroundColor: field.value === 'other' ? '#F3E8FF' : 'transparent',
+                            borderRadius: '8px',
+                            padding: '8px 12px',
+                            margin: 0,
+                            transition: 'all 0.2s'
+                          }}
                         />
                       </RadioGroup>
                     )}
@@ -522,9 +552,9 @@ export default function AccountInfo() {
 
                 {/* 生日日历选择 */}
                 <div>
-                  <Typography variant="body2" className="mb-2 font-medium">
-                    生日 <Typography variant="caption" className="text-gray-500">(可选)</Typography>
-                  </Typography>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">
+                    生日 <span className="text-gray-500 font-normal">(可选)</span>
+                  </label>
                   <Controller
                     name="birthDate"
                     control={control}
@@ -537,10 +567,10 @@ export default function AccountInfo() {
                         slotProps={{
                           textField: {
                             placeholder: '请选择生日',
-                            size: 'small',
                             fullWidth: false,
-                            style: { width: '200px' },
-                            helperText: '点击选择您的生日'
+                            style: { width: '250px' },
+                            helperText: '点击选择您的生日',
+                            sx: {}
                           },
                           actionBar: {
                             actions: ['clear', 'today', 'cancel', 'accept']
@@ -555,14 +585,13 @@ export default function AccountInfo() {
             </CardContent>
           </Card>
 
-          {/* 提交按钮 - 固定在页面底部 */}
-          <Card className="sticky bottom-4 shadow-lg">
-            <CardContent className="p-4">
+          {/* 提交按钮 */}
+          <Card>
+            <CardContent className="p-6">
               <div className="flex justify-between items-center">
                 <div className="text-sm text-gray-600">
                   {unsavedChanges && (
-                    <span className="flex items-center">
-                      <div className="w-2 h-2 rounded-full mr-2" style={{ backgroundColor: '#7E44C6' }}></div>
+                    <span className="text-orange-600">
                       有未保存的更改
                     </span>
                   )}
@@ -570,7 +599,6 @@ export default function AccountInfo() {
                 <div className="flex space-x-3">
                   <Button 
                     variant="outlined" 
-                    color="inherit"
                     onClick={handleCancel}
                     disabled={loading.save}
                   >
@@ -579,9 +607,12 @@ export default function AccountInfo() {
                   <Button 
                     type="submit" 
                     variant="contained" 
-                    sx={{ backgroundColor: '#7E44C6', '&:hover': { backgroundColor: '#6D38B1' } }}
                     disabled={loading.save}
                     startIcon={loading.save ? <CircularProgress size={16} color="inherit" /> : <IconCheck size={16} />}
+                    sx={{
+                      backgroundColor: '#7E44C6',
+                      '&:hover': { backgroundColor: '#6D38B1' }
+                    }}
                   >
                     {loading.save ? '保存中...' : '保存更改'}
                   </Button>
@@ -589,7 +620,7 @@ export default function AccountInfo() {
               </div>
             </CardContent>
           </Card>
-        </form>
+          </form>
 
         {/* 消息提示 */}
         <Snackbar
@@ -608,7 +639,10 @@ export default function AccountInfo() {
         </Snackbar>
 
         {/* 确认对话框 */}
-        <Dialog open={confirmDialog.open} onClose={() => setConfirmDialog(prev => ({ ...prev, open: false }))}>
+        <Dialog 
+          open={confirmDialog.open} 
+          onClose={() => setConfirmDialog(prev => ({ ...prev, open: false }))}
+        >
           <DialogTitle>{confirmDialog.title}</DialogTitle>
           <DialogContent>
             <Typography>{confirmDialog.message}</Typography>
@@ -617,12 +651,19 @@ export default function AccountInfo() {
             <Button onClick={() => setConfirmDialog(prev => ({ ...prev, open: false }))}>
               取消
             </Button>
-            <Button onClick={confirmDialog.onConfirm} color="primary" variant="contained">
+            <Button 
+              onClick={confirmDialog.onConfirm} 
+              variant="contained"
+              sx={{
+                backgroundColor: '#7E44C6',
+                '&:hover': { backgroundColor: '#6D38B1' }
+              }}
+            >
               确认
             </Button>
           </DialogActions>
         </Dialog>
-      </div>
+    </div>
     </LocalizationProvider>
   );
 } 

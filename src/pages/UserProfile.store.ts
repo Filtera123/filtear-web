@@ -196,6 +196,7 @@ export const mockGetUserPosts = (userId: string, tab: ProfileTab, filter: WorksF
         const basePost = withAuthorIp({
           id: `${userId}-post-${i}`,
           author: `用户${userId}`,
+          authorId: userId,
           authorAvatar: `https://picsum.photos/id/${Math.floor(Math.random() * 100)}/40/40`,
           content: `这是${tab}类型的第${i + 1}个帖子内容。这里是更详细的内容描述，包含了更多的文字内容，用于展示帖子的具体信息。`,
           title: `帖子标题 ${i + 1}`,

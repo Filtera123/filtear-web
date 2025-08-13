@@ -65,15 +65,21 @@ export default function DetailPageHeader({ className = '' }: DetailPageHeaderPro
           <div className="flex-1 max-w-xl mx-4 relative">
             <form
               onSubmit={handleSearch}
-              className="flex items-center w-full bg-white rounded-full shadow-md transition-all"
+              className="flex items-center w-full bg-white rounded-full border border-gray-200 transition-all"
             >
               <input
                 type="text"
                 placeholder="搜索Filtera"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                onFocus={() => setShowSuggestions(true)}
-                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                onFocus={(e) => {
+                  setShowSuggestions(true);
+                  (e.target as HTMLInputElement).parentElement!.style.borderColor = '#7E44C6';
+                }}
+                onBlur={(e) => {
+                  setTimeout(() => setShowSuggestions(false), 200);
+                  (e.target as HTMLInputElement).parentElement!.style.borderColor = '#e5e7eb';
+                }}
                 className="w-full h-9 pl-4 pr-2 bg-transparent rounded-full focus:outline-none text-gray-700 placeholder-gray-400"
               />
               <button

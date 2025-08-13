@@ -15,6 +15,7 @@ export type PostTypeValue = (typeof PostType)[keyof typeof PostType];
 export interface BasePost {
   id: string;
   author: string;
+  authorId?: string; // 新增：作者ID，用于导航
   authorAvatar: string;
   authorIpLocation?: string; // 新增：作者IP地址
   createdAt: string;

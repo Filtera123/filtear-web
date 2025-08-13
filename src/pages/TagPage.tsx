@@ -1,6 +1,7 @@
-import React, { useEffect, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTagPageStore } from './TagPage.store';
+import { useTagSubscriptionStore } from '../stores/tagSubscriptionStore';
 import { Tabs } from '@chakra-ui/react';
 import { 
   TAG_PAGE_TABS, 
@@ -12,7 +13,6 @@ import {
   type LatestSubTab,
   type HotSubTab,
   type ContentFilter,
-  type ViewMode,
   type TagDetail 
 } from './TagPage.types';
 import TagVirtualPostList from './TagVirtualPostList';
@@ -39,6 +39,9 @@ export default function TagPage() {
     resetState,
   } = useTagPageStore();
 
+  // 获取全局订阅状态
+  const { subscribedTags } = useTagSubscriptionStore();
+
   // 使用滚动方向检测hook
   const { isVisible } = useScrollDirection({ 
     threshold: 20 // 滚动20px后才触发显示/隐藏
@@ -47,6 +50,11 @@ export default function TagPage() {
   // 初始化标签详情数据
   useEffect(() => {
     if (tagName) {
+      // 检查当前tag是否已订阅
+      const isSubscribed = subscribedTags.some(
+        subscribedTag => subscribedTag.name === tagName || subscribedTag.id === tagName
+      );
+
       // 这里应该调用真实的API获取标签详情
       const mockTagDetail: TagDetail = {
         id: tagName,
@@ -57,13 +65,30 @@ export default function TagPage() {
           postCount: Math.floor(Math.random() * 5000) + 100,
           followerCount: Math.floor(Math.random() * 10000) + 500,
         },
-        isSubscribed: Math.random() > 0.5,
+        isSubscribed: isSubscribed, // 基于真实订阅状态
         isBlocked: false,
         color: '#7E44C6',
       };
       setTagDetail(mockTagDetail);
     }
   }, [tagName, setTagDetail]);
+
+  // 单独监听订阅状态变化，只更新isSubscribed字段
+  useEffect(() => {
+    if (tagName && tagDetail) {
+      const isSubscribed = subscribedTags.some(
+        subscribedTag => subscribedTag.name === tagName || subscribedTag.id === tagName
+      );
+      
+      // 只有当订阅状态真的发生变化时才更新
+      if (tagDetail.isSubscribed !== isSubscribed) {
+        setTagDetail({
+          ...tagDetail,
+          isSubscribed: isSubscribed
+        });
+      }
+    }
+  }, [subscribedTags, tagName, tagDetail, setTagDetail]);
 
   // 清理状态
   useEffect(() => {

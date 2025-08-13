@@ -5,6 +5,7 @@ export interface BrowsingRecord {
   id: string;
   title: string;
   author: string;
+  authorId?: string; // 新增：作者ID，用于导航
   authorAvatar?: string;
   type: 'article' | 'image' | 'dynamic' | 'video';
   viewTime: string; // ISO date string

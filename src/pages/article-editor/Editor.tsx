@@ -38,6 +38,7 @@ const Editor = () => {
       <StyledTextField
         required
         className="w-full bg-white rounded-md"
+        label="文章标题"
         variant="standard"
         placeholder="请输入文章标题"
         value={article.title}
@@ -51,6 +52,7 @@ const Editor = () => {
       />
       <StyledTextField
         className="w-full bg-white  rounded-md"
+        label="引言"
         variant="standard"
         placeholder="请输入引言"
         value={article.summary}

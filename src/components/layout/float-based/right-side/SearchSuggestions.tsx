@@ -130,7 +130,8 @@ const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({ query, onSuggesti
 
   return (
     <div
-      className={`absolute bg-white w-full mt-2 border border-gray-300 rounded-sm z-10 max-h-96 overflow-y-auto ${layout === 'horizontal' ? 'p-4' : ''}`}
+      className={`absolute bg-white w-full mt-2 border border-gray-300 rounded-lg z-10 max-h-96 overflow-y-auto ${layout === 'horizontal' ? 'p-4' : ''}`}
+      style={{ boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15), 0 0 10px rgba(0, 0, 0, 0.1)' }}
       ref={suggestionsRef}
     >
       {loading && <div className="px-4 py-2 text-sm text-gray-500">加载中...</div>}

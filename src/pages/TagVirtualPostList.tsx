@@ -38,6 +38,7 @@ const fetchTagPosts = async (
       title: `关于 #${tagName} 的帖子 ${pageParam * pageSize + i + 1}`,
       content: `这是关于 ${tagName} 标签的内容，当前筛选：${tab} - ${subTab} - ${contentFilter}`,
       author: `用户${i + 1}`,
+      authorId: `user${i + 1}`,
       authorAvatar: `https://picsum.photos/40/40?random=${i}`,
       authorIpLocation: getRandomIpLocation(i + pageParam * pageSize),
       createdAt: new Date(Date.now() - Math.random() * 86400000 * 7).toISOString(),
@@ -400,7 +401,8 @@ export default function TagVirtualPostList({ tagName }: TagVirtualPostListProps)
   const handleUserProfileClick = useCallback(
     (e: React.MouseEvent, post: any) => {
       e.stopPropagation();
-      navigate(`/user/${post.author}`);
+      const userId = post.authorId || post.author?.replace(/[^a-zA-Z0-9]/g, '') || 'unknown';
+      navigate(`/user/${userId}`);
     },
     [navigate]
   );

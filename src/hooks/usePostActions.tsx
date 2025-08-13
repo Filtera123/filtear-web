@@ -106,7 +106,8 @@ export function usePostActions(post?: BasePost) {
   // ✅ 点击作者头像或名字跳转
   const handleUserClick = () => {
     if (post?.author) {
-      navigate(`/user/${post.author}`);
+      const userId = post.authorId || post.author?.replace(/[^a-zA-Z0-9]/g, '') || 'unknown';
+      navigate(`/user/${userId}`);
     }
   };
 

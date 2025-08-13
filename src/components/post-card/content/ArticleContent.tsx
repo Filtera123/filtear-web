@@ -1,6 +1,5 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Blockquote, Float } from '@chakra-ui/react';
+import { Blockquote } from '@chakra-ui/react';
 import type { ArticlePost } from '../post.types';
 
 interface ArticleContentProps {
@@ -37,12 +36,9 @@ export default function ArticleContent({ post }: ArticleContentProps) {
           
           <Blockquote.Root
             variant="plain"
-            className="text-gray-700 ml-4 cursor-pointer hover:text-gray-900 mb-4 italic"
+            className="text-gray-700 ml-4 cursor-pointer hover:text-gray-900 mb-4"
             onClick={onPostClick}
           >
-            <Float placement="top-start" offsetY="2">
-              <Blockquote.Icon />
-            </Float>
             <Blockquote.Content cite="Uzumaki Naruto">
               <span className="line-clamp-3">{post.abstract}</span>
             </Blockquote.Content>

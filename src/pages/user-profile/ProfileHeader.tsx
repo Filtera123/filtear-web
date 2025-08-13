@@ -209,7 +209,7 @@ export default function ProfileHeader({
               // 自己的主页：显示编辑资料按钮
               <button
                 onClick={onEditProfile}
-                className="flex items-center space-x-1 px-3 py-1.5 bg-white/90 text-gray-700 rounded-full text-sm hover:bg-white transition-colors"
+                className="flex items-center space-x-1 px-3 py-1.5 bg-white/90 text-gray-700 rounded-full text-sm border border-gray-200 hover:bg-white hover:border-purple-300 hover:text-purple-600 hover:shadow-md transition-all duration-200"
               >
                 <IconEdit size={14} />
                 <span>编辑资料</span>

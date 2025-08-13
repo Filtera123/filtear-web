@@ -231,7 +231,6 @@ export default function PostFooter({
             </button>
           </div>
         </div>
-        <div>SC</div>
       </div>
 
 

@@ -45,7 +45,8 @@ export default function BasePostCard({
 
   // 处理用户头像点击事件
   const handleUserAvatarClick = () => {
-    navigate(`/user/${post.author}`);
+    const userId = post.authorId || post.author?.replace(/[^a-zA-Z0-9]/g, '') || 'unknown';
+    navigate(`/user/${userId}`);
   };
 
   // 根据帖子类型生成详情页URL

@@ -105,11 +105,17 @@ export default function CommentItem({
           {/* 用户名和时间 */}
           <div className="flex items-center space-x-2 mb-1">
             <span 
-              className="font-medium text-sm text-gray-900 cursor-pointer hover:opacity-80 transition-opacity"
-              style={{ color: '#7E44C6' }}
+              className="font-medium text-sm cursor-pointer hover:opacity-80 transition-opacity"
               onClick={() => onUserClick?.(comment.userId)}
             >
-              {comment.userName}
+              {comment.userName.startsWith('回复') ? (
+                <>
+                  <span className="text-gray-400">回复</span>
+                  <span className="text-gray-900 ml-1">{comment.userName.slice(2)}</span>
+                </>
+              ) : (
+                <span className="text-gray-900">{comment.userName}</span>
+              )}
             </span>
             <span className="text-xs text-gray-500">{formatTime(comment.createdAt)}</span>
             {comment.userIpLocation && (
@@ -149,10 +155,8 @@ export default function CommentItem({
             {level < maxLevel && (
               <button 
                 onClick={() => onReplyClick?.(comment)}
-                className="text-xs text-gray-500 hover:opacity-80 transition-opacity"
-
-                onMouseEnter={(e) => (e.target as HTMLElement).style.color = '#7E44C6'}
-            onMouseLeave={(e) => (e.target as HTMLElement).style.color = '#6b7280'}
+                className="text-xs hover:opacity-80 transition-opacity"
+                style={{ color: '#7E44C6' }}
               >
                 回复
               </button>
