@@ -23,6 +23,8 @@ import dayjs, { Dayjs } from 'dayjs';
 import 'dayjs/locale/zh-cn';
 import { useForm, Controller } from 'react-hook-form';
 import { IconUpload, IconTrash, IconCheck } from '@tabler/icons-react';
+import { ImageCropModal } from '../../components/ImageCropModal';
+import { API_CONFIG, apiRequest } from '../../config/api';
 
 interface AccountInfoForm {
   nickname: string;
@@ -68,6 +70,11 @@ export default function AccountInfo() {
     title: '',
     message: '',
     onConfirm: () => {}
+  });
+  const [cropModal, setCropModal] = useState({
+    open: false,
+    file: null as File | null,
+    type: 'avatar' as 'avatar' | 'background'
   });
 
   // 文件上传引用
@@ -125,8 +132,8 @@ export default function AccountInfo() {
     setSnackbar({ open: true, message, severity });
   };
 
-  // 文件上传处理
-  const handleFileUpload = async (file: File, type: 'avatar' | 'background') => {
+  // 文件选择处理 - 打开裁剪弹窗
+  const handleFileSelect = (file: File, type: 'avatar' | 'background') => {
     // 文件格式验证
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
@@ -142,37 +149,63 @@ export default function AccountInfo() {
       return;
     }
 
-    // 图片尺寸验证（仅背景图）
-    if (type === 'background') {
-      const img = new Image();
-      const objectUrl = URL.createObjectURL(file);
-      
-      img.onload = () => {
-        URL.revokeObjectURL(objectUrl);
-        if (img.width < 800 || img.height < 300) {
-          showSnackbar('背景图建议尺寸至少 800×300 像素', 'warning');
-        }
-      };
-      img.src = objectUrl;
-    }
+    // 打开裁剪弹窗
+    setCropModal({
+      open: true,
+      file: file,
+      type: type
+    });
+  };
 
+  // 裁剪完成后上传
+  const handleCropComplete = async (croppedFile: File) => {
+    setCropModal({ open: false, file: null, type: 'avatar' });
+    const type = cropModal.type;
+    
     setLoading(prev => ({ ...prev, [type]: true }));
 
     try {
-      // 模拟上传API调用
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // 创建FormData
+      const formData = new FormData();
+      formData.append('file', croppedFile);
+
+      // 使用配置文件中的API地址
+      const response = await apiRequest(API_CONFIG.ENDPOINTS.FILE_UPLOAD, {
+        method: 'POST',
+        body: formData,
+        // 注意：上传文件时不要设置Content-Type，让浏览器自动设置
+        headers: {}, 
+      });
+
+      const result = await response.json();
       
-      // 创建预览URL
-      const previewUrl = URL.createObjectURL(file);
-      setUploadState(prev => ({ ...prev, [type]: previewUrl }));
-      
-      showSnackbar(type === 'avatar' ? '头像上传成功' : '背景图上传成功', 'success');
-      setUnsavedChanges(true);
+      if (result.code === 200 && result.data) {
+        // 使用OSS key生成预览URL
+        const previewUrl = `https://your-oss-domain.com${result.data}`;
+        setUploadState(prev => ({ ...prev, [type]: previewUrl }));
+        showSnackbar(type === 'avatar' ? '头像上传成功' : '背景图上传成功', 'success');
+        setUnsavedChanges(true);
+        
+        console.log('✅ 上传成功:', {
+          type,
+          ossKey: result.data,
+          fileSize: croppedFile.size
+        });
+      } else {
+        throw new Error(result.message || '上传失败');
+      }
     } catch (error) {
-      showSnackbar('上传失败，请重试', 'error');
+      console.error('💥 上传失败:', error);
+      const errorMsg = error instanceof Error ? error.message : '上传失败，请重试';
+      showSnackbar(errorMsg, 'error');
     } finally {
       setLoading(prev => ({ ...prev, [type]: false }));
     }
+  };
+
+  // 取消裁剪
+  const handleCropCancel = () => {
+    setCropModal({ open: false, file: null, type: 'avatar' });
   };
 
   // 头像上传
@@ -183,7 +216,7 @@ export default function AccountInfo() {
   const onAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      handleFileUpload(file, 'avatar');
+      handleFileSelect(file, 'avatar');
     }
     // 重置input值，允许重复选择同一文件
     event.target.value = '';
@@ -197,7 +230,7 @@ export default function AccountInfo() {
   const onBackgroundChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      handleFileUpload(file, 'background');
+      handleFileSelect(file, 'background');
     }
     event.target.value = '';
   };
@@ -663,6 +696,15 @@ export default function AccountInfo() {
             </Button>
           </DialogActions>
         </Dialog>
+
+        {/* 裁剪弹窗 */}
+        <ImageCropModal
+          open={cropModal.open}
+          imageFile={cropModal.file}
+          cropType={cropModal.type}
+          onCropComplete={handleCropComplete}
+          onCancel={handleCropCancel}
+        />
     </div>
     </LocalizationProvider>
   );

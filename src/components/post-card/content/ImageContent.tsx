@@ -32,7 +32,7 @@ const ImageItem: React.FC<{
   </div>
 );
 
-export default function ImageContent({ post, onImageClick }: ImageContentProps) {
+export default function ImageContent({ post }: ImageContentProps) {
   const navigate = useNavigate();
   
   // 图片查看状态
@@ -46,7 +46,6 @@ export default function ImageContent({ post, onImageClick }: ImageContentProps) 
 
   // 限制最多20张图片
   const limitedImages = post.images.slice(0, 20);
-  const imageCount = limitedImages.length;
 
   // 处理图片点击事件
   const handleImageClick = (index: number) => {
@@ -167,7 +166,7 @@ export default function ImageContent({ post, onImageClick }: ImageContentProps) 
   const imagesToRender = useMemo(() => limitedImages.slice(0, 9), [limitedImages]);
 
   // 主容器的通用样式
-  const containerClasses = 'grid h-[410px] rounded-2xl overflow-hidden gap-[2px] mb-3';
+  const containerClasses = 'grid overflow-hidden gap-[2px] mb-3 mr-10';
 
   // 处理文字内容点击事件
   const onPostClick = () => {
@@ -181,11 +180,12 @@ export default function ImageContent({ post, onImageClick }: ImageContentProps) 
     if (count === 1) {
       return (
         <div 
-          className="h-[410px] rounded-2xl overflow-hidden"
+          className="overflow-hidden mr-10"
           style={{ 
             aspectRatio,
             maxWidth: '100%',
-            width: 'fit-content'
+            width: 'fit-content',
+            maxHeight: '320px'
           }}
         >
           <ImageItem
@@ -201,7 +201,9 @@ export default function ImageContent({ post, onImageClick }: ImageContentProps) 
       return (
         <div className={`${containerClasses} grid-cols-2`}>
           {imagesToRender.map((img, index) => (
-            <ImageItem key={index} imageUrl={img.url} onClick={() => handleImageClick(index)} />
+            <div key={index} className="aspect-square">
+              <ImageItem imageUrl={img.url} onClick={() => handleImageClick(index)} />
+            </div>
           ))}
         </div>
       );
@@ -211,14 +213,19 @@ export default function ImageContent({ post, onImageClick }: ImageContentProps) 
       return (
         <div className={`${containerClasses} grid-cols-2 grid-rows-2`}>
           {/* 左侧大图，占据两行 */}
-          <ImageItem
-            imageUrl={imagesToRender[0].url}
-            className="row-span-2"
-            onClick={() => handleImageClick(0)}
-          />
+          <div className="row-span-2 aspect-[1/2]">
+            <ImageItem
+              imageUrl={imagesToRender[0].url}
+              onClick={() => handleImageClick(0)}
+            />
+          </div>
           {/* 右侧两张小图 */}
-          <ImageItem imageUrl={imagesToRender[1].url} onClick={() => handleImageClick(1)} />
-          <ImageItem imageUrl={imagesToRender[2].url} onClick={() => handleImageClick(2)} />
+          <div className="aspect-square">
+            <ImageItem imageUrl={imagesToRender[1].url} onClick={() => handleImageClick(1)} />
+          </div>
+          <div className="aspect-square">
+            <ImageItem imageUrl={imagesToRender[2].url} onClick={() => handleImageClick(2)} />
+          </div>
         </div>
       );
     }
@@ -227,7 +234,9 @@ export default function ImageContent({ post, onImageClick }: ImageContentProps) 
       return (
         <div className={`${containerClasses} grid-cols-2 grid-rows-2`}>
           {imagesToRender.map((img, index) => (
-            <ImageItem key={index} imageUrl={img.url} alt={img.alt} onClick={() => handleImageClick(index)} />
+            <div key={index} className="aspect-square">
+              <ImageItem imageUrl={img.url} alt={img.alt} onClick={() => handleImageClick(index)} />
+            </div>
           ))}
         </div>
       );
@@ -237,7 +246,9 @@ export default function ImageContent({ post, onImageClick }: ImageContentProps) 
       return (
         <div className={`${containerClasses} grid-cols-3 grid-rows-2`}>
           {imagesToRender.map((img, index) => (
-            <ImageItem key={index} imageUrl={img.url} alt={img.alt} onClick={() => handleImageClick(index)} />
+            <div key={index} className="aspect-square">
+              <ImageItem imageUrl={img.url} alt={img.alt} onClick={() => handleImageClick(index)} />
+            </div>
           ))}
         </div>
       );
@@ -251,7 +262,7 @@ export default function ImageContent({ post, onImageClick }: ImageContentProps) 
           const remainingCount = count - 9;
           
           return (
-            <div key={index} className="relative w-full h-full">
+            <div key={index} className="relative aspect-square">
               <ImageItem imageUrl={img.url} alt={img.alt} onClick={() => handleImageClick(index)} />
               {isLastDisplayed && (
                 <div className="absolute inset-0 bg-black/60 flex items-center justify-center cursor-pointer"
@@ -294,7 +305,7 @@ export default function ImageContent({ post, onImageClick }: ImageContentProps) 
       <div className="mb-3">
         {isViewing ? (
           // 图片查看模式
-          <div className="bg-gray-100 rounded-2xl overflow-hidden">
+          <div className="bg-gray-100 overflow-hidden mr-10">
             {/* 顶部工具栏 */}
             <div className="flex items-center justify-between p-3 bg-white border-b border-gray-200">
               <div className="flex items-center space-x-4">

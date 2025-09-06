@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import CommentSection from '@/components/comment/CommentSection';
 import { useCommentStore } from '@/components/comment/Comment.store';
 import type { DynamicPost } from '@/components/post-card/post.types';
@@ -13,22 +13,8 @@ import { useReportContext } from '@/components/report';
 import { mockPostsByType } from '@/mocks/post/data';
 
 export default function DynamicDetail() {
-  const getImageGridClass = (count: number) => {
-    switch (count) {
-      case 1:
-        return 'grid-cols-1';
-      case 2:
-        return 'grid-cols-2';
-      case 3:
-        return 'grid-cols-3';
-      case 4:
-        return 'grid-cols-2';
-      default:
-        return 'grid-cols-3';
-    }
-  };
-  const location = useLocation();
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
   const { postId } = useParams();
   const { state } = useLocation();
   
@@ -38,7 +24,6 @@ export default function DynamicDetail() {
     const mockDynamicPosts = (mockPostsByType as any)[PostType.DYNAMIC] as DynamicPost[];
     post = mockDynamicPosts.find(p => p.id === postId);
   }
-  const navigate = useNavigate();
   const { addRecord } = useBrowsingHistoryStore();
   const { openReportModal } = useReportContext();
 
@@ -89,9 +74,7 @@ export default function DynamicDetail() {
     handleUnfollow,
     handleUserClick,
     handleBlockUser,
-    handleReportUser,
     handleBlockPost,
-    handleReportPost,
     comments,
     views,
     formatNumber,
@@ -179,6 +162,57 @@ export default function DynamicDetail() {
     console.log('屏蔽用户:', userId);
     // TODO: 实现用户屏蔽逻辑
   };
+
+  // 图片预览相关函数
+  const handleImageClick = (imageUrl: string, index: number) => {
+    setPreviewImage(imageUrl);
+    setCurrentImageIndex(index);
+  };
+
+  const closeImagePreview = () => {
+    setPreviewImage(null);
+    setCurrentImageIndex(0);
+  };
+
+  const nextImage = () => {
+    if (post?.images && currentImageIndex < post.images.length - 1) {
+      const newIndex = currentImageIndex + 1;
+      setCurrentImageIndex(newIndex);
+      setPreviewImage(post.images[newIndex].url);
+    }
+  };
+
+  const prevImage = () => {
+    if (post?.images && currentImageIndex > 0) {
+      const newIndex = currentImageIndex - 1;
+      setCurrentImageIndex(newIndex);
+      setPreviewImage(post.images[newIndex].url);
+    }
+  };
+
+  // 键盘事件处理
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!previewImage || !post?.images) return;
+      
+      switch (e.key) {
+        case 'Escape':
+          closeImagePreview();
+          break;
+        case 'ArrowLeft':
+          prevImage();
+          break;
+        case 'ArrowRight':
+          nextImage();
+          break;
+      }
+    };
+
+    if (previewImage) {
+      document.addEventListener('keydown', handleKeyDown);
+      return () => document.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [previewImage, currentImageIndex, post?.images]);
 
   return (
     <>
@@ -358,7 +392,7 @@ export default function DynamicDetail() {
 
           {/* 图片展示 */}
           {post.images && post.images.length > 0 && (
-            <div className="mb-6">
+            <div className="mb-6 mr-10">
               <div
                 className={`grid gap-2 ${
                   post.images.length === 1
@@ -377,14 +411,15 @@ export default function DynamicDetail() {
                   return (
                     <div
                       key={index}
-                      className={`relative rounded-lg overflow-hidden bg-gray-100 hover:opacity-95 transition-opacity ${
+                      className={`relative overflow-hidden bg-gray-100 hover:opacity-95 transition-opacity ${
                         post.images && post.images.length === 1 ? 'aspect-[4/3]' : 'aspect-square'
                       }`}
                     >
                       <img
                         src={image.url}
                         alt={image.alt || `${post.title} - 配图 ${index + 1}`}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform duration-200"
+                        onClick={() => handleImageClick(image.url, index)}
                         onError={(e) => {
                           e.currentTarget.onerror = null;
                           e.currentTarget.src = '/fallback-image.png'; // 默认图
@@ -451,6 +486,77 @@ export default function DynamicDetail() {
           )}
         </main>
       </div>
+
+      {/* 图片预览模态框 */}
+      {previewImage && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90">
+          {/* 关闭按钮 */}
+          <button
+            onClick={closeImagePreview}
+            className="absolute top-4 right-4 text-white hover:text-gray-300 z-10"
+          >
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+
+          {/* 图片计数 */}
+          {post?.images && post.images.length > 1 && (
+            <div className="absolute top-4 left-1/2 transform -translate-x-1/2 text-white bg-black bg-opacity-50 px-3 py-1 rounded-full text-sm z-10">
+              {currentImageIndex + 1} / {post.images.length}
+            </div>
+          )}
+
+          {/* 左箭头 */}
+          {post?.images && post.images.length > 1 && currentImageIndex > 0 && (
+            <button
+              onClick={prevImage}
+              className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 z-10"
+            >
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          )}
+
+          {/* 右箭头 */}
+          {post?.images && post.images.length > 1 && currentImageIndex < post.images.length - 1 && (
+            <button
+              onClick={nextImage}
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 z-10"
+            >
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          )}
+
+          {/* 主图片 */}
+          <div className="max-w-4xl max-h-[calc(100vh-160px)] flex items-center justify-center p-4">
+            <img
+              src={previewImage}
+              alt="预览图片"
+              className="max-w-full max-h-full object-contain"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+
+          {/* 背景区域点击关闭 */}
+          <div
+            className="absolute inset-0 -z-10"
+            onClick={closeImagePreview}
+          />
+
+          {/* 底部操作提示 */}
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white text-sm bg-black bg-opacity-50 px-4 py-2 rounded-full">
+            {post?.images && post.images.length > 1 ? (
+              "ESC 关闭 · ← → 切换图片"
+            ) : (
+              "ESC 关闭 · 点击背景关闭"
+            )}
+          </div>
+        </div>
+      )}
     </>
   );
 }

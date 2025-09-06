@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { DynamicPost } from '../post.types';
 
@@ -66,7 +66,7 @@ export default function DynamicContent({ post }: DynamicContentProps) {
 
       {/* 配图展示 */}
       {post.images && post.images.length > 0 && (
-        <div className="mb-3">
+        <div className="mb-3 mr-10">
           <div className={`grid gap-2 ${getImageGridClass(post.images.length)}`}>
             {post.images.slice(0, 9).map((image, index) => {
               const isLastItem = index === 8 && post.images!.length > 9;
@@ -75,7 +75,7 @@ export default function DynamicContent({ post }: DynamicContentProps) {
               return (
                 <div
                   key={index}
-                  className={`relative rounded-lg overflow-hidden bg-gray-100 cursor-pointer hover:opacity-95 transition-opacity ${
+                  className={`relative overflow-hidden bg-gray-100 cursor-pointer hover:opacity-95 transition-opacity ${
                     post.images!.length === 1 ? 'aspect-[4/3]' : 'aspect-square'
                   }`}
                   onClick={onPostClick}

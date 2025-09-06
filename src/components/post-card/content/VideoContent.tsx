@@ -72,8 +72,8 @@ export default function VideoContent({ post, onVideoClick }: VideoContentProps) 
       )}
 
       {/* 视频播放区域 */}
-      <div className="mb-3">
-        <div className="relative rounded-lg overflow-hidden bg-gray-900 aspect-video">
+      <div className="mb-3 mr-10">
+        <div className="relative overflow-hidden bg-gray-900 aspect-video">
           {!videoError ? (
             <>
               {!isPlaying ? (
